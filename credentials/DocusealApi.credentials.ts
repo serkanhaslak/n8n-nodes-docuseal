@@ -10,7 +10,7 @@ export class DocusealApi implements ICredentialType {
 	properties: INodeProperties[] = [
 		{
 			displayName: 'Production API Key',
-			name: 'productionApiKey',
+			name: 'apiKey',
 			type: 'string',
 			typeOptions: { password: true },
 			default: '',
@@ -23,13 +23,13 @@ export class DocusealApi implements ICredentialType {
 			type: 'string',
 			typeOptions: { password: true },
 			default: '',
-			description: 'The DocuSeal test API key for sandbox testing',
+			description: 'The DocuSeal test API key for sandbox testing (optional)',
 		},
 		{
 			displayName: 'Base URL',
 			name: 'baseUrl',
 			type: 'string',
-			default: 'https://api.docuseal.com',
+			default: 'https://api.docuseal.co',
 			description: 'The base URL for DocuSeal API calls',
 		},
 	];
