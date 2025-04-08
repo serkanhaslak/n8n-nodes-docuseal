@@ -7,6 +7,7 @@ import {
 	IDataObject,
 	IHttpRequestMethods,
 	IRequestOptions,
+	NodeConnectionType,
 } from 'n8n-workflow';
 
 export class DocusealApi implements INodeType {
@@ -23,12 +24,12 @@ export class DocusealApi implements INodeType {
 		},
 		inputs: [
 			{
-				type: 'main',
+				type: NodeConnectionType.Main,
 			},
 		],
 		outputs: [
 			{
-				type: 'main',
+				type: NodeConnectionType.Main,
 			},
 		],
 		credentials: [

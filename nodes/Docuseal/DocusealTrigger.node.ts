@@ -5,6 +5,7 @@ import {
 	INodeType,
 	INodeTypeDescription,
 	IWebhookResponseData,
+	NodeConnectionType,
 } from 'n8n-workflow';
 
 export class DocusealTrigger implements INodeType {
@@ -21,7 +22,7 @@ export class DocusealTrigger implements INodeType {
 		inputs: [],
 		outputs: [
 			{
-				type: 'main',
+				type: NodeConnectionType.Main,
 			},
 		],
 		credentials: [

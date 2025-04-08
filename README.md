@@ -9,9 +9,9 @@ This package contains n8n nodes to integrate with [DocuSeal](https://www.docusea
 Three nodes are included in this package to cover all DocuSeal integration needs:
 
 1. **DocuSeal** - A regular node to perform CRUD operations on DocuSeal resources:
-   - Templates: Get list, create from PDF
-   - Submissions: Create, get details
-   - Submitters: Update details and values
+   - Templates: Get list, get a template by ID
+   - Submissions: Create, get details, list submissions with filters, delete submissions, send email notifications
+   - Submitters: Update details and values, get submitter by ID, list submitters with filters
 
 2. **DocuSeal Trigger** - A webhook trigger node to start workflows based on DocuSeal events:
    - Submission created
@@ -57,14 +57,19 @@ Use this node to interact with the DocuSeal API for common operations:
 
 - **Templates**
   - Get a list of your templates
-  - Create new templates from PDFs
+  - Get a specific template by ID
 
 - **Submissions**
   - Create new submissions (send documents for signature)
   - Get submission details
+  - List submissions with filtering options (status, template ID, email, etc.)
+  - Delete a submission
+  - Send email notifications for a submission
 
 - **Submitters**
   - Update submitter information
+  - Get a submitter by ID
+  - List submitters with filtering options (status, email, submission ID, template ID, etc.)
   - Pre-fill form fields
 
 ### DocuSeal Trigger
@@ -104,13 +109,21 @@ This specialized node helps map data from various sources to DocuSeal form field
 4. Conditional: Check approval status
 5. Branch workflow based on approval result
 
+### Automated Follow-up Workflow
+
+1. Schedule Trigger: Run daily to find pending submissions
+2. DocuSeal: List submissions with status "pending"
+3. Loop: For each pending submission
+4. DocuSeal: Send email notification to remind submitters
+5. Slack: Notify team about reminders sent
+
 ## Local Development
 
 If you want to develop custom features for this integration:
 
 ```bash
 # Clone repository
-git clone https://github.com/username/n8n-nodes-docuseal.git
+git clone https://github.com/serkanhaslak/n8n-nodes-docuseal.git
 
 # Install dependencies
 cd n8n-nodes-docuseal
