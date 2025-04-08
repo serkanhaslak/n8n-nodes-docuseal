@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-docuseal",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "n8n nodes to integrate with DocuSeal for document signing and form automation",
   "keywords": [
     "n8n-community-node-package",
