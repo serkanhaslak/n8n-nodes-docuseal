@@ -45,7 +45,8 @@
     "nodes": [
       "dist/nodes/Docuseal/DocusealApi.node.js",
       "dist/nodes/Docuseal/DocusealTrigger.node.js",
-      "dist/nodes/Docuseal/DocusealAiTool.node.js"
+      "dist/nodes/Docuseal/DocusealAiTool.node.js",
+      "dist/nodes/Docuseal/DocusealToolAgent.node.js"
     ],
     "tools": [
       "dist/tools/DocusealAITool.js"
