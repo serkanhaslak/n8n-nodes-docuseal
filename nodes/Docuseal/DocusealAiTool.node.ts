@@ -1,13 +1,11 @@
 import {
 	IExecuteFunctions,
-	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
-	NodeOperationError,
-	IHttpRequestMethods,
-	IRequestOptions,
 	NodeConnectionType,
+	INodeExecutionData,
 	IDataObject,
+	NodeOperationError,
 } from 'n8n-workflow';
 
 export class DocusealAiTool implements INodeType {
@@ -24,6 +22,7 @@ export class DocusealAiTool implements INodeType {
 		},
 		inputs: [NodeConnectionType.Main],
 		outputs: [NodeConnectionType.Main],
+		usableAsTool: true,
 		credentials: [
 			{
 				name: 'docusealApi',
@@ -32,17 +31,125 @@ export class DocusealAiTool implements INodeType {
 		],
 		properties: [
 			{
-				displayName: 'Usable as Tool',
-				name: 'usableAsTool',
-				type: 'hidden',
-				default: true,
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				options: [
+					{
+						name: 'Get template',
+						value: 'getTemplate',
+						description: 'Retrieve a DocuSeal template with its fields',
+						action: 'Get DocuSeal template details',
+					},
+					{
+						name: 'Create submission',
+						value: 'createSubmission',
+						description: 'Create a new submission with pre-filled values',
+						action: 'Create a DocuSeal submission',
+					},
+				],
+				default: 'createSubmission',
+			},
+			// Parameters for Get Template operation
+			{
+				displayName: 'Template ID',
+				name: 'templateId',
+				type: 'string',
 				required: true,
+				displayOptions: {
+					show: {
+						operation: ['getTemplate'],
+					},
+				},
+				default: '',
+				description: 'ID of the template to retrieve',
+			},
+			// Parameters for Create Submission operation
+			{
+				displayName: 'Template ID',
+				name: 'templateId',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						operation: ['createSubmission'],
+					},
+				},
+				default: '',
+				description: 'ID of the template to use for creating a submission',
+			},
+			{
+				displayName: 'Submitter Email',
+				name: 'submitterEmail',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						operation: ['createSubmission'],
+					},
+				},
+				default: '',
+				description: 'Email address of the submitter',
+			},
+			{
+				displayName: 'Submitter Name',
+				name: 'submitterName',
+				type: 'string',
+				displayOptions: {
+					show: {
+						operation: ['createSubmission'],
+					},
+				},
+				default: '',
+				description: 'Name of the submitter',
+			},
+			{
+				displayName: 'Submitter Role',
+				name: 'submitterRole',
+				type: 'string',
+				displayOptions: {
+					show: {
+						operation: ['createSubmission'],
+					},
+				},
+				default: '',
+				description: 'Role of the submitter',
+			},
+			{
+				displayName: 'Field Values',
+				name: 'fieldValues',
+				type: 'json',
+				required: true,
+				displayOptions: {
+					show: {
+						operation: ['createSubmission'],
+					},
+				},
+				default: '{}',
+				description: 'JSON object with key-value pairs mapping field names to values (e.g. {"First Name": "John", "Last Name": "Doe", "Email": "john@example.com"})',
+			},
+			{
+				displayName: 'Send Email',
+				name: 'sendEmail',
+				type: 'boolean',
+				displayOptions: {
+					show: {
+						operation: ['createSubmission'],
+					},
+				},
+				default: true,
+				description: 'Whether to send an email notification to the submitter',
 			},
 			{
 				displayName: 'Environment',
 				name: 'environment',
 				type: 'options',
-				default: 'production',
+				displayOptions: {
+					show: {
+						operation: ['getTemplate', 'createSubmission'],
+					},
+				},
 				options: [
 					{
 						name: 'Production',
@@ -53,239 +160,75 @@ export class DocusealAiTool implements INodeType {
 						value: 'test',
 					},
 				],
-				description: 'Choose between production and test environment',
-			},
-			{
-				displayName: 'Operation',
-				name: 'operation',
-				type: 'options',
-				options: [
-					{
-						name: 'Auto Fill Submission',
-						value: 'autoFill',
-						description: 'Pre-fill submission fields based on input data',
-						action: 'Pre fill submission fields based on input data',
-					},
-				],
-				default: 'autoFill',
-				noDataExpression: true,
-			},
-			{
-				displayName: 'Template ID',
-				name: 'templateId',
-				type: 'number',
-				default: '',
-				required: true,
-				displayOptions: {
-					show: {
-						operation: [
-							'autoFill',
-						],
-					},
-				},
-				description: 'ID of the template to use for the submission',
-			},
-			{
-				displayName: 'Source Data',
-				name: 'sourceData',
-				type: 'json',
-				default: '',
-				required: true,
-				displayOptions: {
-					show: {
-						operation: [
-							'autoFill',
-						],
-					},
-				},
-				description: 'The source data to use for AI field mapping (must be a valid JSON object)',
-			},
-			{
-				displayName: 'Submitter Email',
-				name: 'submitterEmail',
-				type: 'string',
-				default: '',
-				required: true,
-				displayOptions: {
-					show: {
-						operation: [
-							'autoFill',
-						],
-					},
-				},
-				description: 'Email address of the submitter',
-			},
-			{
-				displayName: 'Submitter Name',
-				name: 'submitterName',
-				type: 'string',
-				default: '',
-				displayOptions: {
-					show: {
-						operation: [
-							'autoFill',
-						],
-					},
-				},
-				description: 'Name of the submitter (optional)',
-			},
-			{
-				displayName: 'Submitter Role',
-				name: 'submitterRole',
-				type: 'string',
-				default: '',
-				displayOptions: {
-					show: {
-						operation: [
-							'autoFill',
-						],
-					},
-				},
-				description: 'Role of the submitter (optional)',
-			},
-			{
-				displayName: 'Send Email',
-				name: 'sendEmail',
-				type: 'boolean',
-				default: true,
-				displayOptions: {
-					show: {
-						operation: [
-							'autoFill',
-						],
-					},
-				},
-				description: 'Whether to send email notification to the submitter',
-			},
-			{
-				displayName: 'Field Mapping',
-				name: 'fieldMapping',
-				placeholder: 'Add Field Mapping',
-				type: 'fixedCollection',
-				typeOptions: {
-					multipleValues: true,
-				},
-				default: {},
-				displayOptions: {
-					show: {
-						operation: [
-							'autoFill',
-						],
-					},
-				},
-				options: [
-					{
-						name: 'mapping',
-						displayName: 'Mapping',
-						values: [
-							{
-								displayName: 'Form Field Name',
-								name: 'formField',
-								type: 'string',
-								default: '',
-								description: 'Name of the field in the DocuSeal form',
-							},
-							{
-								displayName: 'Source Data Path',
-								name: 'sourcePath',
-								type: 'string',
-								default: '',
-								description: 'Path to the data in the source JSON (e.g., person.name)',
-							},
-							{
-								displayName: 'Fallback Value',
-								name: 'fallbackValue',
-								type: 'string',
-								default: '',
-								description: 'Value to use if the source path is not found',
-							},
-						],
-					},
-				],
-				description: 'Define how fields should be mapped from source data',
+				default: 'production',
+				description: 'The environment to use for the API call',
 			},
 		],
-
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
-		const returnData: INodeExecutionData[] = [];
-		
-		// Get credentials and base URL
-		const credentials = await this.getCredentials('docusealApi') as IDataObject;
-		const environment = this.getNodeParameter('environment', 0) as string;
-		const baseUrl = environment === 'production' ? (credentials.baseUrl as string) || 'https://api.docuseal.com' : (credentials.baseUrl as string) || 'https://test-api.docuseal.com';
-		
-		// Handle both old and new credential structures for backward compatibility
-		let apiKey: string;
-		if (credentials.apiKey) {
-			// Support old credentials format
-			apiKey = credentials.apiKey as string;
-		} else {
-			// Use new credentials format with environment selection
-			apiKey = environment === 'production' 
-				? (credentials.productionApiKey as string) 
-				: (credentials.testApiKey as string);
-		}
-		const operation = this.getNodeParameter('operation', 0) as string;
+		const returnData: IDataObject[] = [];
 
-		// Auto fill operation
-		if (operation === 'autoFill') {
+		for (let i = 0; i < items.length; i++) {
 			try {
-				for (let i = 0; i < items.length; i++) {
-					const templateId = this.getNodeParameter('templateId', i) as number;
-					const sourceDataStr = this.getNodeParameter('sourceData', i) as string;
-					const submitterEmail = this.getNodeParameter('submitterEmail', i) as string;
-					const submitterName = this.getNodeParameter('submitterName', i) as string;
-					const submitterRole = this.getNodeParameter('submitterRole', i) as string;
-					const sendEmail = this.getNodeParameter('sendEmail', i) as boolean;
-					const fieldMappingParam = this.getNodeParameter('fieldMapping.mapping', i, []) as Array<{
-						formField: string;
-						sourcePath: string;
-						fallbackValue: string;
-					}>;
+				const operation = this.getNodeParameter('operation', i) as string;
+				const environment = this.getNodeParameter('environment', i, 'production') as string;
 
-					// Parse the source data
-					let sourceData;
-					try {
-						sourceData = JSON.parse(sourceDataStr);
-					} catch (error) {
-						throw new NodeOperationError(this.getNode(), 'Source data must be a valid JSON object');
-					}
+				// Handle credentials with backward compatibility
+				const credentials = await this.getCredentials('docusealApi');
+				
+				let apiKey: string;
+				if ('apiKey' in credentials) {
+					apiKey = credentials.apiKey as string;
+				} else {
+					apiKey = environment === 'production' 
+						? credentials.productionApiKey as string 
+						: credentials.testApiKey as string;
+				}
 
-					// Create values object based on field mapping
-					const values: { [key: string]: string } = {};
+				const baseUrl = environment === 'production'
+					? 'https://api.docuseal.com'
+					: 'https://test-api.docuseal.com';
+
+				if (operation === 'getTemplate') {
+					const templateId = this.getNodeParameter('templateId', i) as string;
 					
-					for (const mapping of fieldMappingParam) {
-						const { formField, sourcePath, fallbackValue } = mapping;
-						if (!formField) continue;
+					const response = await this.helpers.request({
+						method: 'GET',
+						uri: `${baseUrl}/templates/${templateId}`,
+						headers: {
+							'X-Auth-Token': apiKey,
+							'Content-Type': 'application/json',
+						},
+						json: true,
+					});
 
-						// Extract value from source data path
-						let value = fallbackValue;
-						if (sourcePath) {
-							const pathParts = sourcePath.split('.');
-							let currentValue = sourceData;
-							let pathFound = true;
+					returnData.push({
+						success: true,
+						message: 'Template retrieved successfully',
+						templateId,
+						...response,
+					});
+				}
 
-							for (const part of pathParts) {
-								if (currentValue && typeof currentValue === 'object' && part in currentValue) {
-									currentValue = currentValue[part];
-								} else {
-									pathFound = false;
-									break;
-								}
-							}
-
-							if (pathFound && currentValue !== undefined && currentValue !== null) {
-								value = String(currentValue);
-							}
-						}
-
-						values[formField] = value;
+				if (operation === 'createSubmission') {
+					const templateId = this.getNodeParameter('templateId', i) as string;
+					const submitterEmail = this.getNodeParameter('submitterEmail', i) as string;
+					const submitterName = this.getNodeParameter('submitterName', i, '') as string;
+					const submitterRole = this.getNodeParameter('submitterRole', i, '') as string;
+					const sendEmail = this.getNodeParameter('sendEmail', i, true) as boolean;
+					
+					let fieldValues: IDataObject = {};
+					try {
+						const fieldValuesInput = this.getNodeParameter('fieldValues', i) as string;
+						fieldValues = typeof fieldValuesInput === 'string' 
+							? JSON.parse(fieldValuesInput)
+							: fieldValuesInput;
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), `Invalid JSON in field values: ${error.message}`);
 					}
 
-					// Prepare the submission request
 					const submissionData = {
 						template_id: templateId,
 						send_email: sendEmail,
@@ -294,42 +237,39 @@ export class DocusealAiTool implements INodeType {
 								email: submitterEmail,
 								name: submitterName || undefined,
 								role: submitterRole || undefined,
-								values: values,
+								values: fieldValues,
 							},
 						],
 					};
 
-					// Make API request to create submission with pre-filled values
-					const options: IRequestOptions = {
-						method: 'POST' as IHttpRequestMethods,
-						url: `${baseUrl}/submissions`,
-						json: true,
-						body: submissionData,
+					const response = await this.helpers.request({
+						method: 'POST',
+						uri: `${baseUrl}/submissions`,
 						headers: {
 							'X-Auth-Token': apiKey,
 							'Content-Type': 'application/json',
 						},
-					};
+						body: submissionData,
+						json: true,
+					});
 
-					const response = await this.helpers.request(options);
-					
-					// Return the response data
 					returnData.push({
-						json: {
-							success: true,
-							submissionData,
-							response,
-						},
+						success: true,
+						message: 'Submission created successfully',
+						templateId,
+						submitterEmail,
+						...response,
 					});
 				}
 			} catch (error) {
-				if (error.node) {
+				if (this.continueOnFail()) {
+					returnData.push({ error: error.message });
+				} else {
 					throw error;
 				}
-				throw new NodeOperationError(this.getNode(), `Error: ${error.message}`);
 			}
 		}
 
-		return [returnData];
+		return [this.helpers.returnJsonArray(returnData)];
 	}
 }
