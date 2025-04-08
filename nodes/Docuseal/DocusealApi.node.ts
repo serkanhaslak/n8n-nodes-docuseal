@@ -32,6 +32,23 @@ export class DocusealApi implements INodeType {
 		],
 		properties: [
 			{
+				displayName: 'Environment',
+				name: 'environment',
+				type: 'options',
+				default: 'production',
+				options: [
+					{
+						name: 'Production',
+						value: 'production',
+					},
+					{
+						name: 'Test',
+						value: 'test',
+					},
+				],
+				description: 'Choose between production and test environment',
+			},
+			{
 				displayName: 'Resource',
 				name: 'resource',
 				type: 'options',
@@ -422,7 +439,9 @@ export class DocusealApi implements INodeType {
 		const operation = this.getNodeParameter('operation', 0) as string;
 
 		const credentials = await this.getCredentials('docusealApi') as IDataObject;
-		const baseUrl = (credentials.baseUrl as string) || 'https://api.docuseal.com';
+		const environment = this.getNodeParameter('environment', 0) as string;
+		const baseUrl = environment === 'production' ? (credentials.baseUrl as string) || 'https://api.docuseal.com' : (credentials.baseUrl as string) || 'https://test-api.docuseal.com';
+		const apiKey = environment === 'production' ? credentials.productionApiKey : credentials.testApiKey;
 
 		let responseData;
 
@@ -444,7 +463,7 @@ export class DocusealApi implements INodeType {
 							url: `${baseUrl}/templates`,
 							qs,
 							headers: {
-								'X-Auth-Token': credentials.apiKey,
+								'X-Auth-Token': apiKey,
 							},
 							json: true,
 						};
@@ -460,7 +479,7 @@ export class DocusealApi implements INodeType {
 							method: 'GET' as IHttpRequestMethods,
 							url: `${baseUrl}/templates/${templateId}`,
 							headers: {
-								'X-Auth-Token': credentials.apiKey,
+								'X-Auth-Token': apiKey,
 							},
 							json: true,
 						};
@@ -510,7 +529,7 @@ export class DocusealApi implements INodeType {
 							url: `${baseUrl}/templates/pdf`,
 							body,
 							headers: {
-								'X-Auth-Token': credentials.apiKey,
+								'X-Auth-Token': apiKey,
 								'Content-Type': 'application/json',
 							},
 							json: true,
@@ -687,7 +706,7 @@ export class DocusealApi implements INodeType {
 							json: true,
 							body: submissionData,
 							headers: {
-								'X-Auth-Token': credentials.apiKey,
+								'X-Auth-Token': apiKey,
 								'Content-Type': 'application/json',
 							},
 						};
@@ -703,7 +722,7 @@ export class DocusealApi implements INodeType {
 							method: 'GET' as IHttpRequestMethods,
 							url: `${baseUrl}/submissions/${submissionId}`,
 							headers: {
-								'X-Auth-Token': credentials.apiKey,
+								'X-Auth-Token': apiKey,
 							},
 							json: true,
 						};
@@ -726,7 +745,7 @@ export class DocusealApi implements INodeType {
 							url: `${baseUrl}/submissions`,
 							qs,
 							headers: {
-								'X-Auth-Token': credentials.apiKey,
+								'X-Auth-Token': apiKey,
 							},
 							json: true,
 						};
@@ -742,7 +761,7 @@ export class DocusealApi implements INodeType {
 							method: 'DELETE' as IHttpRequestMethods,
 							url: `${baseUrl}/submissions/${submissionId}`,
 							headers: {
-								'X-Auth-Token': credentials.apiKey,
+								'X-Auth-Token': apiKey,
 							},
 							json: true,
 						};
@@ -784,7 +803,7 @@ export class DocusealApi implements INodeType {
 							url: `${baseUrl}/submissions/emails`,
 							body: submitterData,
 							headers: {
-								'X-Auth-Token': credentials.apiKey,
+								'X-Auth-Token': apiKey,
 								'Content-Type': 'application/json',
 							},
 							json: true,
@@ -819,7 +838,7 @@ export class DocusealApi implements INodeType {
 							url: `${baseUrl}/submitters/${submitterId}`,
 							body,
 							headers: {
-								'X-Auth-Token': credentials.apiKey,
+								'X-Auth-Token': apiKey,
 								'Content-Type': 'application/json',
 							},
 							json: true,
@@ -836,7 +855,7 @@ export class DocusealApi implements INodeType {
 							method: 'GET' as IHttpRequestMethods,
 							url: `${baseUrl}/submitters/${submitterId}`,
 							headers: {
-								'X-Auth-Token': credentials.apiKey,
+								'X-Auth-Token': apiKey,
 							},
 							json: true,
 						};
@@ -859,7 +878,7 @@ export class DocusealApi implements INodeType {
 							url: `${baseUrl}/submitters`,
 							qs,
 							headers: {
-								'X-Auth-Token': credentials.apiKey,
+								'X-Auth-Token': apiKey,
 							},
 							json: true,
 						};

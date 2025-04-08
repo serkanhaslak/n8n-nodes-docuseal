@@ -7,6 +7,7 @@ import {
 	IHttpRequestMethods,
 	IRequestOptions,
 	NodeConnectionType,
+	IDataObject,
 } from 'n8n-workflow';
 
 export class DocusealAiTool implements INodeType {
@@ -29,6 +30,23 @@ export class DocusealAiTool implements INodeType {
 			},
 		],
 		properties: [
+			{
+				displayName: 'Environment',
+				name: 'environment',
+				type: 'options',
+				default: 'production',
+				options: [
+					{
+						name: 'Production',
+						value: 'production',
+					},
+					{
+						name: 'Test',
+						value: 'test',
+					},
+				],
+				description: 'Choose between production and test environment',
+			},
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -179,13 +197,18 @@ export class DocusealAiTool implements INodeType {
 				description: 'Define how fields should be mapped from source data',
 			},
 		],
+
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
-		const credentials = await this.getCredentials('docusealApi');
-		const baseUrl = credentials.baseUrl as string || 'https://api.docuseal.com';
+		
+		// Get credentials and base URL
+		const credentials = await this.getCredentials('docusealApi') as IDataObject;
+		const environment = this.getNodeParameter('environment', 0) as string;
+		const baseUrl = environment === 'production' ? (credentials.baseUrl as string) || 'https://api.docuseal.com' : (credentials.baseUrl as string) || 'https://test-api.docuseal.com';
+		const apiKey = environment === 'production' ? credentials.productionApiKey : credentials.testApiKey;
 		const operation = this.getNodeParameter('operation', 0) as string;
 
 		// Auto fill operation
@@ -264,7 +287,7 @@ export class DocusealAiTool implements INodeType {
 						json: true,
 						body: submissionData,
 						headers: {
-							'X-Auth-Token': credentials.apiKey,
+							'X-Auth-Token': apiKey,
 							'Content-Type': 'application/json',
 						},
 					};

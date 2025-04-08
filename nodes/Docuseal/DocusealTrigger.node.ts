@@ -37,6 +37,23 @@ export class DocusealTrigger implements INodeType {
 		],
 		properties: [
 			{
+				displayName: 'Environment',
+				name: 'environment',
+				type: 'options',
+				default: 'production',
+				options: [
+					{
+						name: 'Production',
+						value: 'production',
+					},
+					{
+						name: 'Test',
+						value: 'test',
+					},
+				],
+				description: 'Choose between production and test environment',
+			},
+			{
 				displayName: 'Event Type',
 				name: 'eventType',
 				type: 'options',
@@ -116,6 +133,7 @@ To complete the setup:
 		// If DocuSeal adds webhook signature validation in the future, we'll use this
 		// const headerData = this.getHeaderData() as IDataObject;
 		const eventType = this.getNodeParameter('eventType') as string;
+		const environment = this.getNodeParameter('environment') as string;
 
 		// Validate webhook signature if available
 		// DocuSeal documentation doesn't mention a signature validation method, 
