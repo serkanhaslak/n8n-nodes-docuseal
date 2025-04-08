@@ -22,16 +22,8 @@ export class DocusealApi implements INodeType {
 		defaults: {
 			name: 'DocuSeal',
 		},
-		inputs: [
-			{
-				type: NodeConnectionType.Main,
-			},
-		],
-		outputs: [
-			{
-				type: NodeConnectionType.Main,
-			},
-		],
+		inputs: [NodeConnectionType.Main],
+		outputs: [NodeConnectionType.Main],
 		credentials: [
 			{
 				name: 'docusealApi',
@@ -207,6 +199,31 @@ export class DocusealApi implements INodeType {
 				},
 				options: [
 					{
+						displayName: 'After',
+						name: 'after',
+						type: 'string',
+						default: '',
+						description: 'Return submissions created after this timestamp',
+					},
+					{
+						displayName: 'Email',
+						name: 'email',
+						type: 'string',
+						placeholder: 'name@email.com',
+						default: '',
+						description: 'Filter submissions by submitter email',
+					},
+					{
+						displayName: 'Limit',
+						name: 'limit',
+						type: 'number',
+						typeOptions: {
+							minValue: 1,
+						},
+						default: 50,
+						description: 'Max number of results to return',
+					},
+					{
 						displayName: 'Status',
 						name: 'status',
 						type: 'options',
@@ -233,31 +250,6 @@ export class DocusealApi implements INodeType {
 						type: 'number',
 						default: 0,
 						description: 'Filter submissions by template ID',
-					},
-					{
-						displayName: 'Email',
-						name: 'email',
-						type: 'string',
-						placeholder: 'name@email.com',
-						default: '',
-						description: 'Filter submissions by submitter email',
-					},
-					{
-						displayName: 'Limit',
-						name: 'limit',
-						type: 'number',
-						typeOptions: {
-							minValue: 1,
-						},
-						default: 50,
-						description: 'Max number of results to return',
-					},
-					{
-						displayName: 'After',
-						name: 'after',
-						type: 'number',
-						default: 0,
-						description: 'Return results after this submission ID',
 					},
 				],
 			},
@@ -362,6 +354,31 @@ export class DocusealApi implements INodeType {
 				},
 				options: [
 					{
+						displayName: 'After',
+						name: 'after',
+						type: 'number',
+						default: 0,
+						description: 'Return results after this submitter ID',
+					},
+					{
+						displayName: 'Email',
+						name: 'email',
+						type: 'string',
+						placeholder: 'name@email.com',
+						default: '',
+						description: 'Filter submitters by email',
+					},
+					{
+						displayName: 'Limit',
+						name: 'limit',
+						type: 'number',
+						typeOptions: {
+							minValue: 1,
+						},
+						default: 50,
+						description: 'Max number of results to return',
+					},
+					{
 						displayName: 'Status',
 						name: 'status',
 						type: 'options',
@@ -379,14 +396,6 @@ export class DocusealApi implements INodeType {
 						description: 'Filter submitters by status',
 					},
 					{
-						displayName: 'Email',
-						name: 'email',
-						type: 'string',
-						placeholder: 'name@email.com',
-						default: '',
-						description: 'Filter submitters by email',
-					},
-					{
 						displayName: 'Submission ID',
 						name: 'submission_id',
 						type: 'number',
@@ -399,23 +408,6 @@ export class DocusealApi implements INodeType {
 						type: 'number',
 						default: 0,
 						description: 'Filter submitters by template ID',
-					},
-					{
-						displayName: 'Limit',
-						name: 'limit',
-						type: 'number',
-						typeOptions: {
-							minValue: 1,
-						},
-						default: 50,
-						description: 'Max number of results to return',
-					},
-					{
-						displayName: 'After',
-						name: 'after',
-						type: 'number',
-						default: 0,
-						description: 'Return results after this submitter ID',
 					},
 				],
 			},

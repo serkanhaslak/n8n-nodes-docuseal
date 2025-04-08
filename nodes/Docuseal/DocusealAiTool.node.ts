@@ -20,16 +20,8 @@ export class DocusealAiTool implements INodeType {
 		defaults: {
 			name: 'DocuSeal AI Tool',
 		},
-		inputs: [
-			{
-				type: NodeConnectionType.Main,
-			},
-		],
-		outputs: [
-			{
-				type: NodeConnectionType.Main,
-			},
-		],
+		inputs: [NodeConnectionType.Main],
+		outputs: [NodeConnectionType.Main],
 		credentials: [
 			{
 				name: 'docusealApi',

@@ -20,11 +20,7 @@ export class DocusealTrigger implements INodeType {
 			name: 'DocuSeal Trigger',
 		},
 		inputs: [],
-		outputs: [
-			{
-				type: NodeConnectionType.Main,
-			},
-		],
+		outputs: [NodeConnectionType.Main],
 		credentials: [
 			{
 				name: 'docusealApi',
