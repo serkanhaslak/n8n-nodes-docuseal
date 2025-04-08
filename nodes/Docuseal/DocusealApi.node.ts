@@ -7,7 +7,6 @@ import {
 	IDataObject,
 	IHttpRequestMethods,
 	IRequestOptions,
-	NodeConnectionType,
 } from 'n8n-workflow';
 
 export class DocusealApi implements INodeType {
@@ -24,12 +23,12 @@ export class DocusealApi implements INodeType {
 		},
 		inputs: [
 			{
-				type: NodeConnectionType.Main,
+				type: 'main',
 			},
 		],
 		outputs: [
 			{
-				type: NodeConnectionType.Main,
+				type: 'main',
 			},
 		],
 		credentials: [
@@ -116,6 +115,12 @@ export class DocusealApi implements INodeType {
 						action: 'Create a submission',
 					},
 					{
+						name: 'Delete',
+						value: 'delete',
+						description: 'Delete a submission',
+						action: 'Delete a submission',
+					},
+					{
 						name: 'Get',
 						value: 'get',
 						description: 'Get a submission by ID',
@@ -126,12 +131,6 @@ export class DocusealApi implements INodeType {
 						value: 'getList',
 						description: 'Get a list of submissions',
 						action: 'Get a list of submissions',
-					},
-					{
-						name: 'Delete',
-						value: 'delete',
-						description: 'Delete a submission',
-						action: 'Delete a submission',
 					},
 					{
 						name: 'Send Email',
@@ -224,7 +223,7 @@ export class DocusealApi implements INodeType {
 								value: 'canceled',
 							},
 						],
-						default: '',
+						default: 'pending',
 						description: 'Filter submissions by status',
 					},
 					{
@@ -246,8 +245,11 @@ export class DocusealApi implements INodeType {
 						displayName: 'Limit',
 						name: 'limit',
 						type: 'number',
-						default: 10,
-						description: 'Maximum number of results to return',
+						typeOptions: {
+							minValue: 1,
+						},
+						default: 50,
+						description: 'Max number of results to return',
 					},
 					{
 						displayName: 'After',
@@ -372,7 +374,7 @@ export class DocusealApi implements INodeType {
 								value: 'completed',
 							},
 						],
-						default: '',
+						default: 'pending',
 						description: 'Filter submitters by status',
 					},
 					{
@@ -401,8 +403,11 @@ export class DocusealApi implements INodeType {
 						displayName: 'Limit',
 						name: 'limit',
 						type: 'number',
-						default: 10,
-						description: 'Maximum number of results to return',
+						typeOptions: {
+							minValue: 1,
+						},
+						default: 50,
+						description: 'Max number of results to return',
 					},
 					{
 						displayName: 'After',

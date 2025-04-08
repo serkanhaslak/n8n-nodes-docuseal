@@ -6,7 +6,6 @@ import {
 	NodeOperationError,
 	IHttpRequestMethods,
 	IRequestOptions,
-	NodeConnectionType,
 } from 'n8n-workflow';
 
 export class DocusealAiTool implements INodeType {
@@ -22,12 +21,12 @@ export class DocusealAiTool implements INodeType {
 		},
 		inputs: [
 			{
-				type: NodeConnectionType.Main,
+				type: 'main',
 			},
 		],
 		outputs: [
 			{
-				type: NodeConnectionType.Main,
+				type: 'main',
 			},
 		],
 		credentials: [

@@ -5,7 +5,6 @@ import {
 	INodeType,
 	INodeTypeDescription,
 	IWebhookResponseData,
-	NodeConnectionType,
 } from 'n8n-workflow';
 
 export class DocusealTrigger implements INodeType {
@@ -22,7 +21,7 @@ export class DocusealTrigger implements INodeType {
 		inputs: [],
 		outputs: [
 			{
-				type: NodeConnectionType.Main,
+				type: 'main',
 			},
 		],
 		credentials: [
@@ -63,14 +62,14 @@ export class DocusealTrigger implements INodeType {
 						description: 'When a new submission is created',
 					},
 					{
-						name: 'Submitter Opened',
-						value: 'submitter.opened',
-						description: 'When a form is opened by a submitter',
-					},
-					{
 						name: 'Submitter Completed',
 						value: 'submitter.completed',
 						description: 'When a submitter completes their form',
+					},
+					{
+						name: 'Submitter Opened',
+						value: 'submitter.opened',
+						description: 'When a form is opened by a submitter',
 					},
 				],
 				description: 'The event type to listen to',

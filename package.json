@@ -12,12 +12,12 @@
   "license": "MIT",
   "homepage": "https://www.docuseal.co",
   "author": {
-    "name": "DocuSeal Integration Team",
-    "email": "integration@example.com"
+    "name": "Serkan Haslak",
+    "email": "serkan@pragmaticgrowth.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/username/n8n-nodes-docuseal.git"
+    "url": "https://github.com/serkanhaslak/n8n-nodes-docuseal.git"
   },
   "engines": {
     "node": ">=18.10",
