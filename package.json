@@ -1,19 +1,23 @@
 {
-  "name": "n8n-nodes-<...>",
-  "version": "0.1.0",
-  "description": "",
+  "name": "n8n-nodes-docuseal",
+  "version": "0.1.1",
+  "description": "n8n nodes to integrate with DocuSeal for document signing and form automation",
   "keywords": [
-    "n8n-community-node-package"
+    "n8n-community-node-package",
+    "docuseal",
+    "document-signing",
+    "forms",
+    "pdf"
   ],
   "license": "MIT",
-  "homepage": "",
+  "homepage": "https://www.docuseal.co",
   "author": {
-    "name": "",
-    "email": ""
+    "name": "DocuSeal Integration Team",
+    "email": "integration@example.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/<...>/n8n-nodes-<...>.git"
+    "url": "https://github.com/username/n8n-nodes-docuseal.git"
   },
   "engines": {
     "node": ">=18.10",
@@ -36,12 +40,12 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
-      "dist/credentials/ExampleCredentialsApi.credentials.js",
-      "dist/credentials/HttpBinApi.credentials.js"
+      "dist/credentials/DocusealApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/ExampleNode/ExampleNode.node.js",
-      "dist/nodes/HttpBin/HttpBin.node.js"
+      "dist/nodes/Docuseal/DocusealApi.node.js",
+      "dist/nodes/Docuseal/DocusealTrigger.node.js",
+      "dist/nodes/Docuseal/DocusealAiTool.node.js"
     ]
   },
   "devDependencies": {
@@ -49,10 +53,15 @@
     "eslint": "^8.56.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.1",
     "gulp": "^4.0.2",
+    "n8n-workflow": "^1.82.0",
     "prettier": "^3.3.2",
     "typescript": "^5.5.3"
   },
   "peerDependencies": {
     "n8n-workflow": "*"
+  },
+  "dependencies": {
+    "request": "^2.88.2",
+    "request-promise-native": "^1.0.9"
   }
 }

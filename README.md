@@ -1,46 +1,129 @@
-![Banner image](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
+![DocuSeal for n8n](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
 
-# n8n-nodes-starter
+# n8n-nodes-docuseal
 
-This repo contains example nodes to help you get started building your own custom integrations for [n8n](n8n.io). It includes the node linter and other dependencies.
+This package contains n8n nodes to integrate with [DocuSeal](https://www.docuseal.co/), a modern open-source document signing and form solution.
 
-To make your custom node available to the community, you must create it as an npm package, and [submit it to the npm registry](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry).
+## Features
 
-## Prerequisites
+Three nodes are included in this package to cover all DocuSeal integration needs:
 
-You need the following installed on your development machine:
+1. **DocuSeal** - A regular node to perform CRUD operations on DocuSeal resources:
+   - Templates: Get list, create from PDF
+   - Submissions: Create, get details
+   - Submitters: Update details and values
 
-* [git](https://git-scm.com/downloads)
-* Node.js and pnpm. Minimum version Node 18. You can find instructions on how to install both using nvm (Node Version Manager) for Linux, Mac, and WSL [here](https://github.com/nvm-sh/nvm). For Windows users, refer to Microsoft's guide to [Install NodeJS on Windows](https://docs.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-windows).
-* Install n8n with:
-  ```
-  pnpm install n8n -g
-  ```
-* Recommended: follow n8n's guide to [set up your development environment](https://docs.n8n.io/integrations/creating-nodes/build/node-development-environment/).
+2. **DocuSeal Trigger** - A webhook trigger node to start workflows based on DocuSeal events:
+   - Submission created
+   - Submission completed
+   - Submitter opened form
+   - Submitter completed form
 
-## Using this starter
+3. **DocuSeal AI Tool** - A specialized node for pre-filling submission fields using AI-like logic:
+   - Maps source data to form fields
+   - Supports fallback values
+   - Creates submissions with pre-filled data
 
-These are the basic steps for working with the starter. For detailed guidance on creating and publishing nodes, refer to the [documentation](https://docs.n8n.io/integrations/creating-nodes/).
+## Installation
 
-1. [Generate a new repository](https://github.com/n8n-io/n8n-nodes-starter/generate) from this template repository.
-2. Clone your new repo:
-   ```
-   git clone https://github.com/<your organization>/<your-repo-name>.git
-   ```
-3. Run `pnpm i` to install dependencies.
-4. Open the project in your editor.
-5. Browse the examples in `/nodes` and `/credentials`. Modify the examples, or replace them with your own nodes.
-6. Update the `package.json` to match your details.
-7. Run `pnpm lint` to check for errors or `pnpm lintfix` to automatically fix errors when possible.
-8. Test your node locally. Refer to [Run your node locally](https://docs.n8n.io/integrations/creating-nodes/test/run-node-locally/) for guidance.
-9. Replace this README with documentation for your node. Use the [README_TEMPLATE](README_TEMPLATE.md) to get started.
-10. Update the LICENSE file to use your details.
-11. [Publish](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry) your package to npm.
+### In n8n
 
-## More information
+1. Go to **Settings > Community Nodes**
+2. Click on **Install**
+3. Enter `n8n-nodes-docuseal` in **Enter npm package name**
+4. Click on **Install**
 
-Refer to our [documentation on creating nodes](https://docs.n8n.io/integrations/creating-nodes/) for detailed information on building your own nodes.
+### Global Installation (Advanced)
 
-## License
+```
+npm install -g n8n-nodes-docuseal
+```
 
-[MIT](https://github.com/n8n-io/n8n-nodes-starter/blob/master/LICENSE.md)
+## Usage
+
+### Authentication
+
+You need to set up a credentials entry with your DocuSeal API key:
+
+1. In n8n, go to **Credentials**
+2. Click on **Create New**
+3. Search for "DocuSeal API"
+4. Enter your API key (found in your DocuSeal account settings)
+5. Optional: Customize the base URL if using a self-hosted instance
+
+### DocuSeal Node
+
+Use this node to interact with the DocuSeal API for common operations:
+
+- **Templates**
+  - Get a list of your templates
+  - Create new templates from PDFs
+
+- **Submissions**
+  - Create new submissions (send documents for signature)
+  - Get submission details
+
+- **Submitters**
+  - Update submitter information
+  - Pre-fill form fields
+
+### DocuSeal Trigger
+
+This node creates a webhook endpoint that can be configured in your DocuSeal account:
+
+1. Add the DocuSeal Trigger node to your workflow
+2. Select the event type you want to listen for
+3. Deploy your workflow to activate the webhook
+4. Copy the webhook URL from n8n
+5. Add this URL to your DocuSeal account's webhook settings
+
+### DocuSeal AI Tool
+
+This specialized node helps map data from various sources to DocuSeal form fields:
+
+1. Configure your template ID
+2. Provide the source data (in JSON format)
+3. Set up field mappings to match source data fields to form fields
+4. Define optional fallbacks for missing data
+5. Execute to create a pre-filled submission
+
+## Example Workflows
+
+### Automated Contract Workflow
+
+1. Trigger: When a new client record is created in CRM
+2. DocuSeal AI Tool: Create contract submission with pre-filled client data
+3. Wait: Until submission is completed (using DocuSeal Trigger)
+4. Email: Send welcome message with signed contract attached
+
+### Document Approval Process
+
+1. Trigger: When a form is submitted in your application
+2. DocuSeal: Create submission for approval document
+3. Wait: For document completion (using DocuSeal Trigger)
+4. Conditional: Check approval status
+5. Branch workflow based on approval result
+
+## Local Development
+
+If you want to develop custom features for this integration:
+
+```bash
+# Clone repository
+git clone https://github.com/username/n8n-nodes-docuseal.git
+
+# Install dependencies
+cd n8n-nodes-docuseal
+pnpm install
+
+# Build
+pnpm build
+
+# Link to your n8n installation
+pnpm link
+```
+
+## Resources
+
+- [DocuSeal API Documentation](https://www.docuseal.co/docs/api)
+- [n8n Documentation](https://docs.n8n.io)
