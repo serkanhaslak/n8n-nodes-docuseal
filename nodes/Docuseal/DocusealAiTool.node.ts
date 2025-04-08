@@ -37,13 +37,13 @@ export class DocusealAiTool implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
-						name: 'Get template',
+						name: 'Get Template',
 						value: 'getTemplate',
 						description: 'Retrieve a DocuSeal template with its fields',
 						action: 'Get DocuSeal template details',
 					},
 					{
-						name: 'Create submission',
+						name: 'Create Submission',
 						value: 'createSubmission',
 						description: 'Create a new submission with pre-filled values',
 						action: 'Create a DocuSeal submission',
@@ -178,18 +178,26 @@ export class DocusealAiTool implements INodeType {
 				// Handle credentials with backward compatibility
 				const credentials = await this.getCredentials('docusealApi');
 				
-				let apiKey: string;
-				if ('apiKey' in credentials) {
-					apiKey = credentials.apiKey as string;
-				} else {
-					apiKey = environment === 'production' 
-						? credentials.productionApiKey as string 
-						: credentials.testApiKey as string;
+				if (credentials === undefined) {
+					throw new NodeOperationError(this.getNode(), 'No credentials got returned!');
 				}
 
-				const baseUrl = environment === 'production'
-					? 'https://api.docuseal.com'
-					: 'https://test-api.docuseal.com';
+				let apiKey = '';
+				let baseUrl = 'https://api.docuseal.co';
+
+				if (credentials) {
+					// Support both old and new credential format
+					if (credentials.productionApiKey) {
+						apiKey = credentials.productionApiKey as string;
+					} else if (credentials.apiKey) {
+						// Backward compatibility
+						apiKey = credentials.apiKey as string;
+					}
+				}
+
+				if (environment === 'test') {
+					baseUrl = 'https://test-api.docuseal.co';
+				}
 
 				if (operation === 'getTemplate') {
 					const templateId = this.getNodeParameter('templateId', i) as string;

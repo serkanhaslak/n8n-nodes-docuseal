@@ -659,16 +659,14 @@ export class DocusealApi implements INodeType {
 		const environment = this.getNodeParameter('environment', 0) as string;
 		const baseUrl = environment === 'production' ? (credentials.baseUrl as string) || 'https://api.docuseal.com' : (credentials.baseUrl as string) || 'https://test-api.docuseal.com';
 
-		// Handle both old and new credential structures for backward compatibility
-		let apiKey: string;
-		if (credentials.apiKey) {
-			// Support old credentials format
+		// Handle credentials with backward compatibility
+		let apiKey = '';
+		
+		if (credentials.productionApiKey) {
+			apiKey = credentials.productionApiKey as string;
+		} else if (credentials.apiKey) {
+			// For backward compatibility
 			apiKey = credentials.apiKey as string;
-		} else {
-			// Use new credentials format with environment selection
-			apiKey = environment === 'production' 
-				? (credentials.productionApiKey as string) 
-				: (credentials.testApiKey as string);
 		}
 
 		let responseData;

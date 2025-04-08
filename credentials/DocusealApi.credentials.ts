@@ -10,7 +10,7 @@ export class DocusealApi implements ICredentialType {
 	properties: INodeProperties[] = [
 		{
 			displayName: 'Production API Key',
-			name: 'apiKey',
+			name: 'productionApiKey',
 			type: 'string',
 			typeOptions: { password: true },
 			default: '',
