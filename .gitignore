@@ -8,6 +8,3 @@ yarn.lock
 .vscode/launch.json
 integrations-doc
 .vscode
-docuseal-index.yaml
-docuseal-doc.md
-code-of-conduct.md

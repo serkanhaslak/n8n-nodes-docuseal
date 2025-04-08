@@ -119,16 +119,16 @@ export class DocusealApi implements INodeType {
 				},
 				options: [
 					{
+						name: 'Archive',
+						value: 'archive',
+						description: 'Archive a submission',
+						action: 'Archive a submission',
+					},
+					{
 						name: 'Create',
 						value: 'create',
 						description: 'Create a new submission',
 						action: 'Create a submission',
-					},
-					{
-						name: 'Delete',
-						value: 'delete',
-						description: 'Delete a submission',
-						action: 'Delete a submission',
 					},
 					{
 						name: 'Get',
@@ -200,6 +200,39 @@ export class DocusealApi implements INodeType {
 				},
 				default: 0,
 				description: 'ID of the template to retrieve',
+			},
+			// Template: Get List Parameters
+			{
+				displayName: 'Additional Fields',
+				name: 'additionalFields',
+				type: 'collection',
+				placeholder: 'Add Field',
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['template'],
+						operation: ['getList'],
+					},
+				},
+				options: [
+					{
+						displayName: 'Limit',
+						name: 'limit',
+						type: 'number',
+						typeOptions: {
+							minValue: 1,
+						},
+						default: 50,
+						description: 'Max number of results to return',
+					},
+					{
+						displayName: 'Offset',
+						name: 'offset',
+						type: 'number',
+						default: 0,
+						description: 'Number of results to skip',
+					},
+				],
 			},
 			// Submission: Get List Parameters
 			{
@@ -428,6 +461,190 @@ export class DocusealApi implements INodeType {
 					},
 				],
 			},
+			// Submission operation parameters
+			{
+				displayName: 'Submission ID',
+				name: 'submissionId',
+				type: 'number',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: [
+							'submission',
+						],
+						operation: [
+							'get',
+							'archive',
+						],
+					},
+				},
+				default: '',
+				description: 'ID of the submission to retrieve or archive',
+			},
+			// Parameters for submission create operation
+			{
+				displayName: 'Template ID',
+				name: 'templateId',
+				type: 'number',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: [
+							'submission',
+						],
+						operation: [
+							'create',
+						],
+					},
+				},
+				default: '',
+				description: 'ID of the template to use for the submission',
+			},
+			{
+				displayName: 'Send Email',
+				name: 'sendEmail',
+				type: 'boolean',
+				displayOptions: {
+					show: {
+						resource: [
+							'submission',
+						],
+						operation: [
+							'create',
+						],
+					},
+				},
+				default: true,
+				description: 'Whether to send email notification to submitters',
+			},
+			{
+				displayName: 'Submitters',
+				name: 'submitters',
+				placeholder: 'Add Submitter',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: true,
+				},
+				displayOptions: {
+					show: {
+						resource: [
+							'submission',
+						],
+						operation: [
+							'create',
+						],
+					},
+				},
+				default: {},
+				options: [
+					{
+						name: 'submitterValues',
+						displayName: 'Submitter',
+						values: [
+							{
+								displayName: 'Email',
+								name: 'email',
+								type: 'string',
+								placeholder: 'name@email.com',
+								required: true,
+								default: '',
+								description: 'Email address of the submitter',
+							},
+							{
+								displayName: 'Name',
+								name: 'name',
+								type: 'string',
+								default: '',
+								description: 'Name of the submitter',
+							},
+							{
+								displayName: 'Role',
+								name: 'role',
+								type: 'string',
+								default: '',
+								description: 'Role of the submitter',
+							},
+							{
+								displayName: 'Fields',
+								name: 'fields',
+								type: 'json',
+								default: '{}',
+								description: 'Field values to pre-fill. Should be an object with field names as keys.',
+							},
+						],
+					},
+				],
+				description: 'List of submitters to create for this submission',
+			},
+			// Submitter operation parameters
+			{
+				displayName: 'Submitter ID',
+				name: 'submitterId',
+				type: 'number',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: [
+							'submitter',
+						],
+						operation: [
+							'update',
+							'get',
+						],
+					},
+				},
+				default: '',
+				description: 'ID of the submitter to operate on',
+			},
+			// Parameters for submitter update operation
+			{
+				displayName: 'Update Fields',
+				name: 'updateFields',
+				type: 'collection',
+				placeholder: 'Add Field',
+				default: {},
+				displayOptions: {
+					show: {
+						resource: [
+							'submitter',
+						],
+						operation: [
+							'update',
+						],
+					},
+				},
+				options: [
+					{
+						displayName: 'Email',
+						name: 'email',
+						type: 'string',
+						placeholder: 'name@email.com',
+						default: '',
+						description: 'New email address for the submitter',
+					},
+					{
+						displayName: 'Name',
+						name: 'name',
+						type: 'string',
+						default: '',
+						description: 'New name for the submitter',
+					},
+					{
+						displayName: 'Role',
+						name: 'role',
+						type: 'string',
+						default: '',
+						description: 'New role for the submitter',
+					},
+					{
+						displayName: 'Field Values',
+						name: 'values',
+						type: 'json',
+						default: '{}',
+						description: 'New field values for the submitter. Should be an object with field names as keys.',
+					},
+				],
+			},
 		],
 	};
 
@@ -441,7 +658,18 @@ export class DocusealApi implements INodeType {
 		const credentials = await this.getCredentials('docusealApi') as IDataObject;
 		const environment = this.getNodeParameter('environment', 0) as string;
 		const baseUrl = environment === 'production' ? (credentials.baseUrl as string) || 'https://api.docuseal.com' : (credentials.baseUrl as string) || 'https://test-api.docuseal.com';
-		const apiKey = environment === 'production' ? credentials.productionApiKey : credentials.testApiKey;
+
+		// Handle both old and new credential structures for backward compatibility
+		let apiKey: string;
+		if (credentials.apiKey) {
+			// Support old credentials format
+			apiKey = credentials.apiKey as string;
+		} else {
+			// Use new credentials format with environment selection
+			apiKey = environment === 'production' 
+				? (credentials.productionApiKey as string) 
+				: (credentials.testApiKey as string);
+		}
 
 		let responseData;
 
@@ -540,166 +768,26 @@ export class DocusealApi implements INodeType {
 				} else if (resource === 'submission') {
 					// Create Submission
 					if (operation === 'create') {
-						// Get the parameters
 						const templateId = this.getNodeParameter('templateId', i) as number;
 						const sendEmail = this.getNodeParameter('sendEmail', i) as boolean;
-						const order = this.getNodeParameter('order', i) as string;
-
-						const submitters = this.getNodeParameter('submitters', i) as {
-							submitterValues: Array<{
-								email: string;
-								name?: string;
-								role?: string;
-								fields?: {
-									fieldValues: Array<{
-										name: string;
-										default_value?: string;
-										readonly?: boolean;
-										required?: boolean;
-										title?: string;
-										description?: string;
-										validation_pattern?: string;
-										invalid_message?: string;
-										preferences?: {
-											preferenceValues: {
-												font_size?: number;
-												font_type?: string;
-												font?: string;
-												color?: string;
-												align?: string;
-												format?: string;
-												price?: number;
-												currency?: string;
-												mask?: boolean;
-											}
-										},
-										roles?: string[];
-									}>
-								}
-							}>
-						};
-
-						// Prepare submitter data
-						const submitterData = submitters.submitterValues.map(submitter => {
-							const formattedSubmitter: IDataObject = {
+						const submitters = this.getNodeParameter('submitters.submitterValues', i, []) as IDataObject[];
+						
+						// Format submitters data
+						const formattedSubmitters = submitters.map((submitter) => {
+							return {
 								email: submitter.email,
+								name: submitter.name || undefined,
+								role: submitter.role || undefined,
+								values: submitter.fields ? JSON.parse(submitter.fields as string) : {},
 							};
-
-							if (submitter.name) {
-								formattedSubmitter.name = submitter.name;
-							}
-
-							if (submitter.role) {
-								formattedSubmitter.role = submitter.role;
-							}
-
-							// Process fields if they exist
-							if (submitter.fields && submitter.fields.fieldValues && submitter.fields.fieldValues.length > 0) {
-								const fields = submitter.fields.fieldValues.map(field => {
-									const formattedField: IDataObject = {
-										name: field.name,
-									};
-
-									if (field.default_value !== undefined) {
-										formattedField.default_value = field.default_value;
-									}
-
-									if (field.readonly !== undefined) {
-										formattedField.readonly = field.readonly;
-									}
-
-									if (field.required !== undefined) {
-										formattedField.required = field.required;
-									}
-
-									if (field.title) {
-										formattedField.title = field.title;
-									}
-
-									if (field.description) {
-										formattedField.description = field.description;
-									}
-
-									if (field.validation_pattern) {
-										formattedField.validation_pattern = field.validation_pattern;
-									}
-
-									if (field.invalid_message) {
-										formattedField.invalid_message = field.invalid_message;
-									}
-
-									// Process preferences if they exist
-									if (field.preferences && field.preferences.preferenceValues) {
-										const prefs = field.preferences.preferenceValues;
-										const preferences: IDataObject = {};
-
-										if (prefs.font_size !== undefined) {
-											preferences.font_size = prefs.font_size;
-										}
-
-										if (prefs.font_type) {
-											preferences.font_type = prefs.font_type;
-										}
-
-										if (prefs.font) {
-											preferences.font = prefs.font;
-										}
-
-										if (prefs.color) {
-											preferences.color = prefs.color;
-										}
-
-										if (prefs.align) {
-											preferences.align = prefs.align;
-										}
-
-										if (prefs.format) {
-											preferences.format = prefs.format;
-										}
-
-										if (prefs.price !== undefined) {
-											preferences.price = prefs.price;
-										}
-
-										if (prefs.currency) {
-											preferences.currency = prefs.currency;
-										}
-
-										if (prefs.mask !== undefined) {
-											preferences.mask = prefs.mask;
-										}
-
-										if (Object.keys(preferences).length > 0) {
-											formattedField.preferences = preferences;
-										}
-									}
-
-									// Add roles if provided
-									if (field.roles && field.roles.length > 0) {
-										formattedField.roles = field.roles;
-									}
-
-									return formattedField;
-								});
-
-								formattedSubmitter.fields = fields;
-							}
-
-							return formattedSubmitter;
 						});
 
-						// Prepare the request data
 						const submissionData: IDataObject = {
 							template_id: templateId,
 							send_email: sendEmail,
-							submitters: submitterData,
+							submitters: formattedSubmitters,
 						};
 
-						if (order) {
-							submissionData.order = order;
-						}
-
-						// Make the API request
 						const options: IRequestOptions = {
 							method: 'POST' as IHttpRequestMethods,
 							url: `${baseUrl}/submissions`,
@@ -714,7 +802,7 @@ export class DocusealApi implements INodeType {
 						responseData = await this.helpers.request(options);
 					}
 
-					// Get Submission
+					// Get Submission by ID
 					else if (operation === 'get') {
 						const submissionId = this.getNodeParameter('submissionId', i) as number;
 
@@ -753,8 +841,8 @@ export class DocusealApi implements INodeType {
 						responseData = await this.helpers.request(options);
 					}
 
-					// Delete Submission
-					else if (operation === 'delete') {
+					// Archive Submission
+					else if (operation === 'archive') {
 						const submissionId = this.getNodeParameter('submissionId', i) as number;
 
 						const options: IRequestOptions = {
@@ -816,27 +904,34 @@ export class DocusealApi implements INodeType {
 					if (operation === 'update') {
 						const submitterId = this.getNodeParameter('submitterId', i) as number;
 						const updateFields = this.getNodeParameter('updateFields', i) as IDataObject;
-
-						const body: IDataObject = {};
-
-						// Add fields to update
-						if (updateFields.name) body.name = updateFields.name;
-						if (updateFields.email) body.email = updateFields.email;
-						if (updateFields.send_email !== undefined) body.send_email = updateFields.send_email;
-
-						// Handle values field (JSON object)
+						
+						// Prepare the update data
+						const updateData: IDataObject = {};
+						
+						if (updateFields.email) {
+							updateData.email = updateFields.email;
+						}
+						
+						if (updateFields.name) {
+							updateData.name = updateFields.name;
+						}
+						
+						if (updateFields.role) {
+							updateData.role = updateFields.role;
+						}
+						
 						if (updateFields.values) {
 							try {
-								body.values = JSON.parse(updateFields.values as string);
+								updateData.values = JSON.parse(updateFields.values as string);
 							} catch (error) {
-								throw new NodeOperationError(this.getNode(), 'Values must be a valid JSON object');
+								throw new NodeOperationError(this.getNode(), 'Invalid JSON in field values');
 							}
 						}
-
+						
 						const options: IRequestOptions = {
 							method: 'PUT' as IHttpRequestMethods,
 							url: `${baseUrl}/submitters/${submitterId}`,
-							body,
+							body: updateData,
 							headers: {
 								'X-Auth-Token': apiKey,
 								'Content-Type': 'application/json',

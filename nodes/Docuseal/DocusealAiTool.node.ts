@@ -208,7 +208,18 @@ export class DocusealAiTool implements INodeType {
 		const credentials = await this.getCredentials('docusealApi') as IDataObject;
 		const environment = this.getNodeParameter('environment', 0) as string;
 		const baseUrl = environment === 'production' ? (credentials.baseUrl as string) || 'https://api.docuseal.com' : (credentials.baseUrl as string) || 'https://test-api.docuseal.com';
-		const apiKey = environment === 'production' ? credentials.productionApiKey : credentials.testApiKey;
+		
+		// Handle both old and new credential structures for backward compatibility
+		let apiKey: string;
+		if (credentials.apiKey) {
+			// Support old credentials format
+			apiKey = credentials.apiKey as string;
+		} else {
+			// Use new credentials format with environment selection
+			apiKey = environment === 'production' 
+				? (credentials.productionApiKey as string) 
+				: (credentials.testApiKey as string);
+		}
 		const operation = this.getNodeParameter('operation', 0) as string;
 
 		// Auto fill operation

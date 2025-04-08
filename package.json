@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-docuseal",
-  "version": "0.1.1",
+  "version": "0.2.1",
   "description": "n8n nodes to integrate with DocuSeal for document signing and form automation",
   "keywords": [
     "n8n-community-node-package",
@@ -27,7 +27,7 @@
   "main": "index.js",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "build": "tsc && gulp build:icons",
+    "build": "tsc && gulp build:icons && cp -r tools dist/tools",
     "dev": "tsc --watch",
     "format": "prettier nodes credentials --write",
     "lint": "eslint nodes credentials package.json",
@@ -46,6 +46,9 @@
       "dist/nodes/Docuseal/DocusealApi.node.js",
       "dist/nodes/Docuseal/DocusealTrigger.node.js",
       "dist/nodes/Docuseal/DocusealAiTool.node.js"
+    ],
+    "tools": [
+      "dist/tools/DocusealAITool.js"
     ]
   },
   "devDependencies": {

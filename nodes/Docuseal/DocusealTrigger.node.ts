@@ -133,7 +133,8 @@ To complete the setup:
 		// If DocuSeal adds webhook signature validation in the future, we'll use this
 		// const headerData = this.getHeaderData() as IDataObject;
 		const eventType = this.getNodeParameter('eventType') as string;
-		const environment = this.getNodeParameter('environment') as string;
+		// Uncomment when environment-specific webhook handling is needed
+		// const environment = this.getNodeParameter('environment') as string;
 
 		// Validate webhook signature if available
 		// DocuSeal documentation doesn't mention a signature validation method, 
