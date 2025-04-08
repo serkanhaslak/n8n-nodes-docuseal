@@ -17,6 +17,7 @@ export class DocusealAiTool implements INodeType {
 		icon: 'file:docuseal.svg',
 		group: ['transform'],
 		version: 1,
+		subtitle: '={{$parameter["operation"]}}',
 		description: 'Pre-fill submission fields using AI-like logic',
 		defaults: {
 			name: 'DocuSeal AI Tool',
@@ -30,6 +31,12 @@ export class DocusealAiTool implements INodeType {
 			},
 		],
 		properties: [
+			{
+				displayName: 'Usable as Tool',
+				name: 'usableAsTool',
+				type: 'hidden',
+				default: true,
+			},
 			{
 				displayName: 'Environment',
 				name: 'environment',
