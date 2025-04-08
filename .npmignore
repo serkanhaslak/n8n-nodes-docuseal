@@ -1,3 +1,6 @@
 .DS_Store
 *.tsbuildinfo
 integrations-doc
+.docuseal-index.yaml
+.docuseal-doc.md
+code-of-conduct.md
