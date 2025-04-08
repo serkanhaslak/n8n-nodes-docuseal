@@ -6,6 +6,7 @@ import {
 	INodeExecutionData,
 	IDataObject,
 	NodeOperationError,
+	IHttpRequestMethods,
 } from 'n8n-workflow';
 
 export class DocusealAiTool implements INodeType {
@@ -13,7 +14,7 @@ export class DocusealAiTool implements INodeType {
 		displayName: 'DocuSeal AI Tool',
 		name: 'docusealAiTool',
 		icon: 'file:docuseal.svg',
-		group: ['transform'],
+		group: ['ai', 'transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"]}}',
 		description: 'Create and pre-fill DocuSeal submissions',
@@ -30,6 +31,23 @@ export class DocusealAiTool implements INodeType {
 			},
 		],
 		properties: [
+			{
+				displayName: 'Environment',
+				name: 'environment',
+				type: 'options',
+				options: [
+					{
+						name: 'Production',
+						value: 'production',
+					},
+					{
+						name: 'Test',
+						value: 'test',
+					},
+				],
+				default: 'production',
+				description: 'The environment to use',
+			},
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -51,7 +69,6 @@ export class DocusealAiTool implements INodeType {
 				],
 				default: 'createSubmission',
 			},
-			// Parameters for Get Template operation
 			{
 				displayName: 'Template ID',
 				name: 'templateId',
@@ -59,62 +76,14 @@ export class DocusealAiTool implements INodeType {
 				required: true,
 				displayOptions: {
 					show: {
-						operation: ['getTemplate'],
+						operation: [
+							'getTemplate',
+							'createSubmission',
+						],
 					},
 				},
 				default: '',
-				description: 'ID of the template to retrieve',
-			},
-			// Parameters for Create Submission operation
-			{
-				displayName: 'Template ID',
-				name: 'templateId',
-				type: 'string',
-				required: true,
-				displayOptions: {
-					show: {
-						operation: ['createSubmission'],
-					},
-				},
-				default: '',
-				description: 'ID of the template to use for creating a submission',
-			},
-			{
-				displayName: 'Submitter Email',
-				name: 'submitterEmail',
-				type: 'string',
-				required: true,
-				displayOptions: {
-					show: {
-						operation: ['createSubmission'],
-					},
-				},
-				default: '',
-				description: 'Email address of the submitter',
-			},
-			{
-				displayName: 'Submitter Name',
-				name: 'submitterName',
-				type: 'string',
-				displayOptions: {
-					show: {
-						operation: ['createSubmission'],
-					},
-				},
-				default: '',
-				description: 'Name of the submitter',
-			},
-			{
-				displayName: 'Submitter Role',
-				name: 'submitterRole',
-				type: 'string',
-				displayOptions: {
-					show: {
-						operation: ['createSubmission'],
-					},
-				},
-				default: '',
-				description: 'Role of the submitter',
+				description: 'The ID of the template',
 			},
 			{
 				displayName: 'Field Values',
@@ -123,57 +92,27 @@ export class DocusealAiTool implements INodeType {
 				required: true,
 				displayOptions: {
 					show: {
-						operation: ['createSubmission'],
+						operation: [
+							'createSubmission',
+						],
 					},
 				},
 				default: '{}',
-				description: 'JSON object with key-value pairs mapping field names to values (e.g. {"First Name": "John", "Last Name": "Doe", "Email": "john@example.com"})',
-			},
-			{
-				displayName: 'Send Email',
-				name: 'sendEmail',
-				type: 'boolean',
-				displayOptions: {
-					show: {
-						operation: ['createSubmission'],
-					},
-				},
-				default: true,
-				description: 'Whether to send an email notification to the submitter',
-			},
-			{
-				displayName: 'Environment',
-				name: 'environment',
-				type: 'options',
-				displayOptions: {
-					show: {
-						operation: ['getTemplate', 'createSubmission'],
-					},
-				},
-				options: [
-					{
-						name: 'Production',
-						value: 'production',
-					},
-					{
-						name: 'Test',
-						value: 'test',
-					},
-				],
-				default: 'production',
-				description: 'The environment to use for the API call',
+				description: 'Field values to pre-fill in the submission in JSON format. Example: { "email": "user@example.com", "name": "John Doe" }',
 			},
 		],
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
-		const returnData: IDataObject[] = [];
+		const returnData: INodeExecutionData[] = [];
 
+		let responseData: any;
+		
 		for (let i = 0; i < items.length; i++) {
 			try {
 				const operation = this.getNodeParameter('operation', i) as string;
-				const environment = this.getNodeParameter('environment', i, 'production') as string;
+				const environment = this.getNodeParameter('environment', i) as string;
 
 				// Handle credentials with backward compatibility
 				const credentials = await this.getCredentials('docusealApi');
@@ -183,101 +122,89 @@ export class DocusealAiTool implements INodeType {
 				}
 
 				let apiKey = '';
-				let baseUrl = 'https://api.docuseal.co';
+				let baseUrl = '';
 
 				if (credentials) {
 					// Support both old and new credential format
-					if (credentials.productionApiKey) {
+					if (credentials.productionApiKey && environment === 'production') {
 						apiKey = credentials.productionApiKey as string;
+					} else if (credentials.testApiKey && environment === 'test') {
+						apiKey = credentials.testApiKey as string;
 					} else if (credentials.apiKey) {
 						// Backward compatibility
 						apiKey = credentials.apiKey as string;
 					}
+
+					if (environment === 'production') {
+						baseUrl = (credentials.baseUrl as string) || 'https://api.docuseal.co';
+					} else {
+						baseUrl = 'https://test-api.docuseal.co';
+					}
 				}
 
-				if (environment === 'test') {
-					baseUrl = 'https://test-api.docuseal.co';
+				if (!apiKey) {
+					throw new NodeOperationError(this.getNode(), 'API key is required! Please check your credentials.');
 				}
 
 				if (operation === 'getTemplate') {
 					const templateId = this.getNodeParameter('templateId', i) as string;
 					
-					const response = await this.helpers.request({
-						method: 'GET',
-						uri: `${baseUrl}/templates/${templateId}`,
+					const options = {
+						method: 'GET' as IHttpRequestMethods,
 						headers: {
 							'X-Auth-Token': apiKey,
 							'Content-Type': 'application/json',
 						},
-						json: true,
-					});
-
-					returnData.push({
-						success: true,
-						message: 'Template retrieved successfully',
-						templateId,
-						...response,
-					});
-				}
-
-				if (operation === 'createSubmission') {
-					const templateId = this.getNodeParameter('templateId', i) as string;
-					const submitterEmail = this.getNodeParameter('submitterEmail', i) as string;
-					const submitterName = this.getNodeParameter('submitterName', i, '') as string;
-					const submitterRole = this.getNodeParameter('submitterRole', i, '') as string;
-					const sendEmail = this.getNodeParameter('sendEmail', i, true) as boolean;
-					
-					let fieldValues: IDataObject = {};
-					try {
-						const fieldValuesInput = this.getNodeParameter('fieldValues', i) as string;
-						fieldValues = typeof fieldValuesInput === 'string' 
-							? JSON.parse(fieldValuesInput)
-							: fieldValuesInput;
-					} catch (error) {
-						throw new NodeOperationError(this.getNode(), `Invalid JSON in field values: ${error.message}`);
-					}
-
-					const submissionData = {
-						template_id: templateId,
-						send_email: sendEmail,
-						submitters: [
-							{
-								email: submitterEmail,
-								name: submitterName || undefined,
-								role: submitterRole || undefined,
-								values: fieldValues,
-							},
-						],
 					};
 
-					const response = await this.helpers.request({
-						method: 'POST',
-						uri: `${baseUrl}/submissions`,
+					responseData = await this.helpers.request(
+						`${baseUrl}/templates/${templateId}`,
+						options,
+					);
+
+				} else if (operation === 'createSubmission') {
+					const templateId = this.getNodeParameter('templateId', i) as string;
+					const fieldValuesJson = this.getNodeParameter('fieldValues', i) as string;
+					
+					let fieldValues: IDataObject;
+					try {
+						fieldValues = JSON.parse(fieldValuesJson);
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), 'Invalid JSON for field values. Please provide a valid JSON object');
+					}
+					
+					const options = {
+						method: 'POST' as IHttpRequestMethods,
 						headers: {
 							'X-Auth-Token': apiKey,
 							'Content-Type': 'application/json',
 						},
-						body: submissionData,
-						json: true,
-					});
+						body: JSON.stringify({
+							values: fieldValues,
+						}),
+					};
 
-					returnData.push({
-						success: true,
-						message: 'Submission created successfully',
-						templateId,
-						submitterEmail,
-						...response,
-					});
+					responseData = await this.helpers.request(
+						`${baseUrl}/templates/${templateId}/submissions`,
+						options,
+					);
 				}
+
+				const executionData = this.helpers.constructExecutionMetaData(
+					this.helpers.returnJsonArray(responseData),
+					{ itemData: { item: i } },
+				);
+				
+				returnData.push(...executionData);
 			} catch (error) {
 				if (this.continueOnFail()) {
-					returnData.push({ error: error.message });
-				} else {
-					throw error;
+					returnData.push({ json: { error: error.message } });
+					continue;
 				}
+				throw error;
 			}
 		}
-
-		return [this.helpers.returnJsonArray(returnData)];
+		
+		return this.prepareOutputData(returnData);
 	}
 }
