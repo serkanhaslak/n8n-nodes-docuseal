@@ -2,6 +2,19 @@
 
 This guide documents important lessons learned, potential pitfalls, and best practices for developing and maintaining the n8n-nodes-docuseal project.
 
+## Project Architecture
+
+The package follows a standard n8n community node structure:
+
+- `credentials/`: Contains the DocuSeal API credential definition
+- `nodes/Docuseal/`: Contains all node implementations
+  - `DocusealApi.node.ts`: Main API node implementation
+  - `DocusealTrigger.node.ts`: Webhook trigger node
+  - `TemplateDescription.ts`: Template resource operations and fields
+  - `SubmissionDescription.ts`: Submission resource operations and fields
+  - `GenericFunctions.ts`: Shared utility functions for API requests
+  - `docuseal.svg`: Node icon
+
 ## TypeScript and ESLint Configuration
 
 ### Node Input/Output Configuration
@@ -10,14 +23,14 @@ One of the most challenging aspects of developing n8n custom nodes is handling t
 
 **Problem**: The n8n node input/output format has changed across different versions of the n8n-workflow package. This can lead to conflicts between:
 
-  - TypeScript type definitions requiring `NodeConnectionType.Main`
-  - ESLint rules expecting `['main']` string array format
+- TypeScript type definitions requiring `NodeConnectionType.Main`
+- ESLint rules expecting `['main']` string array format
 
 **Solution**:
 
-  1. Use `NodeConnectionType.Main` format in all node files:
+1. Use `NodeConnectionType.Main` format in all node files:
 
-    ```typescript
+```typescript
 import { NodeConnectionType } from 'n8n-workflow';
 
 // ...
@@ -26,28 +39,12 @@ inputs: [NodeConnectionType.Main],
 outputs: [NodeConnectionType.Main],
 ```
 
-  2. Disable conflicting ESLint rules in `.eslintrc.js`:
+2. Disable conflicting ESLint rules in `.eslintrc.js`:
 
-    ```javascript
+```javascript
 'n8n-nodes-base/node-class-description-inputs-wrong-regular-node': 'off',
 'n8n-nodes-base/node-class-description-outputs-wrong': 'off',
 ```
-
-### Common TypeScript Errors During Build/Publish
-
-When running `npm publish` or `pnpm build`, you may encounter TypeScript errors that prevent successful publishing:
-
-  1. **TS6133: Variable is declared but its value is never read**
-    - **Problem**: Occurs when you declare variables that you don't use in your code.
-    - **Solution**: Either use the variable in your code or comment it out.
-
-  2. **TS2322: Type assignment error**
-    - **Problem**: Occurs when assigning a value of the wrong type.
-    - **Solution**: Ensure proper type casting or use appropriate type definitions.
-
-  3. **TS2339: Property does not exist on type**
-    - **Problem**: Occurs when referencing a property that TypeScript doesn't recognize.
-    - **Solution**: Ensure proper imports and interface definitions.
 
 ### Alphabetization Requirements
 
@@ -69,82 +66,121 @@ options: [
 ]
 ```
 
-## Project Structure
+## AI Integration Best Practices
 
-### Resource Description Files
+When developing nodes that will be used with n8n's AI Agent feature, follow these best practices:
 
-For better code organization, create separate description files for each resource type:
+### 1. Detailed Parameter Descriptions
 
-  1. **Template Operations/Fields**: `TemplateDescription.ts`
-  2. **Submission Operations/Fields**: `SubmissionDescription.ts`
-  3. **AI Tool Operations/Fields**: `AiToolDescription.ts`
-
-Import and use these in your main node:
+Provide comprehensive descriptions for all parameters, especially for complex JSON inputs:
 
 ```typescript
-import { templateOperations, templateFields } from './TemplateDescription';
-// ... other imports
-
-export class DocusealApi implements INodeType {
-  description: INodeTypeDescription = {
-    // ...
-    properties: [
-      // ...
-      ...templateOperations,
-      ...templateFields,
-      // ... other operations/fields
-    ],
-  };
+{
+  displayName: 'Submitters',
+  name: 'submitters',
+  type: 'json',
+  default: '[{"email": "example@email.com"}]',
+  description: 'Array of submitters with detailed format example: [{"email": "user@example.com", "name": "User Name", "role": "First Party", "phone": "+1234567890"}]',
 }
 ```
 
-### Shared Utility Functions
+### 2. Include Schema Examples
 
-Store reusable API functions in `GenericFunctions.ts`:
-
-  - `docusealApiRequest`: Basic API request handler
-  - `docusealApiRequestAllItems`: Pagination helper
-  - `parseJsonInput`: Input parser for JSON parameters
-  - `getTemplates`: Helper for template retrieval
-
-## Webhook Implementation
-
-When implementing the trigger node, be aware that the webhook method cannot use shared utility functions directly. Instead:
+For complex parameters, include complete schema examples in the description:
 
 ```typescript
-// In webhook method
-const submissionData = await this.helpers.request({
-  method: 'GET',
-  uri: `${baseUrl}/submissions/${submissionId}`,
-  headers: {
-    'X-Auth-Token': apiKey,
-  },
-  json: true,
-});
+description: 'JSON object with field values. Example: {"First Name": "John", "Signature": "data:image/png;base64,..."}',
 ```
 
-## API Integration Considerations
+### 3. Use the Tool Specification
 
-### Authentication
+To make your node available as an AI tool, include the toolSpecification property:
 
-  - DocuSeal uses API key authentication via `X-Auth-Token` header
-  - Support both production and test environments with separate API keys
+```typescript
+// @ts-ignore
+toolSpecification: {
+  name: 'DocuSeal',
+  displayName: 'DocuSeal',
+  description: 'Create documents, manage templates, and handle submissions with DocuSeal',
+  icon: 'file:docuseal.svg',
+  supportAiNode: true,
+},
+```
 
-### Operations Structure
+## Environment Handling
 
-For comprehensive API integration, include:
+For credentials that support multiple environments (like production/test), ensure you properly handle environment selection:
 
-  - Resource listing operations (getList)
-  - Individual resource retrieval (get)
-  - Create, update, and delete operations
-  - Support for filtering parameters
+```typescript
+// Get environment (production or test)
+let environment: string;
 
-## Testing and Publishing
+try {
+  environment = this.getNodeParameter('environment', 0) as string;
+} catch (error) {
+  // Default to production if parameter is not accessible
+  environment = 'production';
+}
 
-Before publishing:
+// Set API key based on environment
+let apiKey = '';
+if (environment === 'production') {
+  apiKey = credentials.productionApiKey as string;
+} else {
+  apiKey = credentials.testApiKey as string;
+}
+```
 
-  1. Test all operations with real API credentials
-  2. Run `npm run build` to check for TypeScript errors
-  3. Fix any linting errors with `npm run lint`
-  4. Update version in package.json following semantic versioning
-  5. Use `npm publish --access public` to publish to npm registry
+## Common Issues and Solutions
+
+### Build Errors
+
+If you encounter TypeScript errors during build:
+
+1. Check for conflicts between TypeScript type definitions and ESLint rules
+2. Update both n8n-workflow package AND ESLint configuration simultaneously
+3. Consider disabling specific ESLint rules causing conflicts
+
+### Package.json Configuration
+
+Ensure your package.json includes:
+
+```json
+"files": [
+  "dist",
+  "index.js"
+],
+"n8n": {
+  "n8nNodesApiVersion": 1,
+  "credentials": [
+    "dist/credentials/DocusealApi.credentials.js"
+  ],
+  "nodes": [
+    "dist/nodes/Docuseal/DocusealApi.node.js",
+    "dist/nodes/Docuseal/DocusealTrigger.node.js"
+  ]
+}
+```
+
+## Publishing Best Practices
+
+1. **Pre-Publish Checklist**:
+   - All linting errors resolved or specific rules disabled
+   - Example/starter code removed
+   - All new features properly documented in README.md
+
+2. **Version Management**:
+   - Follow semantic versioning
+   - Update version in package.json before publishing
+
+3. **Publishing Command**:
+   ```
+   npm publish --access public
+   ```
+
+## Future Development Ideas
+
+- Add support for more DocuSeal API operations
+- Enhance error handling with more descriptive messages
+- Add support for custom field types and values
+- Improve template handling and creation capabilities
