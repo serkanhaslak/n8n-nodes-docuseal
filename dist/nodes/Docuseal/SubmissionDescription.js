@@ -196,7 +196,7 @@ exports.submissionFields = [
             },
         },
         default: '[\n  {\n    "email": "example@email.com",\n    "name": "John Doe",\n    "role": "Signer"\n  }\n]',
-        description: 'Array of submitters. Each submitter should have email, name, and optional role properties.',
+        description: 'Array of submitters who will sign the document. Each submitter should include email (required), name, role, and optionally phone, values, metadata, etc. Example schema: [{ "email": "user@example.com", "name": "User Name", "role": "First Party", "phone": "+1234567890", "external_id": "user-123", "values": {"field1": "value1"}, "metadata": {"custom": "data"}, "send_email": true }]',
         hint: 'Format: [{"email": "user@example.com", "name": "User Name", "role": "Role Name"}]',
     },
     {
@@ -213,12 +213,50 @@ exports.submissionFields = [
         },
         options: [
             {
+                displayName: 'Completed Redirect URL',
+                name: 'completed_redirect_url',
+                type: 'string',
+                default: '',
+                description: 'URL to redirect submitters to after they complete the submission',
+            },
+            {
+                displayName: 'Expire At',
+                name: 'expire_at',
+                type: 'string',
+                default: '',
+                description: 'Expiration date and time in format: YYYY-MM-DD HH:MM:SS UTC. After this time, the submission will be unavailable for signing.',
+            },
+            {
                 displayName: 'Fields',
                 name: 'fields',
                 type: 'json',
                 default: '{}',
-                description: 'JSON object with field values to pre-fill in the submission. The keys should match the field names in the template.',
+                description: 'JSON object with field values to pre-fill in the document. The keys should match the field names in the template. Example: {"First Name": "John", "Last Name": "Doe", "Date": "12/31/2023", "Signature": "data:image/png;base64,..." or URL to image}. For complex fields, you can specify preferences like: {"Amount": {"value": 100, "preferences": {"font_size": 12, "align": "right", "format": "usd"}}}',
                 hint: 'Format: {"field_name": "field_value"}',
+            },
+            {
+                displayName: 'Message',
+                name: 'message',
+                type: 'json',
+                default: '{"subject": "", "body": ""}',
+                description: 'Custom email message for all submitters. Format: {"subject": "Custom email subject", "body": "Custom email body text. Can include variables: {{template.name}}, {{submitter.link}}, {{account.name}}"}',
+            },
+            {
+                displayName: 'Order',
+                name: 'order',
+                type: 'options',
+                options: [
+                    {
+                        name: 'Preserved (Sequential)',
+                        value: 'preserved',
+                    },
+                    {
+                        name: 'Random (All at Once)',
+                        value: 'random',
+                    },
+                ],
+                default: 'preserved',
+                description: 'Document signing order - "preserved" means sequential signing (second party receives email after first signs), "random" sends to all parties at once',
             },
             {
                 displayName: 'Send Email',
