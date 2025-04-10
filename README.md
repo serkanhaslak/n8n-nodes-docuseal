@@ -1,142 +1,118 @@
-![DocuSeal for n8n](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
-
 # n8n-nodes-docuseal
 
-This package contains n8n nodes to integrate with [DocuSeal](https://www.docuseal.co/), a modern open-source document signing and form solution.
+This package contains n8n nodes for [DocuSeal](https://www.docuseal.com), a document signing solution that makes it easy to create, send, and manage document signing requests.
 
-## Features
+[n8n](https://n8n.io) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
-Three nodes are included in this package to cover all DocuSeal integration needs:
-
-1. **DocuSeal** - A regular node to perform CRUD operations on DocuSeal resources:
-   - Templates: Get list, get a template by ID
-   - Submissions: Create, get details, list submissions with filters, delete submissions, send email notifications
-   - Submitters: Update details and values, get submitter by ID, list submitters with filters
-
-2. **DocuSeal Trigger** - A webhook trigger node to start workflows based on DocuSeal events:
-   - Submission created
-   - Submission completed
-   - Submitter opened form
-   - Submitter completed form
-
-3. **DocuSeal AI Tool** - A specialized node for pre-filling submission fields using AI-like logic:
-   - Maps source data to form fields
-   - Supports fallback values
-   - Creates submissions with pre-filled data
+![DocuSeal Nodes for n8n](https://github.com/serkanhaslak/n8n-nodes-docuseal/blob/master/nodes/Docuseal/docuseal.svg)
 
 ## Installation
 
-### In n8n
+Follow these steps to install this package in your n8n instance:
 
-1. Go to **Settings > Community Nodes**
-2. Click on **Install**
-3. Enter `n8n-nodes-docuseal` in **Enter npm package name**
-4. Click on **Install**
+### Community Nodes (Recommended)
 
-### Global Installation (Advanced)
+For users on n8n v0.187.0+:
 
-```
-npm install -g n8n-nodes-docuseal
-```
+1. Open your n8n instance
+2. Go to **Settings** > **Community Nodes**
+3. Select **Install**
+4. Enter `n8n-nodes-docuseal` in the "Enter npm package name" field
+5. Select **Install**
 
-## Usage
+### Manual Installation
 
-### Authentication
-
-You need to set up a credentials entry with your DocuSeal API key:
-
-1. In n8n, go to **Credentials**
-2. Click on **Create New**
-3. Search for "DocuSeal API"
-4. Enter your API key (found in your DocuSeal account settings)
-5. Optional: Customize the base URL if using a self-hosted instance
-
-### DocuSeal Node
-
-Use this node to interact with the DocuSeal API for common operations:
-
-- **Templates**
-  - Get a list of your templates
-  - Get a specific template by ID
-
-- **Submissions**
-  - Create new submissions (send documents for signature)
-  - Get submission details
-  - List submissions with filtering options (status, template ID, email, etc.)
-  - Delete a submission
-  - Send email notifications for a submission
-
-- **Submitters**
-  - Update submitter information
-  - Get a submitter by ID
-  - List submitters with filtering options (status, email, submission ID, template ID, etc.)
-  - Pre-fill form fields
-
-### DocuSeal Trigger
-
-This node creates a webhook endpoint that can be configured in your DocuSeal account:
-
-1. Add the DocuSeal Trigger node to your workflow
-2. Select the event type you want to listen for
-3. Deploy your workflow to activate the webhook
-4. Copy the webhook URL from n8n
-5. Add this URL to your DocuSeal account's webhook settings
-
-### DocuSeal AI Tool
-
-This specialized node helps map data from various sources to DocuSeal form fields:
-
-1. Configure your template ID
-2. Provide the source data (in JSON format)
-3. Set up field mappings to match source data fields to form fields
-4. Define optional fallbacks for missing data
-5. Execute to create a pre-filled submission
-
-## Example Workflows
-
-### Automated Contract Workflow
-
-1. Trigger: When a new client record is created in CRM
-2. DocuSeal AI Tool: Create contract submission with pre-filled client data
-3. Wait: Until submission is completed (using DocuSeal Trigger)
-4. Email: Send welcome message with signed contract attached
-
-### Document Approval Process
-
-1. Trigger: When a form is submitted in your application
-2. DocuSeal: Create submission for approval document
-3. Wait: For document completion (using DocuSeal Trigger)
-4. Conditional: Check approval status
-5. Branch workflow based on approval result
-
-### Automated Follow-up Workflow
-
-1. Schedule Trigger: Run daily to find pending submissions
-2. DocuSeal: List submissions with status "pending"
-3. Loop: For each pending submission
-4. DocuSeal: Send email notification to remind submitters
-5. Slack: Notify team about reminders sent
-
-## Local Development
-
-If you want to develop custom features for this integration:
+If you're using a self-hosted n8n instance:
 
 ```bash
-# Clone repository
-git clone https://github.com/serkanhaslak/n8n-nodes-docuseal.git
+# In your n8n installation directory
+npm install n8n-nodes-docuseal
 
-# Install dependencies
-cd n8n-nodes-docuseal
-pnpm install
-
-# Build
-pnpm build
-
-# Link to your n8n installation
-pnpm link
+# Start n8n
+n8n start
 ```
+
+## Features
+
+The package includes two powerful nodes:
+
+### 1. DocuSeal
+
+The main API node with the following resource types:
+
+#### Templates
+
+- **Get**: Retrieve a template by ID
+- **Get List**: Get templates with filtering options
+
+#### Submissions
+
+- **Create**: Create a new document signing request
+- **Get**: Retrieve a submission by ID
+- **Get List**: List submissions with filtering options
+- **Archive**: Archive a submission
+
+#### AI Tools
+
+- **Generate Document**: Create documents using AI based on descriptions
+
+### 2. DocuSeal Trigger
+
+A webhook-based trigger node that:
+
+- Listens for DocuSeal events like submission completions and creations
+- Provides detailed setup instructions for webhook configuration
+- Supports event filtering and additional data fetching
+
+## Credentials
+
+The nodes use a custom credential type with the following fields:
+
+- **Production API Key**: Your main DocuSeal API key
+- **Test API Key**: Optional API key for your test environment
+- **Base URL**: API endpoint (defaults to [https://api.docuseal.com](https://api.docuseal.com))
+
+## Usage Examples
+
+### Creating a Document Signing Request
+
+1. Add the **DocuSeal** node to your workflow
+2. Select the **Submission** resource and **Create** operation
+3. Specify a template ID and submitters information:
+
+```json
+[
+  {
+    "email": "signer@example.com",
+    "name": "John Doe",
+    "role": "Signer"
+  }
+]
+```
+
+### Generating a Document with AI
+
+1. Add the **DocuSeal** node to your workflow
+2. Select the **AI Tool** resource and **Generate Document** operation
+3. Enter document type and description:
+   - Document Type: "Non-disclosure agreement"
+   - Party Names: "Acme Inc., John Doe"
+   - Description: "Standard NDA for a contractor relationship"
+
+### Listening for Document Completions
+
+1. Add the **DocuSeal Trigger** node as the start of your workflow
+2. Select **Submission Completed** as the event type
+3. Configure the webhook in your DocuSeal dashboard as instructed
 
 ## Resources
 
-- [DocuSeal API Documentation](https://www.docuseal.co/docs/api)
-- [n8n Documentation](https://docs.n8n.io)
+- [DocuSeal API Documentation](https://www.docuseal.com/docs/api)
+- [n8n Community Nodes Documentation](https://docs.n8n.io/integrations/community-nodes/)
+
+## Support
+
+If you need assistance or want to report issues, please:
+
+- Open an issue on [GitHub](https://github.com/serkanhaslak/n8n-nodes-docuseal/issues)
+- Check the [development guide](./docs/DEVELOPMENT.md) for troubleshooting common issues

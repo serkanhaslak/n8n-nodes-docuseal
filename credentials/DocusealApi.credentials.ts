@@ -6,7 +6,7 @@ import {
 export class DocusealApi implements ICredentialType {
 	name = 'docusealApi';
 	displayName = 'DocuSeal API';
-	documentationUrl = 'https://www.docuseal.co/docs/api';
+	documentationUrl = 'https://www.docuseal.com/docs/api';
 	properties: INodeProperties[] = [
 		{
 			displayName: 'Production API Key',
@@ -29,7 +29,7 @@ export class DocusealApi implements ICredentialType {
 			displayName: 'Base URL',
 			name: 'baseUrl',
 			type: 'string',
-			default: 'https://api.docuseal.co',
+			default: 'https://api.docuseal.com',
 			description: 'The base URL for DocuSeal API calls',
 		},
 	];
