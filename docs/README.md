@@ -10,8 +10,10 @@ The package includes two main nodes:
 
 The main API node that allows you to:
 
-- **Templates**: List and retrieve document templates
-- **Submissions**: Create, list, retrieve, and archive document signing requests
+- **Template Management**: Create, retrieve, and manage document templates
+- **Submission Handling**: Create and manage document submissions
+- **Submitter Management**: Update submitter details, pre-fill fields, and control email notifications
+- **Webhook Integration**: Receive real-time updates on document status changes
 
 ### 2. DocuSeal Trigger
 

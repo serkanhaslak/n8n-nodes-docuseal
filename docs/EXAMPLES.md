@@ -144,3 +144,57 @@ This example shows how to create a document that requires multiple signers in a 
    - **Send Email**: true
 
 This will create a sequential signing flow where the second party receives the document only after the first party has signed.
+
+## 6. Updating a Submitter
+
+You can update a submitter's details, pre-fill form fields, or re-send email notifications using the DocuSeal node:
+
+1. Add a **DocuSeal** node to your workflow
+2. Select **Submitter** as the Resource
+3. Select **Update** as the Operation
+4. Enter the **Submitter ID** (you can get this from a previous submission creation or from DocuSeal's interface)
+5. Configure the update fields:
+
+### Example: Update submitter email and pre-fill fields
+
+```json
+{
+  "email": "new.email@example.com",
+  "send_email": true,
+  "fields": [
+    {
+      "name": "First Name",
+      "default_value": "John"
+    },
+    {
+      "name": "Last Name",
+      "default_value": "Doe"
+    }
+  ]
+}
+```
+
+### Example: Mark a submitter as completed via API
+
+```json
+{
+  "completed": true,
+  "values": {
+    "Signature": "https://example.com/signature.png",
+    "Date": "2025-04-13"
+  }
+}
+```
+
+### Example: Customize email notifications
+
+```json
+{
+  "message": {
+    "subject": "Please sign your updated contract",
+    "body": "Hello, we need your signature on the {{template.name}}. Please click here: {{submitter.link}}"
+  },
+  "send_email": true,
+  "reply_to": "support@yourcompany.com"
+}
+```

@@ -36,6 +36,102 @@ When creating a submission in DocuSeal, you need to provide an array of submitte
 ]
 ```
 
+## Submitter Update Schema
+
+When updating a submitter, you can use the following JSON structure to configure various aspects of the submitter's details, field values, and notification preferences:
+
+```json
+{
+  "name": "John Doe",
+  "email": "john.doe@example.com",
+  "phone": "+1234567890",
+  "external_id": "user-123",
+  "completed": false,
+  "send_email": true,
+  "send_sms": false,
+  "reply_to": "support@yourcompany.com",
+  "completed_redirect_url": "https://yourcompany.com/thank-you",
+  "values": {
+    "First Name": "John",
+    "Last Name": "Doe",
+    "Date": "2025-04-13"
+  },
+  "metadata": {
+    "user_id": "12345",
+    "plan": "premium"
+  },
+  "message": {
+    "subject": "Please sign your document",
+    "body": "Hello, we need your signature on the {{template.name}}. Please click here: {{submitter.link}}"
+  },
+  "fields": [
+    {
+      "name": "First Name",
+      "default_value": "John",
+      "readonly": true,
+      "required": true
+    },
+    {
+      "name": "Signature",
+      "default_value": "https://example.com/signature.png",
+      "preferences": {
+        "font_size": 14,
+        "font_type": "bold",
+        "align": "center"
+      }
+    },
+    {
+      "name": "Date",
+      "format": "DD/MM/YYYY"
+    }
+  ]
+}
+```
+
+### Key Components
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `name` | String | The name of the submitter |
+| `email` | String | The email address of the submitter |
+| `phone` | String | Phone number in E.164 format (e.g., +1234567890) |
+| `external_id` | String | Your application's unique identifier for this submitter |
+| `completed` | Boolean | Set to `true` to mark as completed and auto-sign via API |
+| `send_email` | Boolean | Set to `true` to re-send signature request emails |
+| `send_sms` | Boolean | Set to `true` to re-send signature request via SMS |
+| `reply_to` | String | Reply-To address for notification emails |
+| `completed_redirect_url` | String | URL to redirect after completion |
+| `values` | Object | Pre-filled values using field names as keys |
+| `metadata` | Object | Additional submitter information |
+| `message` | Object | Custom email notification settings |
+| `fields` | Array | List of field configurations |
+
+### Field Configuration
+
+Each field in the `fields` array can have the following properties:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `name` | String | **Required.** The name of the field as defined in the template |
+| `default_value` | Mixed | Default value for the field |
+| `readonly` | Boolean | If `true`, submitter cannot edit the field |
+| `required` | Boolean | If `true`, field must be filled |
+| `validation_pattern` | String | HTML validation pattern |
+| `invalid_message` | String | Message to display on validation failure |
+| `preferences` | Object | Visual preferences for the field |
+| `format` | String | Data format (e.g., DD/MM/YYYY for dates) |
+
+### Preferences Object
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `font_size` | Integer | Font size in pixels |
+| `font_type` | String | Font type (bold, italic, bold_italic) |
+| `font` | String | Font family (Times, Helvetica, Courier) |
+| `color` | String | Font color (black, white, blue) |
+| `align` | String | Horizontal alignment (left, center, right) |
+| `valign` | String | Vertical alignment (top, center, bottom) |
+
 ## Fields Schema
 
 When pre-filling document fields, you can use a simple key-value format or a more complex format with preferences:
@@ -192,4 +288,3 @@ When customizing email notifications, you can use the following format:
     }
   ]
 }
-```

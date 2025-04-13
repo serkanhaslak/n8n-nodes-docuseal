@@ -18,6 +18,7 @@ import {
 
 import { templateOperations, templateFields } from './TemplateDescription';
 import { submissionOperations, submissionFields } from './SubmissionDescription';
+import { submitterOperations, submitterFields } from './SubmitterDescription';
 
 export class DocusealApi implements INodeType {
 	description: INodeTypeDescription = {
@@ -77,6 +78,10 @@ export class DocusealApi implements INodeType {
 						value: 'submission',
 					},
 					{
+						name: 'Submitter',
+						value: 'submitter',
+					},
+					{
 						name: 'Template',
 						value: 'template',
 					},
@@ -88,6 +93,8 @@ export class DocusealApi implements INodeType {
 			...templateFields,
 			...submissionOperations,
 			...submissionFields,
+			...submitterOperations,
+			...submitterFields,
 		],
 	};
 
@@ -257,6 +264,55 @@ export class DocusealApi implements INodeType {
 							this,
 							'DELETE',
 							`/submissions/${submissionId}`,
+						);
+					}
+				}
+				
+				// Submitter operations
+				else if (resource === 'submitter') {
+					// Update submitter
+					if (operation === 'update') {
+						const submitterId = this.getNodeParameter('submitterId', i) as number;
+						const updateFields = this.getNodeParameter('updateFields', i, {}) as IDataObject;
+						
+						// Build request body
+						const body: IDataObject = {};
+						
+						// Add simple fields
+						const simpleFields = [
+							'name', 'email', 'phone', 'external_id', 'completed',
+							'send_email', 'send_sms', 'reply_to', 'completed_redirect_url'
+						];
+						
+						for (const field of simpleFields) {
+							if (updateFields[field] !== undefined) {
+								body[field] = updateFields[field];
+							}
+						}
+						
+						// Handle JSON fields
+						if (updateFields.values) {
+							body.values = parseJsonInput(updateFields.values as string | object);
+						}
+						
+						if (updateFields.metadata) {
+							body.metadata = parseJsonInput(updateFields.metadata as string | object);
+						}
+						
+						if (updateFields.message) {
+							body.message = parseJsonInput(updateFields.message as string | object);
+						}
+						
+						// Handle fields array
+						if (updateFields.fields) {
+							body.fields = parseJsonInput(updateFields.fields as string | object);
+						}
+						
+						responseData = await docusealApiRequest.call(
+							this,
+							'PUT',
+							`/submitters/${submitterId}`,
+							body,
 						);
 					}
 				}
