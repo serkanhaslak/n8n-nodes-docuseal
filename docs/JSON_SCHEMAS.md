@@ -132,6 +132,114 @@ Each field in the `fields` array can have the following properties:
 | `align` | String | Horizontal alignment (left, center, right) |
 | `valign` | String | Vertical alignment (top, center, bottom) |
 
+## Submitter Response Schema
+
+When retrieving a submitter using the "Get" operation, you'll receive a response with the following structure:
+
+```json
+{
+  "id": 500001,
+  "name": "John Doe",
+  "email": "john.doe@example.com",
+  "phone": "+1234567890",
+  "completed": true,
+  "completed_at": "2025-04-13T18:30:45.123Z",
+  "opened": true,
+  "opened_at": "2025-04-13T18:15:22.456Z",
+  "sent_at": "2025-04-13T18:00:00.000Z",
+  "archived": false,
+  "submission_id": 400001,
+  "external_id": "user-123",
+  "role": "Signer",
+  "order": 1,
+  "values": {
+    "First Name": "John",
+    "Last Name": "Doe",
+    "Signature": "data:image/png;base64,..."
+  },
+  "metadata": {
+    "user_id": "12345",
+    "plan": "premium"
+  },
+  "fields": [
+    {
+      "name": "First Name",
+      "value": "John"
+    },
+    {
+      "name": "Last Name",
+      "value": "Doe"
+    },
+    {
+      "name": "Signature",
+      "value": "data:image/png;base64,..."
+    }
+  ],
+  "documents": [
+    {
+      "id": 600001,
+      "name": "signed_document.pdf",
+      "content_type": "application/pdf",
+      "url": "https://api.docuseal.com/documents/600001"
+    }
+  ]
+}
+```
+
+## Submitter List Response Schema
+
+When retrieving a list of submitters using the "Get List" operation, you'll receive a response with the following structure:
+
+```json
+{
+  "data": [
+    {
+      "id": 500001,
+      "name": "John Doe",
+      "email": "john.doe@example.com",
+      "phone": "+1234567890",
+      "completed": true,
+      "completed_at": "2025-04-13T18:30:45.123Z",
+      "opened": true,
+      "opened_at": "2025-04-13T18:15:22.456Z",
+      "sent_at": "2025-04-13T18:00:00.000Z",
+      "archived": false,
+      "submission_id": 400001,
+      "external_id": "user-123",
+      "role": "Signer",
+      "order": 1
+    },
+    {
+      "id": 500002,
+      "name": "Jane Smith",
+      "email": "jane.smith@example.com",
+      "phone": null,
+      "completed": false,
+      "completed_at": null,
+      "opened": false,
+      "opened_at": null,
+      "sent_at": "2025-04-13T18:00:00.000Z",
+      "archived": false,
+      "submission_id": 400001,
+      "external_id": "user-456",
+      "role": "Reviewer",
+      "order": 2
+    }
+  ],
+  "pagination": {
+    "next": 500003,
+    "previous": null
+  }
+}
+```
+
+### Pagination
+
+The `pagination` object provides IDs for navigating through large result sets:
+
+- `next`: The ID to use as the `after` parameter to get the next page of results
+- `previous`: The ID to use as the `before` parameter to get the previous page of results
+
 ## Fields Schema
 
 When pre-filling document fields, you can use a simple key-value format or a more complex format with preferences:

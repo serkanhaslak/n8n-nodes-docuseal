@@ -16,13 +16,25 @@ exports.submitterOperations = [
         },
         options: [
             {
+                name: 'Get',
+                value: 'get',
+                description: 'Get a submitter',
+                action: 'Get a submitter',
+            },
+            {
+                name: 'Get List',
+                value: 'getList',
+                description: 'Get a list of submitters',
+                action: 'Get a list of submitters',
+            },
+            {
                 name: 'Update',
                 value: 'update',
-                description: 'Update a submitter.',
+                description: 'Update a submitter',
                 action: 'Update a submitter',
             },
         ],
-        default: 'update',
+        default: 'get',
     },
 ];
 exports.submitterFields = [
@@ -34,11 +46,105 @@ exports.submitterFields = [
         displayOptions: {
             show: {
                 resource: ['submitter'],
-                operation: ['update'],
+                operation: ['get', 'update'],
             },
         },
         default: 0,
-        description: 'ID of the submitter to update.',
+        description: 'ID of the submitter to retrieve.',
+    },
+    {
+        displayName: 'Return All',
+        name: 'returnAll',
+        type: 'boolean',
+        displayOptions: {
+            show: {
+                resource: ['submitter'],
+                operation: ['getList'],
+            },
+        },
+        default: false,
+        description: 'Whether to return all results or only up to a given limit.',
+    },
+    {
+        displayName: 'Limit',
+        name: 'limit',
+        type: 'number',
+        displayOptions: {
+            show: {
+                resource: ['submitter'],
+                operation: ['getList'],
+                returnAll: [false],
+            },
+        },
+        typeOptions: {
+            minValue: 1,
+        },
+        default: 50,
+        description: 'Max number of results to return.',
+    },
+    {
+        displayName: 'Filters',
+        name: 'filters',
+        type: 'collection',
+        placeholder: 'Add Filter',
+        default: {},
+        displayOptions: {
+            show: {
+                resource: ['submitter'],
+                operation: ['getList'],
+            },
+        },
+        options: [
+            {
+                displayName: 'After ID',
+                name: 'after',
+                type: 'number',
+                default: 0,
+                description: 'Return submitters with ID greater than this value.',
+            },
+            {
+                displayName: 'Before ID',
+                name: 'before',
+                type: 'number',
+                default: 0,
+                description: 'Return submitters with ID less than this value.',
+            },
+            {
+                displayName: 'Completed After',
+                name: 'completed_after',
+                type: 'dateTime',
+                default: '',
+                description: 'Filter submitters that completed after this date and time.',
+            },
+            {
+                displayName: 'Completed Before',
+                name: 'completed_before',
+                type: 'dateTime',
+                default: '',
+                description: 'Filter submitters that completed before this date and time.',
+            },
+            {
+                displayName: 'External ID',
+                name: 'external_id',
+                type: 'string',
+                default: '',
+                description: 'Filter submitters by external ID.',
+            },
+            {
+                displayName: 'Query',
+                name: 'q',
+                type: 'string',
+                default: '',
+                description: 'Filter submitters on name, email or phone partial match.',
+            },
+            {
+                displayName: 'Submission ID',
+                name: 'submission_id',
+                type: 'number',
+                default: 0,
+                description: 'Filter submitters by submission ID.',
+            },
+        ],
     },
     {
         displayName: 'Update Fields',

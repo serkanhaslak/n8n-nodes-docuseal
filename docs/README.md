@@ -12,7 +12,10 @@ The main API node that allows you to:
 
 - **Template Management**: Create, retrieve, and manage document templates
 - **Submission Handling**: Create and manage document submissions
-- **Submitter Management**: Update submitter details, pre-fill fields, and control email notifications
+- **Submitter Management**: 
+  - Update submitter details, pre-fill fields, and control email notifications
+  - Retrieve individual submitter details
+  - List and filter submitters by various criteria (submission ID, completion date, search terms)
 - **Webhook Integration**: Receive real-time updates on document status changes
 
 ### 2. DocuSeal Trigger

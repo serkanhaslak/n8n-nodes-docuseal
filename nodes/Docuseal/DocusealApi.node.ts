@@ -270,8 +270,45 @@ export class DocusealApi implements INodeType {
 				
 				// Submitter operations
 				else if (resource === 'submitter') {
+					// Get submitter by ID
+					if (operation === 'get') {
+						const submitterId = this.getNodeParameter('submitterId', i) as number;
+						
+						responseData = await docusealApiRequest.call(
+							this,
+							'GET',
+							`/submitters/${submitterId}`,
+						);
+					}
+					
+					// Get list of submitters
+					else if (operation === 'getList') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						const filters = this.getNodeParameter('filters', i, {}) as IDataObject;
+						
+						if (returnAll) {
+							responseData = await docusealApiRequestAllItems.call(
+								this,
+								'GET',
+								'/submitters',
+								{},
+								filters,
+							);
+						} else {
+							const limit = this.getNodeParameter('limit', i) as number;
+							filters.limit = limit;
+							responseData = await docusealApiRequest.call(
+								this,
+								'GET',
+								'/submitters',
+								{},
+								filters,
+							);
+						}
+					}
+					
 					// Update submitter
-					if (operation === 'update') {
+					else if (operation === 'update') {
 						const submitterId = this.getNodeParameter('submitterId', i) as number;
 						const updateFields = this.getNodeParameter('updateFields', i, {}) as IDataObject;
 						

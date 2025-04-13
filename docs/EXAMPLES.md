@@ -198,3 +198,57 @@ You can update a submitter's details, pre-fill form fields, or re-send email not
   "reply_to": "support@yourcompany.com"
 }
 ```
+
+## 7. Getting a Submitter
+
+You can retrieve detailed information about a specific submitter using the DocuSeal node:
+
+1. Add a **DocuSeal** node to your workflow
+2. Select **Submitter** as the Resource
+3. Select **Get** as the Operation
+4. Enter the **Submitter ID** (you can get this from a previous submission creation or from DocuSeal's interface)
+
+This will return detailed information about the submitter, including:
+- Contact information (name, email, phone)
+- Status (completed, archived)
+- Submission details
+- Field values
+- Metadata
+
+## 8. Listing and Filtering Submitters
+
+You can retrieve a list of submitters with various filtering options:
+
+1. Add a **DocuSeal** node to your workflow
+2. Select **Submitter** as the Resource
+3. Select **Get List** as the Operation
+4. Choose whether to return all results or limit the number
+5. Configure filters as needed:
+
+### Example: Get Submitters for a Specific Submission
+
+To retrieve all submitters associated with a particular submission:
+
+1. Add the **Submission ID** filter with the ID of the submission
+2. Set **Return All** to true
+
+### Example: Find Submitters by Name or Email
+
+To search for submitters by name, email, or phone:
+
+1. Add the **Query** filter with your search term (e.g., "john" or "example.com")
+2. Set a reasonable limit (e.g., 50)
+
+### Example: Get Recently Completed Submissions
+
+To find submitters who completed their submissions within a specific date range:
+
+1. Add the **Completed After** filter with a start date
+2. Optionally add the **Completed Before** filter with an end date
+
+### Example: Pagination with Before/After IDs
+
+For efficient pagination through large result sets:
+
+1. First request: Set a limit (e.g., 50)
+2. Subsequent requests: Use the last ID from the previous response as the **After ID** filter

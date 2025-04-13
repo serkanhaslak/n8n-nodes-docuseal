@@ -174,7 +174,23 @@ class DocusealApi {
                     }
                 }
                 else if (resource === 'submitter') {
-                    if (operation === 'update') {
+                    if (operation === 'get') {
+                        const submitterId = this.getNodeParameter('submitterId', i);
+                        responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'GET', `/submitters/${submitterId}`);
+                    }
+                    else if (operation === 'getList') {
+                        const returnAll = this.getNodeParameter('returnAll', i);
+                        const filters = this.getNodeParameter('filters', i, {});
+                        if (returnAll) {
+                            responseData = await GenericFunctions_1.docusealApiRequestAllItems.call(this, 'GET', '/submitters', {}, filters);
+                        }
+                        else {
+                            const limit = this.getNodeParameter('limit', i);
+                            filters.limit = limit;
+                            responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'GET', '/submitters', {}, filters);
+                        }
+                    }
+                    else if (operation === 'update') {
                         const submitterId = this.getNodeParameter('submitterId', i);
                         const updateFields = this.getNodeParameter('updateFields', i, {});
                         const body = {};
