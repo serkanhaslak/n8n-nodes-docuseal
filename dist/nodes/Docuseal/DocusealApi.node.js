@@ -4,6 +4,7 @@ exports.DocusealApi = void 0;
 const GenericFunctions_1 = require("./GenericFunctions");
 const TemplateDescription_1 = require("./TemplateDescription");
 const SubmissionDescription_1 = require("./SubmissionDescription");
+const SubmitterDescription_1 = require("./SubmitterDescription");
 class DocusealApi {
     constructor() {
         this.description = {
@@ -62,6 +63,10 @@ class DocusealApi {
                             value: 'submission',
                         },
                         {
+                            name: 'Submitter',
+                            value: 'submitter',
+                        },
+                        {
                             name: 'Template',
                             value: 'template',
                         },
@@ -72,6 +77,8 @@ class DocusealApi {
                 ...TemplateDescription_1.templateFields,
                 ...SubmissionDescription_1.submissionOperations,
                 ...SubmissionDescription_1.submissionFields,
+                ...SubmitterDescription_1.submitterOperations,
+                ...SubmitterDescription_1.submitterFields,
             ],
         };
         this.methods = {
@@ -164,6 +171,35 @@ class DocusealApi {
                     else if (operation === 'archive') {
                         const submissionId = this.getNodeParameter('submissionId', i);
                         responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'DELETE', `/submissions/${submissionId}`);
+                    }
+                }
+                else if (resource === 'submitter') {
+                    if (operation === 'update') {
+                        const submitterId = this.getNodeParameter('submitterId', i);
+                        const updateFields = this.getNodeParameter('updateFields', i, {});
+                        const body = {};
+                        const simpleFields = [
+                            'name', 'email', 'phone', 'external_id', 'completed',
+                            'send_email', 'send_sms', 'reply_to', 'completed_redirect_url'
+                        ];
+                        for (const field of simpleFields) {
+                            if (updateFields[field] !== undefined) {
+                                body[field] = updateFields[field];
+                            }
+                        }
+                        if (updateFields.values) {
+                            body.values = (0, GenericFunctions_1.parseJsonInput)(updateFields.values);
+                        }
+                        if (updateFields.metadata) {
+                            body.metadata = (0, GenericFunctions_1.parseJsonInput)(updateFields.metadata);
+                        }
+                        if (updateFields.message) {
+                            body.message = (0, GenericFunctions_1.parseJsonInput)(updateFields.message);
+                        }
+                        if (updateFields.fields) {
+                            body.fields = (0, GenericFunctions_1.parseJsonInput)(updateFields.fields);
+                        }
+                        responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'PUT', `/submitters/${submitterId}`, body);
                     }
                 }
                 const executionData = this.helpers.constructExecutionMetaData(this.helpers.returnJsonArray(responseData), { itemData: { item: i } });
