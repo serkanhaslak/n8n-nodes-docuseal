@@ -82,6 +82,10 @@ See [EXAMPLES.md](./EXAMPLES.md) for common workflow scenarios and how to implem
 
 ## Version History
 
+- **v0.7.7**: Added Gemini-specific compatibility with simplified parameter structure
+- **v0.7.6**: Made critical parameters required for AI agent visibility and improved tool specification
+- **v0.7.5**: Enhanced field descriptions for AI agents with detailed formatting examples
+- **v0.7.4**: Improved AI agent accessibility by moving all nested parameters to top level
 - **v0.7.3**: Improved AI agent field handling for complex form data
 - **v0.7.2**: Fixed parameter naming for Google Gemini AI compatibility
 - **v0.7.1**: Fixed schema definitions for Google Gemini AI compatibility

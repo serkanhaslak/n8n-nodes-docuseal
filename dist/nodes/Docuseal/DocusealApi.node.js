@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DocusealApi = void 0;
+const n8n_workflow_1 = require("n8n-workflow");
 const GenericFunctions_1 = require("./GenericFunctions");
 const TemplateDescription_1 = require("./TemplateDescription");
 const SubmissionDescription_1 = require("./SubmissionDescription");
@@ -24,116 +25,79 @@ class DocusealApi {
             toolSpecification: {
                 name: 'DocuSeal',
                 displayName: 'DocuSeal',
-                description: 'Create documents, manage templates, and handle submissions with DocuSeal',
+                description: 'Create and manage document submissions and templates in DocuSeal',
                 icon: 'file:docuseal.svg',
                 supportAiNode: true,
                 dynamicProperties: true,
-                schemaDefinition: {
-                    type: 'object',
-                    properties: {
-                        resource: {
-                            type: 'string',
-                            description: 'Resource to operate on (template, submission, submitter)',
-                            enum: ['template', 'submission', 'submitter']
-                        },
-                        operation: {
-                            type: 'string',
-                            description: 'Operation to perform on the resource',
-                            enum: ['create', 'get', 'getList', 'update', 'delete']
-                        },
-                        templateId: {
-                            type: 'integer',
-                            description: 'ID of the template'
-                        },
-                        submissionId: {
-                            type: 'integer',
-                            description: 'ID of the submission'
-                        },
-                        submitterId: {
-                            type: 'integer',
-                            description: 'ID of the submitter'
-                        },
-                        Submitters: {
-                            type: 'array',
-                            description: 'Array of submitters who will sign the document',
-                            items: {
-                                type: 'object',
-                                properties: {
-                                    email: {
-                                        type: 'string',
-                                        description: 'Email address of the submitter'
-                                    },
-                                    name: {
-                                        type: 'string',
-                                        description: 'Name of the submitter'
-                                    },
-                                    role: {
-                                        type: 'string',
-                                        description: 'Role of the submitter'
-                                    },
-                                    phone: {
-                                        type: 'string',
-                                        description: 'Phone number of the submitter'
-                                    },
-                                    external_id: {
-                                        type: 'string',
-                                        description: 'External ID for the submitter'
-                                    },
-                                    values: {
-                                        type: 'object',
-                                        description: 'Pre-filled values for fields'
-                                    },
-                                    metadata: {
-                                        type: 'object',
-                                        description: 'Additional metadata for the submitter'
-                                    },
-                                    send_email: {
-                                        type: 'boolean',
-                                        description: 'Whether to send email to this submitter'
-                                    }
-                                },
-                                required: ['email']
-                            }
-                        },
-                        Fields: {
-                            type: 'array',
-                            description: 'Array of field values to pre-fill in the document',
-                            items: {
-                                type: 'object',
-                                properties: {
-                                    name: {
-                                        type: 'string',
-                                        description: 'Name of the field as defined in the template'
-                                    },
-                                    default_value: {
-                                        type: ['string', 'number', 'boolean'],
-                                        description: 'Default value to pre-fill for this field'
-                                    },
-                                    readonly: {
-                                        type: 'boolean',
-                                        description: 'Whether the field should be read-only'
-                                    }
-                                },
-                                required: ['name']
-                            }
-                        },
-                        preferences: {
+                operations: [
+                    {
+                        name: 'Create Submission',
+                        description: 'Create a new document submission in DocuSeal with signers, pre-filled fields, and preferences',
+                        parameters: {
                             type: 'object',
-                            description: 'Preferences for the document',
+                            required: ['templateId', 'submissionData'],
                             properties: {
-                                font_size: {
+                                templateId: {
                                     type: 'number',
-                                    description: 'Font size in pixels'
+                                    description: 'ID of the template to create a submission for. This is a required numeric identifier that references the specific document template in DocuSeal that will be used for this submission.'
                                 },
-                                color: {
+                                submissionData: {
                                     type: 'string',
-                                    description: 'Color theme for the document'
+                                    description: 'Complete JSON data for the submission including submitters, fields, and preferences. Format as a JSON string with the following structure: {"Submitters": [{"email": "user@example.com", "name": "User Name", "role": "Role Name"}], "Fields": {"field1": "value1"}, "preferences": {"font_size": 12, "color": "blue"}, "completed_redirect_url": "https://example.com", "send_email": true}'
                                 }
                             }
                         }
                     },
-                    required: ['resource', 'operation'],
-                },
+                    {
+                        name: 'Get Submission',
+                        description: 'Retrieve a specific submission by ID',
+                        parameters: {
+                            type: 'object',
+                            required: ['submissionId'],
+                            properties: {
+                                submissionId: {
+                                    type: 'number',
+                                    description: 'The ID of the submission to retrieve'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        name: 'Get Submissions List',
+                        description: 'Retrieve a list of submissions with optional filtering',
+                        parameters: {
+                            type: 'object',
+                            properties: {
+                                limit: {
+                                    type: 'number',
+                                    description: 'Maximum number of results to return (default: 100)'
+                                },
+                                returnAll: {
+                                    type: 'boolean',
+                                    description: 'Whether to return all results or only up to the specified limit'
+                                },
+                                filterData: {
+                                    type: 'string',
+                                    description: 'JSON string with filter criteria: {"after": 123, "before": 456, "archived": false, "q": "search term", "status": "completed", "template_folder": "folder", "template_id": 789}'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        name: 'Archive Submission',
+                        description: 'Archive a submission by ID',
+                        parameters: {
+                            type: 'object',
+                            required: ['submissionId'],
+                            properties: {
+                                submissionId: {
+                                    type: 'number',
+                                    description: 'The ID of the submission to archive'
+                                }
+                            }
+                        }
+                    }
+                ]
             },
             credentials: [
                 {
@@ -197,7 +161,7 @@ class DocusealApi {
                         if (Array.isArray(templates)) {
                             return templates.map((template) => ({
                                 name: template.name,
-                                value: template.id || template.value,
+                                value: template.id || template.value || 0,
                             }));
                         }
                         return returnData;
@@ -212,7 +176,7 @@ class DocusealApi {
     async execute() {
         const items = this.getInputData();
         const returnData = [];
-        let responseData;
+        let responseData = {};
         for (let i = 0; i < items.length; i++) {
             try {
                 const resource = this.getNodeParameter('resource', i);
@@ -242,7 +206,28 @@ class DocusealApi {
                     }
                     else if (operation === 'getList') {
                         const returnAll = this.getNodeParameter('returnAll', i);
-                        const filters = this.getNodeParameter('filters', i, {});
+                        const after = this.getNodeParameter('after', i, 0);
+                        const before = this.getNodeParameter('before', i, 0);
+                        const archived = this.getNodeParameter('archived', i, false);
+                        const searchQuery = this.getNodeParameter('q', i, '');
+                        const status = this.getNodeParameter('status', i, '');
+                        const templateFolder = this.getNodeParameter('template_folder', i, '');
+                        const templateId = this.getNodeParameter('template_id', i, 0);
+                        const filters = {};
+                        if (after)
+                            filters.after = after;
+                        if (before)
+                            filters.before = before;
+                        if (archived)
+                            filters.archived = archived;
+                        if (searchQuery)
+                            filters.q = searchQuery;
+                        if (status)
+                            filters.status = status;
+                        if (templateFolder)
+                            filters.template_folder = templateFolder;
+                        if (templateId)
+                            filters.template_id = templateId;
                         if (returnAll) {
                             responseData = await GenericFunctions_1.docusealApiRequestAllItems.call(this, 'GET', '/submissions', {}, filters);
                         }
@@ -254,25 +239,155 @@ class DocusealApi {
                     }
                     else if (operation === 'create') {
                         const templateId = this.getNodeParameter('templateId', i);
-                        const submittersInput = this.getNodeParameter('submitters', i);
-                        const options = this.getNodeParameter('options', i, {});
-                        const submitters = (0, GenericFunctions_1.parseJsonInput)(submittersInput);
+                        let submitters = [];
+                        let fields = {};
+                        let preferences = {};
+                        let completedRedirectUrl = '';
+                        let expireAt = '';
+                        let messageInput = {};
+                        let order = '';
+                        let sendEmail = true;
+                        let sendSms = false;
+                        let externalId = '';
+                        let metadata = {};
+                        let submitterTypes = {};
+                        try {
+                            const submissionDataParam = this.getNodeParameter('submissionData', i, '');
+                            if (submissionDataParam) {
+                                const submissionData = JSON.parse(submissionDataParam);
+                                if (submissionData.Submitters)
+                                    submitters = submissionData.Submitters;
+                                if (submissionData.Fields)
+                                    fields = submissionData.Fields;
+                                if (submissionData.preferences)
+                                    preferences = submissionData.preferences;
+                                if (submissionData.completed_redirect_url)
+                                    completedRedirectUrl = submissionData.completed_redirect_url;
+                                if (submissionData.expire_at)
+                                    expireAt = submissionData.expire_at;
+                                if (submissionData.message)
+                                    messageInput = submissionData.message;
+                                if (submissionData.order)
+                                    order = submissionData.order;
+                                if (submissionData.send_email !== undefined)
+                                    sendEmail = submissionData.send_email;
+                                if (submissionData.send_sms !== undefined)
+                                    sendSms = submissionData.send_sms;
+                                if (submissionData.external_id)
+                                    externalId = submissionData.external_id;
+                                if (submissionData.metadata)
+                                    metadata = submissionData.metadata;
+                                if (submissionData.submitter_types)
+                                    submitterTypes = submissionData.submitter_types;
+                            }
+                        }
+                        catch (error) {
+                            try {
+                                const submittersInput = this.getNodeParameter('Submitters', i);
+                                submitters = typeof submittersInput === 'string' ? JSON.parse(submittersInput) : submittersInput;
+                            }
+                            catch (error) {
+                                throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'Submitters data is required for creating a submission', { itemIndex: i });
+                            }
+                            try {
+                                const fieldsInput = this.getNodeParameter('Fields', i);
+                                fields = typeof fieldsInput === 'string' ? JSON.parse(fieldsInput) : fieldsInput;
+                            }
+                            catch (error) {
+                                fields = {};
+                            }
+                            try {
+                                const preferencesInput = this.getNodeParameter('preferences', i);
+                                preferences = typeof preferencesInput === 'string' ? JSON.parse(preferencesInput) : preferencesInput;
+                            }
+                            catch (error) {
+                                preferences = {};
+                            }
+                            try {
+                                completedRedirectUrl = this.getNodeParameter('completed_redirect_url', i);
+                            }
+                            catch (error) {
+                            }
+                            try {
+                                expireAt = this.getNodeParameter('expire_at', i);
+                            }
+                            catch (error) {
+                            }
+                            try {
+                                messageInput = this.getNodeParameter('message', i);
+                            }
+                            catch (error) {
+                                messageInput = {};
+                            }
+                            try {
+                                order = this.getNodeParameter('order', i);
+                            }
+                            catch (error) {
+                            }
+                            try {
+                                sendEmail = this.getNodeParameter('send_email', i);
+                            }
+                            catch (error) {
+                                sendEmail = true;
+                            }
+                            try {
+                                sendSms = this.getNodeParameter('send_sms', i);
+                            }
+                            catch (error) {
+                                sendSms = false;
+                            }
+                            try {
+                                externalId = this.getNodeParameter('external_id', i);
+                            }
+                            catch (error) {
+                            }
+                            try {
+                                metadata = this.getNodeParameter('metadata', i);
+                            }
+                            catch (error) {
+                                metadata = {};
+                            }
+                            try {
+                                submitterTypes = this.getNodeParameter('submitter_types', i);
+                            }
+                            catch (error) {
+                                submitterTypes = {};
+                            }
+                        }
+                        let message = {};
+                        if (typeof messageInput === 'string') {
+                            try {
+                                message = JSON.parse(messageInput);
+                            }
+                            catch (error) {
+                                message = { text: messageInput };
+                            }
+                        }
+                        else {
+                            message = messageInput;
+                        }
                         const body = {
                             template_id: templateId,
                             submitters,
+                            fields,
+                            preferences,
                         };
-                        if (options.send_email !== undefined) {
-                            body.send_email = options.send_email;
-                        }
-                        if (options.send_sms !== undefined) {
-                            body.send_sms = options.send_sms;
-                        }
-                        if (options.fields) {
-                            const fields = (0, GenericFunctions_1.parseJsonInput)(options.fields);
-                            submitters.forEach((submitter) => {
-                                submitter.values = fields;
-                            });
-                        }
+                        if (completedRedirectUrl)
+                            body.completed_redirect_url = completedRedirectUrl;
+                        if (expireAt)
+                            body.expire_at = expireAt;
+                        if (Object.keys(message).length > 0)
+                            body.message = message;
+                        if (order)
+                            body.order = order;
+                        if (externalId)
+                            body.external_id = externalId;
+                        if (Object.keys(metadata).length > 0)
+                            body.metadata = metadata;
+                        if (Object.keys(submitterTypes).length > 0)
+                            body.submitter_types = submitterTypes;
+                        body.send_email = sendEmail;
+                        body.send_sms = sendSms;
                         responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'POST', '/submissions', body);
                     }
                     else if (operation === 'archive') {
@@ -287,7 +402,28 @@ class DocusealApi {
                     }
                     else if (operation === 'getList') {
                         const returnAll = this.getNodeParameter('returnAll', i);
-                        const filters = this.getNodeParameter('filters', i, {});
+                        const after = this.getNodeParameter('after', i, 0);
+                        const before = this.getNodeParameter('before', i, 0);
+                        const completedAfter = this.getNodeParameter('completed_after', i, '');
+                        const completedBefore = this.getNodeParameter('completed_before', i, '');
+                        const externalId = this.getNodeParameter('external_id', i, '');
+                        const searchQuery = this.getNodeParameter('q', i, '');
+                        const submissionId = this.getNodeParameter('submission_id', i, 0);
+                        const filters = {};
+                        if (after)
+                            filters.after = after;
+                        if (before)
+                            filters.before = before;
+                        if (completedAfter)
+                            filters.completed_after = completedAfter;
+                        if (completedBefore)
+                            filters.completed_before = completedBefore;
+                        if (externalId)
+                            filters.external_id = externalId;
+                        if (searchQuery)
+                            filters.q = searchQuery;
+                        if (submissionId)
+                            filters.submission_id = submissionId;
                         if (returnAll) {
                             responseData = await GenericFunctions_1.docusealApiRequestAllItems.call(this, 'GET', '/submitters', {}, filters);
                         }
@@ -299,30 +435,110 @@ class DocusealApi {
                     }
                     else if (operation === 'update') {
                         const submitterId = this.getNodeParameter('submitterId', i);
-                        const updateFields = this.getNodeParameter('updateFields', i, {});
+                        let completed = false;
+                        let completedRedirectUrl = '';
+                        let email = '';
+                        let externalId = '';
+                        let fieldsInput = {};
+                        let messageInput = {};
+                        let name = '';
+                        let phone = '';
+                        let role = '';
+                        let sendEmail = false;
+                        let sendSms = false;
+                        let valuesInput = {};
+                        try {
+                            completed = this.getNodeParameter('completed', i);
+                        }
+                        catch (error) {
+                        }
+                        try {
+                            completedRedirectUrl = this.getNodeParameter('completed_redirect_url', i);
+                        }
+                        catch (error) {
+                        }
+                        try {
+                            email = this.getNodeParameter('email', i);
+                        }
+                        catch (error) {
+                        }
+                        try {
+                            externalId = this.getNodeParameter('external_id', i);
+                        }
+                        catch (error) {
+                        }
+                        try {
+                            fieldsInput = this.getNodeParameter('fields', i);
+                        }
+                        catch (error) {
+                            fieldsInput = {};
+                        }
+                        try {
+                            messageInput = this.getNodeParameter('message', i);
+                        }
+                        catch (error) {
+                            messageInput = {};
+                        }
+                        try {
+                            name = this.getNodeParameter('name', i);
+                        }
+                        catch (error) {
+                        }
+                        try {
+                            phone = this.getNodeParameter('phone', i);
+                        }
+                        catch (error) {
+                        }
+                        try {
+                            role = this.getNodeParameter('role', i);
+                        }
+                        catch (error) {
+                        }
+                        try {
+                            sendEmail = this.getNodeParameter('send_email', i);
+                        }
+                        catch (error) {
+                        }
+                        try {
+                            sendSms = this.getNodeParameter('send_sms', i);
+                        }
+                        catch (error) {
+                        }
+                        try {
+                            valuesInput = this.getNodeParameter('values', i);
+                        }
+                        catch (error) {
+                            valuesInput = {};
+                        }
+                        const fields = (0, GenericFunctions_1.parseJsonInput)(fieldsInput);
+                        const message = (0, GenericFunctions_1.parseJsonInput)(messageInput);
+                        const values = (0, GenericFunctions_1.parseJsonInput)(valuesInput);
                         const body = {};
-                        const simpleFields = [
-                            'name', 'email', 'phone', 'external_id', 'completed',
-                            'send_email', 'send_sms', 'reply_to', 'completed_redirect_url'
-                        ];
-                        for (const field of simpleFields) {
-                            if (updateFields[field] !== undefined) {
-                                body[field] = updateFields[field];
-                            }
-                        }
-                        if (updateFields.values) {
-                            body.values = (0, GenericFunctions_1.parseJsonInput)(updateFields.values);
-                        }
-                        if (updateFields.metadata) {
-                            body.metadata = (0, GenericFunctions_1.parseJsonInput)(updateFields.metadata);
-                        }
-                        if (updateFields.message) {
-                            body.message = (0, GenericFunctions_1.parseJsonInput)(updateFields.message);
-                        }
-                        if (updateFields.fields) {
-                            body.fields = (0, GenericFunctions_1.parseJsonInput)(updateFields.fields);
-                        }
-                        responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'PUT', `/submitters/${submitterId}`, body);
+                        if (completed !== undefined)
+                            body.completed = completed;
+                        if (completedRedirectUrl)
+                            body.completed_redirect_url = completedRedirectUrl;
+                        if (email)
+                            body.email = email;
+                        if (externalId)
+                            body.external_id = externalId;
+                        if (fields && Array.isArray(fields) && fields.length > 0)
+                            body.fields = fields;
+                        if (message && Object.keys(message).length > 0)
+                            body.message = message;
+                        if (name)
+                            body.name = name;
+                        if (phone)
+                            body.phone = phone;
+                        if (role)
+                            body.role = role;
+                        if (sendEmail !== undefined)
+                            body.send_email = sendEmail;
+                        if (sendSms !== undefined)
+                            body.send_sms = sendSms;
+                        if (values && Object.keys(values).length > 0)
+                            body.values = values;
+                        responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'PATCH', `/submitters/${submitterId}`, body);
                     }
                 }
                 const executionData = this.helpers.constructExecutionMetaData(this.helpers.returnJsonArray(responseData), { itemData: { item: i } });
