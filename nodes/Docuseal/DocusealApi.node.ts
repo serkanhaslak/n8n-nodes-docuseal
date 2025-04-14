@@ -45,6 +45,7 @@ export class DocusealApi implements INodeType {
 			description: 'Create documents, manage templates, and handle submissions with DocuSeal',
 			icon: 'file:docuseal.svg',
 			supportAiNode: true,
+			dynamicProperties: true,
 			schemaDefinition: {
 				// This ensures proper schema translation for AI tools
 				type: 'object',
@@ -59,7 +60,19 @@ export class DocusealApi implements INodeType {
 						description: 'Operation to perform on the resource',
 						enum: ['create', 'get', 'getList', 'update', 'delete']
 					},
-					submitters: {
+					templateId: {
+						type: 'integer',
+						description: 'ID of the template'
+					},
+					submissionId: {
+						type: 'integer',
+						description: 'ID of the submission'
+					},
+					submitterId: {
+						type: 'integer',
+						description: 'ID of the submitter'
+					},
+					Submitters: {
 						type: 'array',
 						description: 'Array of submitters who will sign the document',
 						items: {
@@ -76,28 +89,66 @@ export class DocusealApi implements INodeType {
 								role: {
 									type: 'string',
 									description: 'Role of the submitter'
+								},
+								phone: {
+									type: 'string',
+									description: 'Phone number of the submitter'
+								},
+								external_id: {
+									type: 'string',
+									description: 'External ID for the submitter'
+								},
+								values: {
+									type: 'object',
+									description: 'Pre-filled values for fields'
+								},
+								metadata: {
+									type: 'object',
+									description: 'Additional metadata for the submitter'
+								},
+								send_email: {
+									type: 'boolean',
+									description: 'Whether to send email to this submitter'
 								}
+							},
+							required: ['email']
+						}
+					},
+					Fields: {
+						type: 'array',
+						description: 'Array of field values to pre-fill in the document',
+						items: {
+							type: 'object',
+							properties: {
+								name: {
+									type: 'string',
+									description: 'Name of the field as defined in the template'
+								},
+								default_value: {
+									type: ['string', 'number', 'boolean'],
+									description: 'Default value to pre-fill for this field'
+								},
+								readonly: {
+									type: 'boolean',
+									description: 'Whether the field should be read-only'
+								}
+							},
+							required: ['name']
+						}
+					},
+					preferences: {
+						type: 'object',
+						description: 'Preferences for the document',
+						properties: {
+							font_size: {
+								type: 'number',
+								description: 'Font size in pixels'
+							},
+							color: {
+								type: 'string',
+								description: 'Color theme for the document'
 							}
 						}
-					},
-					fields: {
-						type: 'object',
-						description: 'JSON object with field values to pre-fill in the document',
-						additionalProperties: {
-							type: 'string'
-						}
-					},
-					templateId: {
-						type: 'integer',
-						description: 'ID of the template'
-					},
-					submissionId: {
-						type: 'integer',
-						description: 'ID of the submission'
-					},
-					submitterId: {
-						type: 'integer',
-						description: 'ID of the submitter'
 					}
 				},
 				required: ['resource', 'operation'],

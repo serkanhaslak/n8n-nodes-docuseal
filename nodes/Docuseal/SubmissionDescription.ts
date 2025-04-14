@@ -191,7 +191,7 @@ export const submissionFields: INodeProperties[] = [
 	},
 	{
 		displayName: 'Submitters',
-		name: 'submitters',
+		name: 'Submitters',
 		type: 'json',
 		required: true,
 		displayOptions: {
@@ -276,7 +276,7 @@ export const submissionFields: INodeProperties[] = [
 			},
 			{
 				displayName: 'Fields',
-				name: 'fields',
+				name: 'Fields',
 				type: 'json',
 				default: '{}',
 				description: 'JSON object with field values to pre-fill in the document. The keys should match the field names in the template. Example: {"First Name": "John", "Last Name": "Doe", "Date": "12/31/2023", "Signature": "data:image/png;base64,..." or URL to image}. For complex fields, you can specify preferences like: {"Amount": {"value": 100, "preferences": {"font_size": 12, "align": "right", "format": "usd"}}}',
