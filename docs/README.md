@@ -17,6 +17,7 @@ The main API node that allows you to:
   - Retrieve individual submitter details
   - List and filter submitters by various criteria (submission ID, completion date, search terms)
 - **Webhook Integration**: Receive real-time updates on document status changes
+- **AI Integration**: Enhanced compatibility with n8n AI Agents including Google Gemini, OpenAI, and other LLM models
 
 ### 2. DocuSeal Trigger
 
@@ -81,6 +82,7 @@ See [EXAMPLES.md](./EXAMPLES.md) for common workflow scenarios and how to implem
 
 ## Version History
 
+- **v0.7.0**: Enhanced compatibility with Google Gemini AI model
 - **v0.4.3**: Enhanced AI integration with improved parameter descriptions
 - **v0.4.2**: Updated DocuSeal SVG logo and cleaned up package structure
 - **v0.4.0/0.4.1**: Simplified package by removing AI Tool functionality

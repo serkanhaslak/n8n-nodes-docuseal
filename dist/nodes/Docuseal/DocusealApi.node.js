@@ -27,6 +27,20 @@ class DocusealApi {
                 description: 'Create documents, manage templates, and handle submissions with DocuSeal',
                 icon: 'file:docuseal.svg',
                 supportAiNode: true,
+                schemaDefinition: {
+                    type: 'object',
+                    properties: {
+                        resource: {
+                            type: 'string',
+                            description: 'Resource to operate on (template, submission, submitter)',
+                        },
+                        operation: {
+                            type: 'string',
+                            description: 'Operation to perform on the resource',
+                        },
+                    },
+                    required: ['resource', 'operation'],
+                },
             },
             credentials: [
                 {

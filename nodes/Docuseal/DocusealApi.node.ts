@@ -2,10 +2,13 @@ import {
 	IExecuteFunctions,
 	INodeExecutionData,
 	INodeType,
-	INodeTypeDescription,
-	IDataObject,
 	NodeConnectionType,
 	ILoadOptionsFunctions,
+} from 'n8n-workflow';
+
+import type {
+	INodeTypeDescription,
+	IDataObject,
 	INodePropertyOptions,
 } from 'n8n-workflow';
 
@@ -42,6 +45,21 @@ export class DocusealApi implements INodeType {
 			description: 'Create documents, manage templates, and handle submissions with DocuSeal',
 			icon: 'file:docuseal.svg',
 			supportAiNode: true,
+			schemaDefinition: {
+				// This ensures proper schema translation for AI tools
+				type: 'object',
+				properties: {
+					resource: {
+						type: 'string',
+						description: 'Resource to operate on (template, submission, submitter)',
+					},
+					operation: {
+						type: 'string',
+						description: 'Operation to perform on the resource',
+					},
+				},
+				required: ['resource', 'operation'],
+			},
 		},
 		credentials: [
 			{

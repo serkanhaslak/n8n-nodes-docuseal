@@ -198,6 +198,49 @@ exports.submissionFields = [
         default: '[\n  {\n    "email": "example@email.com",\n    "name": "John Doe",\n    "role": "Signer"\n  }\n]',
         description: 'Array of submitters who will sign the document. Each submitter should include email (required), name, role, and optionally phone, values, metadata, etc. Example schema: [{ "email": "user@example.com", "name": "User Name", "role": "First Party", "phone": "+1234567890", "external_id": "user-123", "values": {"field1": "value1"}, "metadata": {"custom": "data"}, "send_email": true }]',
         hint: 'Format: [{"email": "user@example.com", "name": "User Name", "role": "Role Name"}]',
+        typeOptions: {
+            jsonSchema: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    properties: {
+                        email: {
+                            type: 'string',
+                            description: 'Email address of the submitter'
+                        },
+                        name: {
+                            type: 'string',
+                            description: 'Name of the submitter'
+                        },
+                        role: {
+                            type: 'string',
+                            description: 'Role of the submitter'
+                        },
+                        phone: {
+                            type: 'string',
+                            description: 'Phone number of the submitter'
+                        },
+                        external_id: {
+                            type: 'string',
+                            description: 'External ID for the submitter'
+                        },
+                        values: {
+                            type: 'object',
+                            description: 'Pre-filled values for fields'
+                        },
+                        metadata: {
+                            type: 'object',
+                            description: 'Additional metadata for the submitter'
+                        },
+                        send_email: {
+                            type: 'boolean',
+                            description: 'Whether to send email to this submitter'
+                        }
+                    },
+                    required: ['email']
+                }
+            }
+        }
     },
     {
         displayName: 'Options',
@@ -233,6 +276,46 @@ exports.submissionFields = [
                 default: '{}',
                 description: 'JSON object with field values to pre-fill in the document. The keys should match the field names in the template. Example: {"First Name": "John", "Last Name": "Doe", "Date": "12/31/2023", "Signature": "data:image/png;base64,..." or URL to image}. For complex fields, you can specify preferences like: {"Amount": {"value": 100, "preferences": {"font_size": 12, "align": "right", "format": "usd"}}}',
                 hint: 'Format: {"field_name": "field_value"}',
+                typeOptions: {
+                    jsonSchema: {
+                        type: 'object',
+                        additionalProperties: {
+                            oneOf: [
+                                { type: 'string', description: 'Simple field value as string' },
+                                { type: 'number', description: 'Numeric field value' },
+                                { type: 'boolean', description: 'Boolean field value' },
+                                {
+                                    type: 'object',
+                                    description: 'Complex field with preferences',
+                                    properties: {
+                                        value: {
+                                            type: 'string',
+                                            description: 'The value for the field'
+                                        },
+                                        preferences: {
+                                            type: 'object',
+                                            description: 'Visual preferences for the field',
+                                            properties: {
+                                                font_size: {
+                                                    type: 'number',
+                                                    description: 'Font size in pixels'
+                                                },
+                                                align: {
+                                                    type: 'string',
+                                                    description: 'Text alignment (left, center, right)'
+                                                },
+                                                format: {
+                                                    type: 'string',
+                                                    description: 'Format for special fields (e.g., usd, eur for currency)'
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
             },
             {
                 displayName: 'Message',
@@ -240,6 +323,21 @@ exports.submissionFields = [
                 type: 'json',
                 default: '{"subject": "", "body": ""}',
                 description: 'Custom email message for all submitters. Format: {"subject": "Custom email subject", "body": "Custom email body text. Can include variables: {{template.name}}, {{submitter.link}}, {{account.name}}"}',
+                typeOptions: {
+                    jsonSchema: {
+                        type: 'object',
+                        properties: {
+                            subject: {
+                                type: 'string',
+                                description: 'Custom email subject line'
+                            },
+                            body: {
+                                type: 'string',
+                                description: 'Custom email body text. Can include variables: {{template.name}}, {{submitter.link}}, {{account.name}}'
+                            }
+                        }
+                    }
+                }
             },
             {
                 displayName: 'Order',

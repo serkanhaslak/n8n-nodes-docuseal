@@ -18,19 +18,19 @@ exports.submitterOperations = [
             {
                 name: 'Get',
                 value: 'get',
-                description: 'Get a submitter',
+                description: 'Get a submitter.',
                 action: 'Get a submitter',
             },
             {
                 name: 'Get List',
                 value: 'getList',
-                description: 'Get a list of submitters',
+                description: 'Get a list of submitters.',
                 action: 'Get a list of submitters',
             },
             {
                 name: 'Update',
                 value: 'update',
-                description: 'Update a submitter',
+                description: 'Update a submitter.',
                 action: 'Update a submitter',
             },
         ],
@@ -194,6 +194,47 @@ exports.submitterFields = [
                 type: 'json',
                 default: '[]',
                 description: 'List of field configurations to update. Format: [{"name": "Field Name", "default_value": "Value", "readonly": false, "required": true, "preferences": {"font_size": 12, "align": "left"}}].',
+                typeOptions: {
+                    jsonSchema: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                name: {
+                                    type: 'string',
+                                    description: 'Name of the field as defined in the template.'
+                                },
+                                default_value: {
+                                    type: 'string',
+                                    description: 'Default value to pre-fill for this field.'
+                                },
+                                readonly: {
+                                    type: 'boolean',
+                                    description: 'Whether the field should be read-only.'
+                                },
+                                required: {
+                                    type: 'boolean',
+                                    description: 'Whether the field is required to be filled.'
+                                },
+                                preferences: {
+                                    type: 'object',
+                                    description: 'Visual preferences for the field.',
+                                    properties: {
+                                        font_size: {
+                                            type: 'number',
+                                            description: 'Font size in pixels.'
+                                        },
+                                        align: {
+                                            type: 'string',
+                                            description: 'Text alignment (left, center, right).'
+                                        }
+                                    }
+                                }
+                            },
+                            required: ['name']
+                        }
+                    }
+                }
             },
             {
                 displayName: 'Message',
@@ -201,6 +242,21 @@ exports.submitterFields = [
                 type: 'json',
                 default: '{"subject": "", "body": ""}',
                 description: 'Custom email message for the submitter. Format: {"subject": "Custom subject", "body": "Custom body with variables: {{template.name}}, {{submitter.link}}, {{account.name}}"}.',
+                typeOptions: {
+                    jsonSchema: {
+                        type: 'object',
+                        properties: {
+                            subject: {
+                                type: 'string',
+                                description: 'Custom email subject line.'
+                            },
+                            body: {
+                                type: 'string',
+                                description: 'Custom email body text. Can include variables: {{template.name}}, {{submitter.link}}, {{account.name}}.'
+                            }
+                        }
+                    }
+                }
             },
             {
                 displayName: 'Metadata',
@@ -208,6 +264,15 @@ exports.submitterFields = [
                 type: 'json',
                 default: '{}',
                 description: 'Metadata object with additional submitter information.',
+                typeOptions: {
+                    jsonSchema: {
+                        type: 'object',
+                        description: 'Custom metadata for the submitter.',
+                        additionalProperties: {
+                            type: 'string'
+                        }
+                    }
+                }
             },
             {
                 displayName: 'Name',
