@@ -52,11 +52,53 @@ export class DocusealApi implements INodeType {
 					resource: {
 						type: 'string',
 						description: 'Resource to operate on (template, submission, submitter)',
+						enum: ['template', 'submission', 'submitter']
 					},
 					operation: {
 						type: 'string',
 						description: 'Operation to perform on the resource',
+						enum: ['create', 'get', 'getList', 'update', 'delete']
 					},
+					submitters: {
+						type: 'array',
+						description: 'Array of submitters who will sign the document',
+						items: {
+							type: 'object',
+							properties: {
+								email: {
+									type: 'string',
+									description: 'Email address of the submitter'
+								},
+								name: {
+									type: 'string',
+									description: 'Name of the submitter'
+								},
+								role: {
+									type: 'string',
+									description: 'Role of the submitter'
+								}
+							}
+						}
+					},
+					fields: {
+						type: 'object',
+						description: 'JSON object with field values to pre-fill in the document',
+						additionalProperties: {
+							type: 'string'
+						}
+					},
+					templateId: {
+						type: 'integer',
+						description: 'ID of the template'
+					},
+					submissionId: {
+						type: 'integer',
+						description: 'ID of the submission'
+					},
+					submitterId: {
+						type: 'integer',
+						description: 'ID of the submitter'
+					}
 				},
 				required: ['resource', 'operation'],
 			},

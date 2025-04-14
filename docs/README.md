@@ -82,6 +82,7 @@ See [EXAMPLES.md](./EXAMPLES.md) for common workflow scenarios and how to implem
 
 ## Version History
 
+- **v0.7.1**: Fixed schema definitions for Google Gemini AI compatibility
 - **v0.7.0**: Enhanced compatibility with Google Gemini AI model
 - **v0.4.3**: Enhanced AI integration with improved parameter descriptions
 - **v0.4.2**: Updated DocuSeal SVG logo and cleaned up package structure
