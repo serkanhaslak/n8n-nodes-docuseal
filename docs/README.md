@@ -82,6 +82,10 @@ See [EXAMPLES.md](./EXAMPLES.md) for common workflow scenarios and how to implem
 
 ## Version History
 
+- **v0.8.2**: Added strict validation for submitter data (`email`, `role`) in 'Create Submission' operation to prevent API calls with invalid data and ensure errors are thrown in n8n.
+- **v0.8.1**: Fixed submitters data handling to prevent default values and added detailed error logging
+- **v0.8.0**: Fixed submission creation to properly format field values according to DocuSeal API requirements
+- **v0.7.8**: Fixed JSON data handling for form submissions with proper recursive parsing
 - **v0.7.7**: Added Gemini-specific compatibility with simplified parameter structure
 - **v0.7.6**: Made critical parameters required for AI agent visibility and improved tool specification
 - **v0.7.5**: Enhanced field descriptions for AI agents with detailed formatting examples

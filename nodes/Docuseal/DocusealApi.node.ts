@@ -17,7 +17,6 @@ import {
 	docusealApiRequest,
 	docusealApiRequestAllItems,
 	getTemplates,
-	parseJsonInput,
 } from './GenericFunctions';
 
 import {
@@ -212,7 +211,36 @@ export class DocusealApi implements INodeType {
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
-		let responseData: IDataObject | IDataObject[] = {};
+		let responseData: unknown;
+		
+		// Helper function to ensure proper format of data
+		const ensureProperFormat = (data: unknown): unknown => {
+			if (data === null || data === undefined) {
+				return data;
+			}
+			
+			if (typeof data === 'string') {
+				try {
+					return JSON.parse(data);
+				} catch (e) {
+					return data;
+				}
+			}
+			
+			if (Array.isArray(data)) {
+				return data.map(item => ensureProperFormat(item));
+			}
+			
+			if (typeof data === 'object') {
+				const result: Record<string, unknown> = {};
+				for (const key in data as Record<string, unknown>) {
+					result[key] = ensureProperFormat((data as Record<string, unknown>)[key]);
+				}
+				return result;
+			}
+			
+			return data;
+		};
 
 		// Process each item
 		for (let i = 0; i < items.length; i++) {
@@ -455,32 +483,78 @@ export class DocusealApi implements INodeType {
 							message = messageInput as IDataObject;
 						}
 						
-						// Build request body
+						// Ensure data is in the proper format
+						const formattedSubmitters = ensureProperFormat(submitters);
+						const formattedFields = ensureProperFormat(fields);
+						const formattedPreferences = ensureProperFormat(preferences);
+						const formattedMessage = ensureProperFormat(message);
+						const formattedMetadata = ensureProperFormat(metadata);
+						const formattedSubmitterTypes = ensureProperFormat(submitterTypes);
+						
+						// Debug log for submitters before adding to body
+						this.logger.info(`DEBUG - Submitters data before formatting: ${JSON.stringify(submitters)}`);
+						this.logger.info(`DEBUG - Formatted submitters: ${JSON.stringify(formattedSubmitters)}`);
+						
+						// Build request body - ensure submitters is an array
 						const body: IDataObject = {
 							template_id: templateId,
-							submitters,
-							fields,
-							preferences,
 						};
+						
+						// Only add submitters if it's a valid array
+						if (Array.isArray(formattedSubmitters) && formattedSubmitters.length > 0) {
+							// Validate each submitter object
+							for (const [index, submitter] of formattedSubmitters.entries()) {
+								if (typeof submitter !== 'object' || submitter === null ||
+									!Object.prototype.hasOwnProperty.call(submitter, 'email') || typeof (submitter as any).email !== 'string' || (submitter as any).email.trim() === '' ||
+									!Object.prototype.hasOwnProperty.call(submitter, 'role') || typeof (submitter as any).role !== 'string' || (submitter as any).role.trim() === '') {
+									throw new NodeOperationError(this.getNode(), `Invalid submitter at index ${index}: Each submitter must be an object with non-empty 'email' and 'role' string properties. Found: ${JSON.stringify(submitter)}`);
+								}
+							}
+							// If validation passes, add to body
+							body.submitters = formattedSubmitters as IDataObject[];
+						} else {
+							throw new NodeOperationError(this.getNode(), 'Submitters parameter must be a valid array with at least one submitter object');
+						}
+
+						// Only add values if they exist
+						if (formattedFields && Object.keys(formattedFields as object).length > 0) {
+							body.values = formattedFields as IDataObject;
+						}
+						
+						// Only add preferences if they exist
+						if (formattedPreferences && Object.keys(formattedPreferences as object).length > 0) {
+							body.preferences = formattedPreferences as IDataObject;
+						}
+						
+						// Debug log to see what's being sent to the API
+						this.logger.info(`DEBUG - DocuSeal API Request Body: ${JSON.stringify(body, null, 2)}`);
 						
 						// Add all top-level parameters to the body
 						if (completedRedirectUrl) body.completed_redirect_url = completedRedirectUrl;
 						if (expireAt) body.expire_at = expireAt;
-						if (Object.keys(message).length > 0) body.message = message;
+						if (Object.keys(formattedMessage as object).length > 0) body.message = formattedMessage as IDataObject;
 						if (order) body.order = order;
 						if (externalId) body.external_id = externalId;
-						if (Object.keys(metadata).length > 0) body.metadata = metadata;
-						if (Object.keys(submitterTypes).length > 0) body.submitter_types = submitterTypes;
+						if (Object.keys(formattedMetadata as object).length > 0) body.metadata = formattedMetadata as IDataObject;
+						if (Object.keys(formattedSubmitterTypes as object).length > 0) body.submitter_types = formattedSubmitterTypes as IDataObject;
 						
 						body.send_email = sendEmail;
 						body.send_sms = sendSms;
 						
-						responseData = await docusealApiRequest.call(
-							this,
-							'POST',
-							'/submissions',
-							body,
-						);
+						// Debug log to see what's being sent to the API
+						this.logger.info(`DEBUG - Final DocuSeal API Request Body: ${JSON.stringify(body, null, 2)}`);
+						
+						try {
+							responseData = await docusealApiRequest.call(
+								this,
+								'POST',
+								'/submissions',
+								body,
+							);
+						} catch (error) {
+							this.logger.error('Error creating submission:', error);
+							throw new NodeOperationError(this.getNode(), `Error creating submission: ${error.message}`);
+						}
 					}
 					
 					// Archive submission
@@ -647,9 +721,9 @@ export class DocusealApi implements INodeType {
 						}
 						
 						// Parse inputs
-						const fields = parseJsonInput(fieldsInput);
-						const message = parseJsonInput(messageInput);
-						const values = parseJsonInput(valuesInput);
+						const fields = ensureProperFormat(fieldsInput);
+						const message = ensureProperFormat(messageInput);
+						const values = ensureProperFormat(valuesInput);
 						
 						// Build request body
 						const body: IDataObject = {};
@@ -667,6 +741,9 @@ export class DocusealApi implements INodeType {
 						if (sendSms !== undefined) body.send_sms = sendSms;
 						if (values && Object.keys(values).length > 0) body.values = values;
 						
+						// Debug log to see what's being sent to the API
+						this.logger.info(`DEBUG - DocuSeal API Request Body: ${JSON.stringify(body, null, 2)}`);
+						
 						responseData = await docusealApiRequest.call(
 							this,
 							'PATCH',
@@ -678,7 +755,7 @@ export class DocusealApi implements INodeType {
 
 				// Add response data to output array
 				const executionData = this.helpers.constructExecutionMetaData(
-					this.helpers.returnJsonArray(responseData),
+					this.helpers.returnJsonArray(responseData as IDataObject | IDataObject[]),
 					{ itemData: { item: i } },
 				);
 				

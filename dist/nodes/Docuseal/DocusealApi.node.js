@@ -176,7 +176,31 @@ class DocusealApi {
     async execute() {
         const items = this.getInputData();
         const returnData = [];
-        let responseData = {};
+        let responseData;
+        const ensureProperFormat = (data) => {
+            if (data === null || data === undefined) {
+                return data;
+            }
+            if (typeof data === 'string') {
+                try {
+                    return JSON.parse(data);
+                }
+                catch (e) {
+                    return data;
+                }
+            }
+            if (Array.isArray(data)) {
+                return data.map(item => ensureProperFormat(item));
+            }
+            if (typeof data === 'object') {
+                const result = {};
+                for (const key in data) {
+                    result[key] = ensureProperFormat(data[key]);
+                }
+                return result;
+            }
+            return data;
+        };
         for (let i = 0; i < items.length; i++) {
             try {
                 const resource = this.getNodeParameter('resource', i);
@@ -366,29 +390,61 @@ class DocusealApi {
                         else {
                             message = messageInput;
                         }
+                        const formattedSubmitters = ensureProperFormat(submitters);
+                        const formattedFields = ensureProperFormat(fields);
+                        const formattedPreferences = ensureProperFormat(preferences);
+                        const formattedMessage = ensureProperFormat(message);
+                        const formattedMetadata = ensureProperFormat(metadata);
+                        const formattedSubmitterTypes = ensureProperFormat(submitterTypes);
+                        this.logger.info(`DEBUG - Submitters data before formatting: ${JSON.stringify(submitters)}`);
+                        this.logger.info(`DEBUG - Formatted submitters: ${JSON.stringify(formattedSubmitters)}`);
                         const body = {
                             template_id: templateId,
-                            submitters,
-                            fields,
-                            preferences,
                         };
+                        if (Array.isArray(formattedSubmitters) && formattedSubmitters.length > 0) {
+                            for (const [index, submitter] of formattedSubmitters.entries()) {
+                                if (typeof submitter !== 'object' || submitter === null ||
+                                    !Object.prototype.hasOwnProperty.call(submitter, 'email') || typeof submitter.email !== 'string' || submitter.email.trim() === '' ||
+                                    !Object.prototype.hasOwnProperty.call(submitter, 'role') || typeof submitter.role !== 'string' || submitter.role.trim() === '') {
+                                    throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Invalid submitter at index ${index}: Each submitter must be an object with non-empty 'email' and 'role' string properties. Found: ${JSON.stringify(submitter)}`);
+                                }
+                            }
+                            body.submitters = formattedSubmitters;
+                        }
+                        else {
+                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'Submitters parameter must be a valid array with at least one submitter object');
+                        }
+                        if (formattedFields && Object.keys(formattedFields).length > 0) {
+                            body.values = formattedFields;
+                        }
+                        if (formattedPreferences && Object.keys(formattedPreferences).length > 0) {
+                            body.preferences = formattedPreferences;
+                        }
+                        this.logger.info(`DEBUG - DocuSeal API Request Body: ${JSON.stringify(body, null, 2)}`);
                         if (completedRedirectUrl)
                             body.completed_redirect_url = completedRedirectUrl;
                         if (expireAt)
                             body.expire_at = expireAt;
-                        if (Object.keys(message).length > 0)
-                            body.message = message;
+                        if (Object.keys(formattedMessage).length > 0)
+                            body.message = formattedMessage;
                         if (order)
                             body.order = order;
                         if (externalId)
                             body.external_id = externalId;
-                        if (Object.keys(metadata).length > 0)
-                            body.metadata = metadata;
-                        if (Object.keys(submitterTypes).length > 0)
-                            body.submitter_types = submitterTypes;
+                        if (Object.keys(formattedMetadata).length > 0)
+                            body.metadata = formattedMetadata;
+                        if (Object.keys(formattedSubmitterTypes).length > 0)
+                            body.submitter_types = formattedSubmitterTypes;
                         body.send_email = sendEmail;
                         body.send_sms = sendSms;
-                        responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'POST', '/submissions', body);
+                        this.logger.info(`DEBUG - Final DocuSeal API Request Body: ${JSON.stringify(body, null, 2)}`);
+                        try {
+                            responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'POST', '/submissions', body);
+                        }
+                        catch (error) {
+                            this.logger.error('Error creating submission:', error);
+                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Error creating submission: ${error.message}`);
+                        }
                     }
                     else if (operation === 'archive') {
                         const submissionId = this.getNodeParameter('submissionId', i);
@@ -510,9 +566,9 @@ class DocusealApi {
                         catch (error) {
                             valuesInput = {};
                         }
-                        const fields = (0, GenericFunctions_1.parseJsonInput)(fieldsInput);
-                        const message = (0, GenericFunctions_1.parseJsonInput)(messageInput);
-                        const values = (0, GenericFunctions_1.parseJsonInput)(valuesInput);
+                        const fields = ensureProperFormat(fieldsInput);
+                        const message = ensureProperFormat(messageInput);
+                        const values = ensureProperFormat(valuesInput);
                         const body = {};
                         if (completed !== undefined)
                             body.completed = completed;
@@ -538,6 +594,7 @@ class DocusealApi {
                             body.send_sms = sendSms;
                         if (values && Object.keys(values).length > 0)
                             body.values = values;
+                        this.logger.info(`DEBUG - DocuSeal API Request Body: ${JSON.stringify(body, null, 2)}`);
                         responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'PATCH', `/submitters/${submitterId}`, body);
                     }
                 }
