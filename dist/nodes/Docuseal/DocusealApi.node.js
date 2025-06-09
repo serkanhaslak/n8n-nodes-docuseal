@@ -274,7 +274,7 @@ class DocusealApi {
                         if (submitters.length === 0) {
                             throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'At least one submitter is required', { itemIndex: i });
                         }
-                        const values = (0, GenericFunctions_1.buildFieldValues)(additionalOptions);
+                        const values = (0, GenericFunctions_1.buildFieldValues)(this.getNodeParameter('', 0));
                         const body = {
                             template_id: templateId,
                             submitters,

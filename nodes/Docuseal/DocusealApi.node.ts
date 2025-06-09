@@ -457,7 +457,7 @@ export class DocusealApi implements INodeType {
 						}
 
 						// Build field values from additional options
-						const values = buildFieldValues(additionalOptions);
+						const values = buildFieldValues(this.getNodeParameter('', 0) as IDataObject);
 
 						// Build request body
 						const body: IDataObject = {

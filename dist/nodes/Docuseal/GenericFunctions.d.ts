@@ -8,5 +8,5 @@ export declare function getTemplates(this: ILoadOptionsFunctions): Promise<Array
 }>>;
 export declare function prepareBinaryData(this: IExecuteFunctions, binaryPropertyName: string, itemIndex: number, fileName?: string): Promise<IDataObject>;
 export declare function buildSubmittersArray(submittersData: IDataObject): IDataObject[];
-export declare function buildFieldValues(additionalOptions: IDataObject): IDataObject;
+export declare function buildFieldValues(nodeParameters: IDataObject): IDataObject;
 export declare function formatDate(date: string): string;

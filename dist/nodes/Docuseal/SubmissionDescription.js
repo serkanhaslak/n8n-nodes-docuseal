@@ -315,6 +315,87 @@ exports.submissionFields = [
         ],
     },
     {
+        displayName: 'Field Values Input Mode',
+        name: 'fieldValuesMode',
+        type: 'options',
+        displayOptions: {
+            show: {
+                resource: ['submission'],
+                operation: ['create', 'createFromPdf', 'createFromHtml'],
+            },
+        },
+        options: [
+            {
+                name: 'Individual Fields',
+                value: 'individual',
+                description: 'Set field values one by one',
+            },
+            {
+                name: 'JSON Object',
+                value: 'json',
+                description: 'Define all field values as a JSON object',
+            },
+        ],
+        default: 'individual',
+        description: 'Choose how to define field values',
+    },
+    {
+        displayName: 'Field Values',
+        name: 'fieldValues',
+        type: 'fixedCollection',
+        typeOptions: {
+            multipleValues: true,
+        },
+        default: {},
+        placeholder: 'Add Field Value',
+        description: 'Pre-fill document fields with values',
+        displayOptions: {
+            show: {
+                resource: ['submission'],
+                operation: ['create', 'createFromPdf', 'createFromHtml'],
+                fieldValuesMode: ['individual'],
+            },
+        },
+        options: [
+            {
+                name: 'field',
+                displayName: 'Field',
+                values: [
+                    {
+                        displayName: 'Field Name',
+                        name: 'name',
+                        type: 'string',
+                        default: '',
+                        required: true,
+                        description: 'Name of the field in the template',
+                    },
+                    {
+                        displayName: 'Value',
+                        name: 'value',
+                        type: 'string',
+                        default: '',
+                        description: 'Value to pre-fill in the field',
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        displayName: 'Field Values JSON',
+        name: 'fieldValuesJson',
+        type: 'json',
+        default: '{}',
+        placeholder: '{"First Name": "John", "Last Name": "Doe", "Email": "john@example.com"}',
+        description: 'Define all field values as a JSON object with field names as keys and values as values',
+        displayOptions: {
+            show: {
+                resource: ['submission'],
+                operation: ['create', 'createFromPdf', 'createFromHtml'],
+                fieldValuesMode: ['json'],
+            },
+        },
+    },
+    {
         displayName: 'Input Source',
         name: 'pdfSource',
         type: 'options',
@@ -430,77 +511,6 @@ exports.submissionFields = [
                 type: 'string',
                 default: '',
                 description: 'Your custom identifier for this submission',
-            },
-            {
-                displayName: 'Field Values Input Mode',
-                name: 'fieldValuesMode',
-                type: 'options',
-                options: [
-                    {
-                        name: 'Individual Fields',
-                        value: 'individual',
-                        description: 'Set field values one by one',
-                    },
-                    {
-                        name: 'JSON Object',
-                        value: 'json',
-                        description: 'Define all field values as a JSON object',
-                    },
-                ],
-                default: 'individual',
-                description: 'Choose how to define field values',
-            },
-            {
-                displayName: 'Field Values',
-                name: 'fieldValues',
-                type: 'fixedCollection',
-                typeOptions: {
-                    multipleValues: true,
-                },
-                default: {},
-                placeholder: 'Add Field Value',
-                description: 'Pre-fill document fields with values',
-                displayOptions: {
-                    show: {
-                        fieldValuesMode: ['individual'],
-                    },
-                },
-                options: [
-                    {
-                        name: 'field',
-                        displayName: 'Field',
-                        values: [
-                            {
-                                displayName: 'Field Name',
-                                name: 'name',
-                                type: 'string',
-                                default: '',
-                                required: true,
-                                description: 'Name of the field in the template',
-                            },
-                            {
-                                displayName: 'Value',
-                                name: 'value',
-                                type: 'string',
-                                default: '',
-                                description: 'Value to pre-fill in the field',
-                            },
-                        ],
-                    },
-                ],
-            },
-            {
-                displayName: 'Field Values JSON',
-                name: 'fieldValuesJson',
-                type: 'json',
-                default: '{}',
-                placeholder: '{"First Name": "John", "Last Name": "Doe", "Email": "john@example.com"}',
-                description: 'Define all field values as a JSON object with field names as keys and values as values',
-                displayOptions: {
-                    show: {
-                        fieldValuesMode: ['json'],
-                    },
-                },
             },
             {
                 displayName: 'Message',

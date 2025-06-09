@@ -226,37 +226,34 @@ export function buildSubmittersArray(submittersData: IDataObject): IDataObject[]
 /**
  * Build field values object from fixedCollection format or JSON input
  */
-export function buildFieldValues(additionalOptions: IDataObject): IDataObject {
+export function buildFieldValues(nodeParameters: IDataObject): IDataObject {
 	// Check if field values mode is specified
-	const fieldValuesMode = additionalOptions.fieldValuesMode as string || 'individual';
+	const fieldValuesMode = nodeParameters.fieldValuesMode as string || 'individual';
 	
 	if (fieldValuesMode === 'json') {
 		// Handle JSON input mode
-		const fieldValuesJson = additionalOptions.fieldValuesJson as string | object;
+		const fieldValuesJson = nodeParameters.fieldValuesJson as string;
 		if (fieldValuesJson) {
 			return parseJsonInput(fieldValuesJson) as IDataObject;
 		}
 		return {};
 	} else {
-		// Handle individual fields mode (legacy format)
-		const fieldValuesData = additionalOptions.fieldValues as IDataObject;
-		if (!fieldValuesData || !fieldValuesData.field) {
+		// Handle individual fields mode
+		const fieldValues = nodeParameters.fieldValues as IDataObject;
+		if (!fieldValues || !fieldValues.field) {
 			return {};
 		}
 
-		const fieldItems = Array.isArray(fieldValuesData.field) 
-			? fieldValuesData.field 
-			: [fieldValuesData.field];
+		const fields = fieldValues.field as IDataObject[];
+		const result: IDataObject = {};
 
-		const values: IDataObject = {};
-		
-		fieldItems.forEach((item: any) => {
-			if (item.name && item.value !== undefined) {
-				values[item.name] = item.value;
+		for (const field of fields) {
+			if (field.name && field.value !== undefined) {
+				result[field.name as string] = field.value;
 			}
-		});
+		}
 
-		return values;
+		return result;
 	}
 }
 

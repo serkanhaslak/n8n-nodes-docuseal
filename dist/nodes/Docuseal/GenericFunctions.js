@@ -152,30 +152,28 @@ function buildSubmittersArray(submittersData) {
     });
 }
 exports.buildSubmittersArray = buildSubmittersArray;
-function buildFieldValues(additionalOptions) {
-    const fieldValuesMode = additionalOptions.fieldValuesMode || 'individual';
+function buildFieldValues(nodeParameters) {
+    const fieldValuesMode = nodeParameters.fieldValuesMode || 'individual';
     if (fieldValuesMode === 'json') {
-        const fieldValuesJson = additionalOptions.fieldValuesJson;
+        const fieldValuesJson = nodeParameters.fieldValuesJson;
         if (fieldValuesJson) {
             return parseJsonInput(fieldValuesJson);
         }
         return {};
     }
     else {
-        const fieldValuesData = additionalOptions.fieldValues;
-        if (!fieldValuesData || !fieldValuesData.field) {
+        const fieldValues = nodeParameters.fieldValues;
+        if (!fieldValues || !fieldValues.field) {
             return {};
         }
-        const fieldItems = Array.isArray(fieldValuesData.field)
-            ? fieldValuesData.field
-            : [fieldValuesData.field];
-        const values = {};
-        fieldItems.forEach((item) => {
-            if (item.name && item.value !== undefined) {
-                values[item.name] = item.value;
+        const fields = fieldValues.field;
+        const result = {};
+        for (const field of fields) {
+            if (field.name && field.value !== undefined) {
+                result[field.name] = field.value;
             }
-        });
-        return values;
+        }
+        return result;
     }
 }
 exports.buildFieldValues = buildFieldValues;
