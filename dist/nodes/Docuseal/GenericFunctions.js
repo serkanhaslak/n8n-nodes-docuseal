@@ -90,23 +90,47 @@ exports.parseJsonInput = parseJsonInput;
 async function getTemplates() {
     try {
         console.log('getTemplates: Starting to fetch templates...');
-        const templates = await docusealApiRequestAllItems.call(this, 'GET', '/templates', {}, {});
-        console.log('getTemplates: API response received:', {
-            templatesCount: Array.isArray(templates) ? templates.length : 'not an array',
-            templatesType: typeof templates,
-            firstTemplate: Array.isArray(templates) && templates.length > 0 ? templates[0] : null
+        const rawResponse = await docusealApiRequest.call(this, 'GET', '/templates', {}, { limit: 100 });
+        console.log('getTemplates: Raw API response:', {
+            responseType: typeof rawResponse,
+            isArray: Array.isArray(rawResponse),
+            responseKeys: rawResponse && typeof rawResponse === 'object' ? Object.keys(rawResponse) : null,
+            rawResponse: rawResponse
         });
-        if (!Array.isArray(templates)) {
-            console.error('getTemplates: Response is not an array:', templates);
+        let templates;
+        if (Array.isArray(rawResponse)) {
+            templates = rawResponse;
+        }
+        else if (rawResponse && typeof rawResponse === 'object') {
+            if (rawResponse.data && Array.isArray(rawResponse.data)) {
+                templates = rawResponse.data;
+            }
+            else if (rawResponse.templates && Array.isArray(rawResponse.templates)) {
+                templates = rawResponse.templates;
+            }
+            else if (rawResponse.results && Array.isArray(rawResponse.results)) {
+                templates = rawResponse.results;
+            }
+            else {
+                console.error('getTemplates: Unknown response structure:', rawResponse);
+                return [];
+            }
+        }
+        else {
+            console.error('getTemplates: Invalid response type:', typeof rawResponse);
             return [];
         }
+        console.log('getTemplates: Extracted templates:', {
+            templatesCount: templates.length,
+            firstTemplate: templates.length > 0 ? templates[0] : null
+        });
         if (templates.length === 0) {
             console.log('getTemplates: No templates found');
             return [];
         }
         const options = templates.map((template) => {
             const option = {
-                name: template.name || `Template ${template.id}`,
+                name: template.name || template.title || `Template ${template.id}`,
                 value: template.id,
             };
             console.log('getTemplates: Mapping template:', { id: template.id, name: template.name, option });
@@ -119,7 +143,8 @@ async function getTemplates() {
         console.error('getTemplates: Error occurred:', {
             errorMessage: error instanceof Error ? error.message : String(error),
             errorStack: error instanceof Error ? error.stack : undefined,
-            errorType: typeof error
+            errorType: typeof error,
+            fullError: error
         });
         return [];
     }
