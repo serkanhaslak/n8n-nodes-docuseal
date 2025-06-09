@@ -190,9 +190,36 @@ export const submissionFields: INodeProperties[] = [
 		],
 	},
 
-	// Create from template
+	// Template selection method
 	{
-		displayName: 'Template Name or ID',
+		displayName: 'Template',
+		name: 'templateSelectionType',
+		type: 'options',
+		options: [
+			{
+				name: 'From List',
+				value: 'list',
+				description: 'Select template from dropdown list',
+			},
+			{
+				name: 'By ID',
+				value: 'id',
+				description: 'Specify template by ID',
+			},
+		],
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['submission'],
+				operation: ['create'],
+			},
+		},
+		default: 'list',
+		description: 'How to select the template',
+	},
+	// Template from list
+	{
+		displayName: 'Template Name',
 		name: 'templateId',
 		type: 'options',
 		typeOptions: {
@@ -203,10 +230,28 @@ export const submissionFields: INodeProperties[] = [
 			show: {
 				resource: ['submission'],
 				operation: ['create'],
+				templateSelectionType: ['list'],
 			},
 		},
 		default: '',
-		description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+		description: 'Select template from the dropdown list',
+	},
+	// Template by ID
+	{
+		displayName: 'Template ID',
+		name: 'templateId',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['submission'],
+				operation: ['create'],
+				templateSelectionType: ['id'],
+			},
+		},
+		default: '',
+		placeholder: 'e.g. 123',
+		description: 'Enter the template ID directly',
 	},
 	{
 		displayName: 'Submitters',

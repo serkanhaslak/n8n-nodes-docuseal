@@ -146,16 +146,23 @@ export async function getTemplates(
 		// Make request to get templates - docusealApiRequest will handle the environment selection
 		const templates = await docusealApiRequest.call(this, 'GET', '/templates', {}, { limit: 100 });
 		
+		console.log('Templates API response:', templates);
+		
 		if (!Array.isArray(templates)) {
+			console.log('Templates response is not an array:', typeof templates);
 			return [];
 		}
 		
 		// Transform API response to options format
-		return templates.map((template: any) => ({
+		const options = templates.map((template: any) => ({
 			name: template.name || `Template ${template.id}`,
 			value: template.id,
 		}));
+		
+		console.log('Transformed template options:', options);
+		return options;
 	} catch (error) {
+		console.error('Error fetching templates:', error);
 		return [];
 	}
 }

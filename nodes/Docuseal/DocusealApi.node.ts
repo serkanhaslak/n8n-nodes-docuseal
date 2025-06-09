@@ -97,13 +97,16 @@ export class DocusealApi implements INodeType {
 				],
 				default: 'submission',
 			},
-			// Import operations and fields from description files
+			// Template operations and fields
 			...templateOperations,
 			...templateFields,
+			// Submission operations and fields
 			...submissionOperations,
 			...submissionFields,
+			// Submitter operations and fields
 			...submitterOperations,
 			...submitterFields,
+			// Form operations and fields
 			...formOperations,
 			...formFields,
 		],

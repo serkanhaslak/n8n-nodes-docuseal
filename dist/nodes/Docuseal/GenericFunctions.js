@@ -90,15 +90,20 @@ exports.parseJsonInput = parseJsonInput;
 async function getTemplates() {
     try {
         const templates = await docusealApiRequest.call(this, 'GET', '/templates', {}, { limit: 100 });
+        console.log('Templates API response:', templates);
         if (!Array.isArray(templates)) {
+            console.log('Templates response is not an array:', typeof templates);
             return [];
         }
-        return templates.map((template) => ({
+        const options = templates.map((template) => ({
             name: template.name || `Template ${template.id}`,
             value: template.id,
         }));
+        console.log('Transformed template options:', options);
+        return options;
     }
     catch (error) {
+        console.error('Error fetching templates:', error);
         return [];
     }
 }
