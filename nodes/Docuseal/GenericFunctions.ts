@@ -26,21 +26,31 @@ export async function docusealApiRequest(
 	}
 
 	// Get environment (production or test)
-	let environment: string;
+	let environment: string = 'production';
 	
 	try {
-		// First try to get the environment parameter from the node
+		// Try to get the environment parameter from the current node parameters
 		environment = this.getNodeParameter('environment', 0) as string;
 	} catch (error) {
-		// If there's an error (e.g., in load options where parameters might not be accessible)
-		// Default to production
-		environment = 'production';
+		// For load options context, parameter might not be accessible
+		// Check credentials to determine default environment
+		if (credentials.testApiKey && !credentials.productionApiKey) {
+			environment = 'test';
+		} else if (credentials.productionApiKey && !credentials.testApiKey) {
+			environment = 'production';
+		} else {
+			// If both keys exist, default to production
+			environment = 'production';
+		}
 	}
 	
 	// Set API key based on environment
 	let apiKey = '';
 	if (environment === 'production') {
 		apiKey = credentials.productionApiKey as string;
+		if (!apiKey) {
+			throw new Error('Production API key is required for production environment');
+		}
 	} else {
 		// Use test API key for test environment
 		apiKey = credentials.testApiKey as string;
@@ -265,35 +275,42 @@ export function formatDate(date: string): string {
 export async function getTemplateFolders(
 	this: ILoadOptionsFunctions,
 ): Promise<Array<{ name: string; value: string }>> {
-	// Fetch all templates to extract unique folders
-	const templates = await docusealApiRequestAllItems.call(this, 'GET', '/templates', {}, { limit: 100 });
-	
-	if (!Array.isArray(templates)) {
-		return [];
-	}
-	
-	// Extract unique folder names
-	const folders = new Set<string>();
-	
-	templates.forEach((template: any) => {
-		if (template.folder_name && template.folder_name.trim() !== '') {
-			folders.add(template.folder_name);
+	try {
+		// Fetch all templates to extract unique folders
+		const templates = await docusealApiRequestAllItems.call(this, 'GET', '/templates', {}, { limit: 100 });
+		
+		if (!Array.isArray(templates)) {
+			console.warn('DocuSeal API returned non-array response for templates');
+			return [{ name: 'No Folder', value: '' }];
 		}
-	});
-	
-	// Convert to options format
-	const folderOptions = Array.from(folders)
-		.sort() // Sort alphabetically
-		.map(folder => ({
-			name: folder,
-			value: folder,
-		}));
-	
-	// Add "No Folder" option at the beginning
-	folderOptions.unshift({
-		name: 'No Folder',
-		value: '',
-	});
-	
-	return folderOptions;
+		
+		// Extract unique folder names
+		const folders = new Set<string>();
+		
+		templates.forEach((template: any) => {
+			if (template.folder_name && template.folder_name.trim() !== '') {
+				folders.add(template.folder_name);
+			}
+		});
+		
+		// Convert to options format
+		const folderOptions = Array.from(folders)
+			.sort() // Sort alphabetically
+			.map(folder => ({
+				name: folder,
+				value: folder,
+			}));
+		
+		// Add "No Folder" option at the beginning
+		folderOptions.unshift({
+			name: 'No Folder',
+			value: '',
+		});
+		
+		return folderOptions;
+	} catch (error) {
+		console.error('Error fetching template folders:', error);
+		// Return at least "No Folder" option on error
+		return [{ name: 'No Folder', value: '' }];
+	}
 }

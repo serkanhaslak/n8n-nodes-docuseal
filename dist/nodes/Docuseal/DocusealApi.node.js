@@ -7,7 +7,6 @@ const TemplateDescription_1 = require("./TemplateDescription");
 const SubmissionDescription_1 = require("./SubmissionDescription");
 const SubmitterDescription_1 = require("./SubmitterDescription");
 const FormDescription_1 = require("./FormDescription");
-const AiToolDescription_1 = require("./AiToolDescription");
 class DocusealApi {
     constructor() {
         this.description = {
@@ -23,6 +22,7 @@ class DocusealApi {
             },
             inputs: ["main"],
             outputs: ["main"],
+            usableAsTool: true,
             credentials: [
                 {
                     name: 'docusealApi',
@@ -54,11 +54,6 @@ class DocusealApi {
                     noDataExpression: true,
                     options: [
                         {
-                            name: 'AI Tool',
-                            value: 'aiTool',
-                            description: 'Generate documents using AI',
-                        },
-                        {
                             name: 'Form',
                             value: 'form',
                             description: 'Work with form events',
@@ -89,8 +84,6 @@ class DocusealApi {
                 ...SubmitterDescription_1.submitterFields,
                 ...FormDescription_1.formOperations,
                 ...FormDescription_1.formFields,
-                ...AiToolDescription_1.aiToolOperations,
-                ...AiToolDescription_1.aiToolFields,
             ],
         };
         this.methods = {
@@ -286,6 +279,9 @@ class DocusealApi {
                     else if (operation === 'getMany') {
                         const returnAll = this.getNodeParameter('returnAll', i);
                         const filters = this.getNodeParameter('filters', i, {});
+                        if (filters.status && Array.isArray(filters.status)) {
+                            filters.status = filters.status.join(',');
+                        }
                         if (returnAll) {
                             responseData = await GenericFunctions_1.docusealApiRequestAllItems.call(this, 'GET', '/submissions', {}, filters);
                         }
@@ -465,26 +461,6 @@ class DocusealApi {
                     }
                     else if (operation === 'getViewed') {
                         responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'GET', `/submitters/${submitterId}/form_viewed`);
-                    }
-                }
-                else if (resource === 'aiTool') {
-                    if (operation === 'generateDocument') {
-                        const documentType = this.getNodeParameter('documentType', i);
-                        const description = this.getNodeParameter('description', i);
-                        const additionalOptions = this.getNodeParameter('additionalOptions', i, {});
-                        const body = {
-                            prompt: `${documentType}: ${description}`,
-                        };
-                        if (additionalOptions.language) {
-                            body.language = additionalOptions.language;
-                        }
-                        if (additionalOptions.style) {
-                            body.style = additionalOptions.style;
-                        }
-                        if (additionalOptions.fields) {
-                            body.fields = additionalOptions.fields.split(',').map(f => f.trim());
-                        }
-                        responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'POST', '/templates/generate', body);
                     }
                 }
                 const executionData = this.helpers.constructExecutionMetaData(this.helpers.returnJsonArray(responseData), { itemData: { item: i } });

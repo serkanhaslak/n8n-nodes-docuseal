@@ -45,10 +45,6 @@ import {
 	formFields,
 } from './FormDescription';
 
-import {
-	aiToolOperations,
-	aiToolFields,
-} from './AiToolDescription';
 
 export class DocusealApi implements INodeType {
 	description: INodeTypeDescription = {
@@ -64,6 +60,8 @@ export class DocusealApi implements INodeType {
 		},
 		inputs: [NodeConnectionType.Main],
 		outputs: [NodeConnectionType.Main],
+		// @ts-ignore - usableAsTool not in official types yet
+		usableAsTool: true,
 		credentials: [
 			{
 				name: 'docusealApi',
@@ -94,11 +92,6 @@ export class DocusealApi implements INodeType {
 				type: 'options',
 				noDataExpression: true,
 				options: [
-					{
-						name: 'AI Tool',
-						value: 'aiTool',
-						description: 'Generate documents using AI',
-					},
 					{
 						name: 'Form',
 						value: 'form',
@@ -131,8 +124,6 @@ export class DocusealApi implements INodeType {
 			...submitterFields,
 			...formOperations,
 			...formFields,
-			...aiToolOperations,
-			...aiToolFields,
 		],
 	};
 
@@ -453,6 +444,11 @@ export class DocusealApi implements INodeType {
 						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
 						const filters = this.getNodeParameter('filters', i, {}) as IDataObject;
 						
+						// Process status filter - convert array to comma-separated string if needed
+						if (filters.status && Array.isArray(filters.status)) {
+							filters.status = (filters.status as string[]).join(',');
+						}
+						
 						if (returnAll) {
 							responseData = await docusealApiRequestAllItems.call(
 								this,
@@ -757,37 +753,6 @@ export class DocusealApi implements INodeType {
 					}
 				}
 
-				// AI Tool operations
-				else if (resource === 'aiTool') {
-					// Generate document
-					if (operation === 'generateDocument') {
-						const documentType = this.getNodeParameter('documentType', i) as string;
-						const description = this.getNodeParameter('description', i) as string;
-						const additionalOptions = this.getNodeParameter('additionalOptions', i, {}) as IDataObject;
-
-						const body: IDataObject = {
-							prompt: `${documentType}: ${description}`,
-						};
-
-						// Add additional options
-						if (additionalOptions.language) {
-							body.language = additionalOptions.language;
-						}
-						if (additionalOptions.style) {
-							body.style = additionalOptions.style;
-						}
-						if (additionalOptions.fields) {
-							body.fields = (additionalOptions.fields as string).split(',').map(f => f.trim());
-						}
-
-						responseData = await docusealApiRequest.call(
-							this,
-							'POST',
-							'/templates/generate',
-							body,
-						);
-					}
-				}
 
 				// Add response data to output array
 				const executionData = this.helpers.constructExecutionMetaData(

@@ -14,7 +14,6 @@ export class DocusealApi implements ICredentialType {
 			type: 'string',
 			typeOptions: { password: true },
 			default: '',
-			required: true,
 			description: 'The DocuSeal production API key obtained from your DocuSeal account',
 		},
 		{
@@ -23,7 +22,7 @@ export class DocusealApi implements ICredentialType {
 			type: 'string',
 			typeOptions: { password: true },
 			default: '',
-			description: 'The DocuSeal test API key for sandbox testing (optional)',
+			description: 'The DocuSeal test API key for sandbox testing',
 		},
 		{
 			displayName: 'Base URL',

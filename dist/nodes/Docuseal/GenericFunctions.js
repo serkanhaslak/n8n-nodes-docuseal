@@ -7,16 +7,27 @@ async function docusealApiRequest(method, endpoint, body = {}, query = {}, optio
     if (!credentials) {
         throw new Error('No credentials provided!');
     }
-    let environment;
+    let environment = 'production';
     try {
         environment = this.getNodeParameter('environment', 0);
     }
     catch (error) {
-        environment = 'production';
+        if (credentials.testApiKey && !credentials.productionApiKey) {
+            environment = 'test';
+        }
+        else if (credentials.productionApiKey && !credentials.testApiKey) {
+            environment = 'production';
+        }
+        else {
+            environment = 'production';
+        }
     }
     let apiKey = '';
     if (environment === 'production') {
         apiKey = credentials.productionApiKey;
+        if (!apiKey) {
+            throw new Error('Production API key is required for production environment');
+        }
     }
     else {
         apiKey = credentials.testApiKey;
@@ -174,27 +185,34 @@ function formatDate(date) {
 }
 exports.formatDate = formatDate;
 async function getTemplateFolders() {
-    const templates = await docusealApiRequestAllItems.call(this, 'GET', '/templates', {}, { limit: 100 });
-    if (!Array.isArray(templates)) {
-        return [];
-    }
-    const folders = new Set();
-    templates.forEach((template) => {
-        if (template.folder_name && template.folder_name.trim() !== '') {
-            folders.add(template.folder_name);
+    try {
+        const templates = await docusealApiRequestAllItems.call(this, 'GET', '/templates', {}, { limit: 100 });
+        if (!Array.isArray(templates)) {
+            console.warn('DocuSeal API returned non-array response for templates');
+            return [{ name: 'No Folder', value: '' }];
         }
-    });
-    const folderOptions = Array.from(folders)
-        .sort()
-        .map(folder => ({
-        name: folder,
-        value: folder,
-    }));
-    folderOptions.unshift({
-        name: 'No Folder',
-        value: '',
-    });
-    return folderOptions;
+        const folders = new Set();
+        templates.forEach((template) => {
+            if (template.folder_name && template.folder_name.trim() !== '') {
+                folders.add(template.folder_name);
+            }
+        });
+        const folderOptions = Array.from(folders)
+            .sort()
+            .map(folder => ({
+            name: folder,
+            value: folder,
+        }));
+        folderOptions.unshift({
+            name: 'No Folder',
+            value: '',
+        });
+        return folderOptions;
+    }
+    catch (error) {
+        console.error('Error fetching template folders:', error);
+        return [{ name: 'No Folder', value: '' }];
+    }
 }
 exports.getTemplateFolders = getTemplateFolders;
 //# sourceMappingURL=GenericFunctions.js.map
