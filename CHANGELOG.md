@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.9.1] - 2025-01-06
+
+### Added
+- Dynamic folder dropdown for template operations using loadOptionsMethod
+- Multi-select support for status filters in submissions and submitters
+
+### Changed
+- Reorganized all "Get Many" operations to follow n8n UX standards
+- Moved all filters to optional collections (removed Before ID/After ID)
+- Consolidated duplicate fields in submission create operation
+- Updated CLAUDE.md with comprehensive development guide
+
+### Fixed
+- Duplicate field values appearing in submission create
+- Confusing ID-based pagination filters
+
 ## [0.9.0] - 2025-01-06
 
 ### Added
