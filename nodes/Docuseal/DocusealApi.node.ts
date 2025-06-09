@@ -17,6 +17,11 @@ import {
 	docusealApiRequest,
 	docusealApiRequestAllItems,
 	getTemplates,
+	parseJsonInput,
+	prepareBinaryData,
+	buildSubmittersArray,
+	buildFieldValues,
+	formatDate,
 } from './GenericFunctions';
 
 import {
@@ -34,6 +39,16 @@ import {
 	submitterFields,
 } from './SubmitterDescription';
 
+import {
+	formOperations,
+	formFields,
+} from './FormDescription';
+
+import {
+	aiToolOperations,
+	aiToolFields,
+} from './AiToolDescription';
+
 export class DocusealApi implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'DocuSeal',
@@ -48,85 +63,6 @@ export class DocusealApi implements INodeType {
 		},
 		inputs: [NodeConnectionType.Main],
 		outputs: [NodeConnectionType.Main],
-		usableAsTool: true,
-		// @ts-ignore
-		toolSpecification: {
-			name: 'DocuSeal',
-			displayName: 'DocuSeal',
-			description: 'Create and manage document submissions and templates in DocuSeal',
-			icon: 'file:docuseal.svg',
-			supportAiNode: true,
-			dynamicProperties: true,
-			operations: [
-				{
-					name: 'Create Submission',
-					description: 'Create a new document submission in DocuSeal with signers, pre-filled fields, and preferences',
-					parameters: {
-						type: 'object',
-						required: ['templateId', 'submissionData'],
-						properties: {
-							templateId: {
-								type: 'number',
-								description: 'ID of the template to create a submission for. This is a required numeric identifier that references the specific document template in DocuSeal that will be used for this submission.'
-							},
-							submissionData: {
-								type: 'string',
-								description: 'Complete JSON data for the submission including submitters, fields, and preferences. Format as a JSON string with the following structure: {"Submitters": [{"email": "user@example.com", "name": "User Name", "role": "Role Name"}], "Fields": {"field1": "value1"}, "preferences": {"font_size": 12, "color": "blue"}, "completed_redirect_url": "https://example.com", "send_email": true}'
-							}
-						}
-					}
-				},
-				{
-					name: 'Get Submission',
-					description: 'Retrieve a specific submission by ID',
-					parameters: {
-						type: 'object',
-						required: ['submissionId'],
-						properties: {
-							submissionId: {
-								type: 'number',
-								description: 'The ID of the submission to retrieve'
-							}
-						}
-					}
-				},
-				{
-					name: 'Get Submissions List',
-					description: 'Retrieve a list of submissions with optional filtering',
-					parameters: {
-						type: 'object',
-						properties: {
-							limit: {
-								type: 'number',
-								description: 'Maximum number of results to return (default: 100)'
-							},
-							returnAll: {
-								type: 'boolean',
-								description: 'Whether to return all results or only up to the specified limit'
-							},
-							filterData: {
-								type: 'string',
-								description: 'JSON string with filter criteria: {"after": 123, "before": 456, "archived": false, "q": "search term", "status": "completed", "template_folder": "folder", "template_id": 789}'
-							}
-						}
-					}
-				},
-				{
-					name: 'Archive Submission',
-					description: 'Archive a submission by ID',
-					parameters: {
-						type: 'object',
-						required: ['submissionId'],
-						properties: {
-							submissionId: {
-								type: 'number',
-								description: 'The ID of the submission to archive'
-							}
-						}
-					}
-				}
-			]
-		},
 		credentials: [
 			{
 				name: 'docusealApi',
@@ -158,19 +94,32 @@ export class DocusealApi implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
+						name: 'AI Tool',
+						value: 'aiTool',
+						description: 'Generate documents using AI',
+					},
+					{
+						name: 'Form',
+						value: 'form',
+						description: 'Work with form events',
+					},
+					{
 						name: 'Submission',
 						value: 'submission',
+						description: 'Create and manage document submissions',
 					},
 					{
 						name: 'Submitter',
 						value: 'submitter',
+						description: 'Manage submitters and their data',
 					},
 					{
 						name: 'Template',
 						value: 'template',
+						description: 'Create and manage document templates',
 					},
 				],
-				default: 'template',
+				default: 'submission',
 			},
 			// Import operations and fields from description files
 			...templateOperations,
@@ -179,6 +128,10 @@ export class DocusealApi implements INodeType {
 			...submissionFields,
 			...submitterOperations,
 			...submitterFields,
+			...formOperations,
+			...formFields,
+			...aiToolOperations,
+			...aiToolFields,
 		],
 	};
 
@@ -188,17 +141,7 @@ export class DocusealApi implements INodeType {
 			// Get all templates for selection
 			async getTemplates(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				try {
-					const returnData: INodePropertyOptions[] = [];
-					const templates = await getTemplates.call(this);
-					
-					if (Array.isArray(templates)) {
-						return templates.map((template: {name: string, id?: number, value?: number}) => ({
-							name: template.name,
-							value: template.id || template.value || 0, // Provide a default value to avoid undefined
-						}));
-					}
-					
-					return returnData;
+					return await getTemplates.call(this);
 				} catch (error) {
 					// Return empty array on error
 					return [];
@@ -212,35 +155,6 @@ export class DocusealApi implements INodeType {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
 		let responseData: unknown;
-		
-		// Helper function to ensure proper format of data
-		const ensureProperFormat = (data: unknown): unknown => {
-			if (data === null || data === undefined) {
-				return data;
-			}
-			
-			if (typeof data === 'string') {
-				try {
-					return JSON.parse(data);
-				} catch (e) {
-					return data;
-				}
-			}
-			
-			if (Array.isArray(data)) {
-				return data.map(item => ensureProperFormat(item));
-			}
-			
-			if (typeof data === 'object') {
-				const result: Record<string, unknown> = {};
-				for (const key in data as Record<string, unknown>) {
-					result[key] = ensureProperFormat((data as Record<string, unknown>)[key]);
-				}
-				return result;
-			}
-			
-			return data;
-		};
 
 		// Process each item
 		for (let i = 0; i < items.length; i++) {
@@ -262,7 +176,7 @@ export class DocusealApi implements INodeType {
 					}
 					
 					// Get list of templates
-					else if (operation === 'getList') {
+					else if (operation === 'getMany') {
 						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
 						const filters = this.getNodeParameter('filters', i, {}) as IDataObject;
 						
@@ -286,6 +200,217 @@ export class DocusealApi implements INodeType {
 							);
 						}
 					}
+
+					// Create template from PDF
+					else if (operation === 'createFromPdf') {
+						const name = this.getNodeParameter('name', i) as string;
+						const pdfSource = this.getNodeParameter('pdfSource', i) as string;
+						const additionalFields = this.getNodeParameter('additionalFields', i, {}) as IDataObject;
+
+						const formData: IDataObject = {
+							name,
+						};
+
+						if (pdfSource === 'binary') {
+							const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
+							const binaryData = await prepareBinaryData.call(this, binaryPropertyName, i);
+							formData.document = binaryData;
+						} else {
+							formData.document_url = this.getNodeParameter('fileUrl', i) as string;
+						}
+
+						// Add additional fields
+						if (additionalFields.external_id) formData.external_id = additionalFields.external_id;
+						if (additionalFields.folder_name) formData.folder_name = additionalFields.folder_name;
+						if (additionalFields.fields) {
+							const fieldsData = additionalFields.fields as IDataObject;
+							if (fieldsData.field) {
+								formData.fields = fieldsData.field;
+							}
+						}
+
+						responseData = await docusealApiRequest.call(
+							this,
+							'POST',
+							'/templates/pdf',
+							{},
+							{},
+							{ formData },
+						);
+					}
+
+					// Create template from DOCX
+					else if (operation === 'createFromDocx') {
+						const name = this.getNodeParameter('name', i) as string;
+						const docxSource = this.getNodeParameter('docxSource', i) as string;
+						const additionalFields = this.getNodeParameter('additionalFields', i, {}) as IDataObject;
+
+						const formData: IDataObject = {
+							name,
+						};
+
+						if (docxSource === 'binary') {
+							const binaryPropertyName = this.getNodeParameter('binaryPropertyNameDocx', i) as string;
+							const binaryData = await prepareBinaryData.call(this, binaryPropertyName, i);
+							formData.document = binaryData;
+						} else {
+							formData.document_url = this.getNodeParameter('fileUrlDocx', i) as string;
+						}
+
+						// Add additional fields
+						if (additionalFields.external_id) formData.external_id = additionalFields.external_id;
+						if (additionalFields.folder_name) formData.folder_name = additionalFields.folder_name;
+						if (additionalFields.fields) {
+							const fieldsData = additionalFields.fields as IDataObject;
+							if (fieldsData.field) {
+								formData.fields = fieldsData.field;
+							}
+						}
+
+						responseData = await docusealApiRequest.call(
+							this,
+							'POST',
+							'/templates/docx',
+							{},
+							{},
+							{ formData },
+						);
+					}
+
+					// Create template from HTML
+					else if (operation === 'createFromHtml') {
+						const name = this.getNodeParameter('name', i) as string;
+						const htmlContent = this.getNodeParameter('htmlContent', i) as string;
+						const additionalFields = this.getNodeParameter('additionalFields', i, {}) as IDataObject;
+
+						const body: IDataObject = {
+							name,
+							html: htmlContent,
+						};
+
+						// Add additional fields
+						if (additionalFields.external_id) body.external_id = additionalFields.external_id;
+						if (additionalFields.folder_name) body.folder_name = additionalFields.folder_name;
+						if (additionalFields.fields) {
+							const fieldsData = additionalFields.fields as IDataObject;
+							if (fieldsData.field) {
+								body.fields = fieldsData.field;
+							}
+						}
+
+						responseData = await docusealApiRequest.call(
+							this,
+							'POST',
+							'/templates/html',
+							body,
+						);
+					}
+
+					// Clone template
+					else if (operation === 'clone') {
+						const templateId = this.getNodeParameter('templateId', i) as number;
+						const name = this.getNodeParameter('name', i) as string;
+						const additionalFields = this.getNodeParameter('additionalFields', i, {}) as IDataObject;
+
+						const body: IDataObject = {
+							name,
+						};
+
+						if (additionalFields.external_id) body.external_id = additionalFields.external_id;
+						if (additionalFields.folder_name) body.folder_name = additionalFields.folder_name;
+
+						responseData = await docusealApiRequest.call(
+							this,
+							'POST',
+							`/templates/${templateId}/clone`,
+							body,
+						);
+					}
+
+					// Merge templates
+					else if (operation === 'merge') {
+						const templateIds = (this.getNodeParameter('templateIds', i) as string)
+							.split(',')
+							.map(id => parseInt(id.trim()))
+							.filter(id => !isNaN(id));
+						const name = this.getNodeParameter('mergedName', i) as string;
+
+						const body: IDataObject = {
+							template_ids: templateIds,
+							name,
+						};
+
+						responseData = await docusealApiRequest.call(
+							this,
+							'POST',
+							'/templates/merge',
+							body,
+						);
+					}
+
+					// Update template
+					else if (operation === 'update') {
+						const templateId = this.getNodeParameter('templateId', i) as number;
+						const updateFields = this.getNodeParameter('updateFields', i, {}) as IDataObject;
+
+						if (Object.keys(updateFields).length === 0) {
+							throw new NodeOperationError(this.getNode(), 'At least one field must be updated', { itemIndex: i });
+						}
+
+						responseData = await docusealApiRequest.call(
+							this,
+							'PUT',
+							`/templates/${templateId}`,
+							updateFields,
+						);
+					}
+
+					// Update template documents
+					else if (operation === 'updateDocuments') {
+						const templateId = this.getNodeParameter('templateId', i) as number;
+						const documentsSource = this.getNodeParameter('documentsSource', i) as string;
+
+						const formData: IDataObject = {};
+
+						if (documentsSource === 'binary') {
+							const binaryProperties = (this.getNodeParameter('binaryProperties', i) as string)
+								.split(',')
+								.map(prop => prop.trim());
+
+							for (const [index, propertyName] of binaryProperties.entries()) {
+								const binaryData = await prepareBinaryData.call(this, propertyName, i);
+								formData[`documents[${index}]`] = binaryData;
+							}
+						} else {
+							const fileUrls = (this.getNodeParameter('fileUrls', i) as string)
+								.split(',')
+								.map(url => url.trim());
+
+							fileUrls.forEach((url, index) => {
+								formData[`document_urls[${index}]`] = url;
+							});
+						}
+
+						responseData = await docusealApiRequest.call(
+							this,
+							'PUT',
+							`/templates/${templateId}/documents`,
+							{},
+							{},
+							{ formData },
+						);
+					}
+
+					// Archive template
+					else if (operation === 'archive') {
+						const templateId = this.getNodeParameter('templateId', i) as number;
+						
+						responseData = await docusealApiRequest.call(
+							this,
+							'DELETE',
+							`/templates/${templateId}`,
+						);
+					}
 				}
 				
 				// Submission operations
@@ -301,29 +426,21 @@ export class DocusealApi implements INodeType {
 						);
 					}
 					
+					// Get submission documents
+					else if (operation === 'getDocuments') {
+						const submissionId = this.getNodeParameter('submissionId', i) as number;
+						
+						responseData = await docusealApiRequest.call(
+							this,
+							'GET',
+							`/submissions/${submissionId}/documents`,
+						);
+					}
+					
 					// Get list of submissions
-					else if (operation === 'getList') {
+					else if (operation === 'getMany') {
 						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
-						
-						// Get all top-level filter parameters
-						const after = this.getNodeParameter('after', i, 0) as number;
-						const before = this.getNodeParameter('before', i, 0) as number;
-						const archived = this.getNodeParameter('archived', i, false) as boolean;
-						const searchQuery = this.getNodeParameter('q', i, '') as string;
-						const status = this.getNodeParameter('status', i, '') as string;
-						const templateFolder = this.getNodeParameter('template_folder', i, '') as string;
-						const templateId = this.getNodeParameter('template_id', i, 0) as number;
-						
-						// Build filters object
-						const filters: IDataObject = {};
-						
-						if (after) filters.after = after;
-						if (before) filters.before = before;
-						if (archived) filters.archived = archived;
-						if (searchQuery) filters.q = searchQuery;
-						if (status) filters.status = status;
-						if (templateFolder) filters.template_folder = templateFolder;
-						if (templateId) filters.template_id = templateId;
+						const filters = this.getNodeParameter('filters', i, {}) as IDataObject;
 						
 						if (returnAll) {
 							responseData = await docusealApiRequestAllItems.call(
@@ -349,212 +466,146 @@ export class DocusealApi implements INodeType {
 					// Create submission
 					else if (operation === 'create') {
 						const templateId = this.getNodeParameter('templateId', i) as number;
-						
-						// Check if we're getting data from the new simplified parameter structure
-						let submitters: IDataObject[] = [];
-						let fields: IDataObject = {};
-						let preferences: IDataObject = {};
-						let completedRedirectUrl = '';
-						let expireAt = '';
-						let messageInput: string | object = {};
-						let order = '';
-						let sendEmail = true;
-						let sendSms = false;
-						let externalId = '';
-						let metadata: IDataObject = {};
-						let submitterTypes: IDataObject = {};
-						
-						// Try to get submissionData parameter (for AI agents, especially Gemini)
-						try {
-							const submissionDataParam = this.getNodeParameter('submissionData', i, '') as string;
-							if (submissionDataParam) {
-								// Parse the JSON string into an object
-								const submissionData = JSON.parse(submissionDataParam);
-								
-								// Extract all parameters from the submissionData object
-								if (submissionData.Submitters) submitters = submissionData.Submitters as IDataObject[];
-								if (submissionData.Fields) fields = submissionData.Fields as IDataObject;
-								if (submissionData.preferences) preferences = submissionData.preferences as IDataObject;
-								if (submissionData.completed_redirect_url) completedRedirectUrl = submissionData.completed_redirect_url as string;
-								if (submissionData.expire_at) expireAt = submissionData.expire_at as string;
-								if (submissionData.message) messageInput = submissionData.message;
-								if (submissionData.order) order = submissionData.order as string;
-								if (submissionData.send_email !== undefined) sendEmail = submissionData.send_email as boolean;
-								if (submissionData.send_sms !== undefined) sendSms = submissionData.send_sms as boolean;
-								if (submissionData.external_id) externalId = submissionData.external_id as string;
-								if (submissionData.metadata) metadata = submissionData.metadata as IDataObject;
-								if (submissionData.submitter_types) submitterTypes = submissionData.submitter_types as IDataObject;
-							}
-						} catch (error) {
-							// If submissionData parameter is not available, try the traditional parameters
-							try {
-								const submittersInput = this.getNodeParameter('Submitters', i) as string | object;
-								submitters = typeof submittersInput === 'string' ? JSON.parse(submittersInput as string) : submittersInput as IDataObject[];
-							} catch (error) {
-								// If neither parameter is available, throw an error
-								throw new NodeOperationError(this.getNode(), 'Submitters data is required for creating a submission', { itemIndex: i });
-							}
-							
-							try {
-								const fieldsInput = this.getNodeParameter('Fields', i) as string | object;
-								fields = typeof fieldsInput === 'string' ? JSON.parse(fieldsInput as string) : fieldsInput as IDataObject;
-							} catch (error) {
-								// Fields parameter is optional
-								fields = {};
-							}
-							
-							try {
-								const preferencesInput = this.getNodeParameter('preferences', i) as string | object;
-								preferences = typeof preferencesInput === 'string' ? JSON.parse(preferencesInput as string) : preferencesInput as IDataObject;
-							} catch (error) {
-								// Preferences parameter is optional
-								preferences = {};
-							}
-							
-							try {
-								completedRedirectUrl = this.getNodeParameter('completed_redirect_url', i) as string;
-							} catch (error) {
-								// Optional parameter
-							}
-							
-							try {
-								expireAt = this.getNodeParameter('expire_at', i) as string;
-							} catch (error) {
-								// Optional parameter
-							}
-							
-							try {
-								messageInput = this.getNodeParameter('message', i) as string | object;
-							} catch (error) {
-								// Optional parameter
-								messageInput = {};
-							}
-							
-							try {
-								order = this.getNodeParameter('order', i) as string;
-							} catch (error) {
-								// Optional parameter
-							}
-							
-							try {
-								sendEmail = this.getNodeParameter('send_email', i) as boolean;
-							} catch (error) {
-								// Default to true
-								sendEmail = true;
-							}
-							
-							try {
-								sendSms = this.getNodeParameter('send_sms', i) as boolean;
-							} catch (error) {
-								// Default to false
-								sendSms = false;
-							}
-							
-							try {
-								externalId = this.getNodeParameter('external_id', i) as string;
-							} catch (error) {
-								// Optional parameter
-							}
-							
-							try {
-								metadata = this.getNodeParameter('metadata', i) as IDataObject;
-							} catch (error) {
-								// Optional parameter
-								metadata = {};
-							}
-							
-							try {
-								submitterTypes = this.getNodeParameter('submitter_types', i) as IDataObject;
-							} catch (error) {
-								// Optional parameter
-								submitterTypes = {};
-							}
-						}
-						
-						// Process message input
-						let message: IDataObject = {};
-						if (typeof messageInput === 'string') {
-							try {
-								message = JSON.parse(messageInput);
-							} catch (error) {
-								message = { text: messageInput };
-							}
-						} else {
-							message = messageInput as IDataObject;
-						}
-						
-						// Ensure data is in the proper format
-						const formattedSubmitters = ensureProperFormat(submitters);
-						const formattedFields = ensureProperFormat(fields);
-						const formattedPreferences = ensureProperFormat(preferences);
-						const formattedMessage = ensureProperFormat(message);
-						const formattedMetadata = ensureProperFormat(metadata);
-						const formattedSubmitterTypes = ensureProperFormat(submitterTypes);
-						
-						// Debug log for submitters before adding to body
-						this.logger.info(`DEBUG - Submitters data before formatting: ${JSON.stringify(submitters)}`);
-						this.logger.info(`DEBUG - Formatted submitters: ${JSON.stringify(formattedSubmitters)}`);
-						
-						// Build request body - ensure submitters is an array
-						const body: IDataObject = {
-							template_id: templateId,
-						};
-						
-						// Only add submitters if it's a valid array
-						if (Array.isArray(formattedSubmitters) && formattedSubmitters.length > 0) {
-							// Validate each submitter object
-							for (const [index, submitter] of formattedSubmitters.entries()) {
-								if (typeof submitter !== 'object' || submitter === null ||
-									!Object.prototype.hasOwnProperty.call(submitter, 'email') || typeof (submitter as any).email !== 'string' || (submitter as any).email.trim() === '' ||
-									!Object.prototype.hasOwnProperty.call(submitter, 'role') || typeof (submitter as any).role !== 'string' || (submitter as any).role.trim() === '') {
-									throw new NodeOperationError(this.getNode(), `Invalid submitter at index ${index}: Each submitter must be an object with non-empty 'email' and 'role' string properties. Found: ${JSON.stringify(submitter)}`);
-								}
-							}
-							// If validation passes, add to body
-							body.submitters = formattedSubmitters as IDataObject[];
-						} else {
-							throw new NodeOperationError(this.getNode(), 'Submitters parameter must be a valid array with at least one submitter object');
+						const submittersData = this.getNodeParameter('submitters', i) as IDataObject;
+						const fieldValuesData = this.getNodeParameter('fieldValues', i, {}) as IDataObject;
+						const additionalOptions = this.getNodeParameter('additionalOptions', i, {}) as IDataObject;
+						const preferences = this.getNodeParameter('preferences', i, {}) as IDataObject;
+
+						// Build submitters array
+						const submitters = buildSubmittersArray(submittersData);
+						if (submitters.length === 0) {
+							throw new NodeOperationError(this.getNode(), 'At least one submitter is required', { itemIndex: i });
 						}
 
-						// Only add values if they exist
-						if (formattedFields && Object.keys(formattedFields as object).length > 0) {
-							body.values = formattedFields as IDataObject;
+						// Build field values
+						const values = buildFieldValues(fieldValuesData);
+
+						// Build request body
+						const body: IDataObject = {
+							template_id: templateId,
+							submitters,
+						};
+
+						// Add field values if any
+						if (Object.keys(values).length > 0) {
+							body.values = values;
 						}
-						
-						// Only add preferences if they exist
-						if (formattedPreferences && Object.keys(formattedPreferences as object).length > 0) {
-							body.preferences = formattedPreferences as IDataObject;
+
+						// Add preferences if any
+						if (Object.keys(preferences).length > 0) {
+							body.preferences = preferences;
 						}
-						
-						// Debug log to see what's being sent to the API
-						this.logger.info(`DEBUG - DocuSeal API Request Body: ${JSON.stringify(body, null, 2)}`);
-						
-						// Add all top-level parameters to the body
-						if (completedRedirectUrl) body.completed_redirect_url = completedRedirectUrl;
-						if (expireAt) body.expire_at = expireAt;
-						if (Object.keys(formattedMessage as object).length > 0) body.message = formattedMessage as IDataObject;
-						if (order) body.order = order;
-						if (externalId) body.external_id = externalId;
-						if (Object.keys(formattedMetadata as object).length > 0) body.metadata = formattedMetadata as IDataObject;
-						if (Object.keys(formattedSubmitterTypes as object).length > 0) body.submitter_types = formattedSubmitterTypes as IDataObject;
-						
-						body.send_email = sendEmail;
-						body.send_sms = sendSms;
-						
-						// Debug log to see what's being sent to the API
-						this.logger.info(`DEBUG - Final DocuSeal API Request Body: ${JSON.stringify(body, null, 2)}`);
-						
-						try {
-							responseData = await docusealApiRequest.call(
-								this,
-								'POST',
-								'/submissions',
-								body,
-							);
-						} catch (error) {
-							this.logger.error('Error creating submission:', error);
-							throw new NodeOperationError(this.getNode(), `Error creating submission: ${error.message}`);
+
+						// Add additional options
+						if (additionalOptions.completed_redirect_url) {
+							body.completed_redirect_url = additionalOptions.completed_redirect_url;
 						}
+						if (additionalOptions.expire_at) {
+							body.expire_at = formatDate(additionalOptions.expire_at as string);
+						}
+						if (additionalOptions.external_id) {
+							body.external_id = additionalOptions.external_id;
+						}
+						if (additionalOptions.message) {
+							const messageData = additionalOptions.message as IDataObject;
+							if (messageData.messageFields) {
+								body.message = messageData.messageFields;
+							}
+						}
+						if (additionalOptions.metadata) {
+							body.metadata = parseJsonInput(additionalOptions.metadata as string | object);
+						}
+						if (additionalOptions.order) {
+							body.order = additionalOptions.order;
+						}
+						if (additionalOptions.send_email !== undefined) {
+							body.send_email = additionalOptions.send_email;
+						}
+						if (additionalOptions.send_sms !== undefined) {
+							body.send_sms = additionalOptions.send_sms;
+						}
+
+						responseData = await docusealApiRequest.call(
+							this,
+							'POST',
+							'/submissions',
+							body,
+						);
+					}
+
+					// Create submission from PDF
+					else if (operation === 'createFromPdf') {
+						const pdfSource = this.getNodeParameter('pdfSource', i) as string;
+						const submittersData = this.getNodeParameter('submitters', i) as IDataObject;
+						const additionalOptions = this.getNodeParameter('additionalOptions', i, {}) as IDataObject;
+
+						// Build submitters array
+						const submitters = buildSubmittersArray(submittersData);
+						if (submitters.length === 0) {
+							throw new NodeOperationError(this.getNode(), 'At least one submitter is required', { itemIndex: i });
+						}
+
+						const formData: IDataObject = {
+							submitters: JSON.stringify(submitters),
+						};
+
+						if (pdfSource === 'binary') {
+							const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
+							const binaryData = await prepareBinaryData.call(this, binaryPropertyName, i);
+							formData.document = binaryData;
+						} else {
+							formData.document_url = this.getNodeParameter('fileUrl', i) as string;
+						}
+
+						// Add additional options
+						if (additionalOptions.external_id) {
+							formData.external_id = additionalOptions.external_id;
+						}
+						if (additionalOptions.send_email !== undefined && additionalOptions.send_email !== null) {
+							formData.send_email = additionalOptions.send_email.toString();
+						}
+
+						responseData = await docusealApiRequest.call(
+							this,
+							'POST',
+							'/submissions/pdf',
+							{},
+							{},
+							{ formData },
+						);
+					}
+
+					// Create submission from HTML
+					else if (operation === 'createFromHtml') {
+						const htmlContent = this.getNodeParameter('htmlContent', i) as string;
+						const submittersData = this.getNodeParameter('submitters', i) as IDataObject;
+						const additionalOptions = this.getNodeParameter('additionalOptions', i, {}) as IDataObject;
+
+						// Build submitters array
+						const submitters = buildSubmittersArray(submittersData);
+						if (submitters.length === 0) {
+							throw new NodeOperationError(this.getNode(), 'At least one submitter is required', { itemIndex: i });
+						}
+
+						const body: IDataObject = {
+							html: htmlContent,
+							submitters,
+						};
+
+						// Add additional options
+						if (additionalOptions.external_id) {
+							body.external_id = additionalOptions.external_id;
+						}
+						if (additionalOptions.send_email !== undefined) {
+							body.send_email = additionalOptions.send_email;
+						}
+
+						responseData = await docusealApiRequest.call(
+							this,
+							'POST',
+							'/submissions/html',
+							body,
+						);
 					}
 					
 					// Archive submission
@@ -583,28 +634,17 @@ export class DocusealApi implements INodeType {
 					}
 					
 					// Get list of submitters
-					else if (operation === 'getList') {
+					else if (operation === 'getMany') {
 						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
-						
-						// Get all top-level filter parameters
-						const after = this.getNodeParameter('after', i, 0) as number;
-						const before = this.getNodeParameter('before', i, 0) as number;
-						const completedAfter = this.getNodeParameter('completed_after', i, '') as string;
-						const completedBefore = this.getNodeParameter('completed_before', i, '') as string;
-						const externalId = this.getNodeParameter('external_id', i, '') as string;
-						const searchQuery = this.getNodeParameter('q', i, '') as string;
-						const submissionId = this.getNodeParameter('submission_id', i, 0) as number;
-						
-						// Build filters object
-						const filters: IDataObject = {};
-						
-						if (after) filters.after = after;
-						if (before) filters.before = before;
-						if (completedAfter) filters.completed_after = completedAfter;
-						if (completedBefore) filters.completed_before = completedBefore;
-						if (externalId) filters.external_id = externalId;
-						if (searchQuery) filters.q = searchQuery;
-						if (submissionId) filters.submission_id = submissionId;
+						const filters = this.getNodeParameter('filters', i, {}) as IDataObject;
+
+						// Format date filters
+						if (filters.completed_after) {
+							filters.completed_after = formatDate(filters.completed_after as string);
+						}
+						if (filters.completed_before) {
+							filters.completed_before = formatDate(filters.completed_before as string);
+						}
 						
 						if (returnAll) {
 							responseData = await docusealApiRequestAllItems.call(
@@ -630,124 +670,103 @@ export class DocusealApi implements INodeType {
 					// Update submitter
 					else if (operation === 'update') {
 						const submitterId = this.getNodeParameter('submitterId', i) as number;
-						
-						// Get all top-level parameters
-						let completed = false;
-						let completedRedirectUrl = '';
-						let email = '';
-						let externalId = '';
-						let fieldsInput: string | object = {};
-						let messageInput: string | object = {};
-						let name = '';
-						let phone = '';
-						let role = '';
-						let sendEmail = false;
-						let sendSms = false;
-						let valuesInput: string | object = {};
-						
-						try {
-							completed = this.getNodeParameter('completed', i) as boolean;
-						} catch (error) {
-							// Optional parameter
-						}
-						
-						try {
-							completedRedirectUrl = this.getNodeParameter('completed_redirect_url', i) as string;
-						} catch (error) {
-							// Optional parameter
-						}
-						
-						try {
-							email = this.getNodeParameter('email', i) as string;
-						} catch (error) {
-							// Optional parameter
-						}
-						
-						try {
-							externalId = this.getNodeParameter('external_id', i) as string;
-						} catch (error) {
-							// Optional parameter
-						}
-						
-						try {
-							fieldsInput = this.getNodeParameter('fields', i) as string | object;
-						} catch (error) {
-							// Optional parameter
-							fieldsInput = {};
-						}
-						
-						try {
-							messageInput = this.getNodeParameter('message', i) as string | object;
-						} catch (error) {
-							// Optional parameter
-							messageInput = {};
-						}
-						
-						try {
-							name = this.getNodeParameter('name', i) as string;
-						} catch (error) {
-							// Optional parameter
-						}
-						
-						try {
-							phone = this.getNodeParameter('phone', i) as string;
-						} catch (error) {
-							// Optional parameter
-						}
-						
-						try {
-							role = this.getNodeParameter('role', i) as string;
-						} catch (error) {
-							// Optional parameter
-						}
-						
-						try {
-							sendEmail = this.getNodeParameter('send_email', i) as boolean;
-						} catch (error) {
-							// Optional parameter
-						}
-						
-						try {
-							sendSms = this.getNodeParameter('send_sms', i) as boolean;
-						} catch (error) {
-							// Optional parameter
-						}
-						
-						try {
-							valuesInput = this.getNodeParameter('values', i) as string | object;
-						} catch (error) {
-							// Optional parameter
-							valuesInput = {};
-						}
-						
-						// Parse inputs
-						const fields = ensureProperFormat(fieldsInput);
-						const message = ensureProperFormat(messageInput);
-						const values = ensureProperFormat(valuesInput);
-						
-						// Build request body
+						const updateFields = this.getNodeParameter('updateFields', i, {}) as IDataObject;
+						const fieldsData = this.getNodeParameter('fields', i, {}) as IDataObject;
+						const valuesData = this.getNodeParameter('values', i, {}) as IDataObject;
+
 						const body: IDataObject = {};
-						
-						if (completed !== undefined) body.completed = completed;
-						if (completedRedirectUrl) body.completed_redirect_url = completedRedirectUrl;
-						if (email) body.email = email;
-						if (externalId) body.external_id = externalId;
-						if (fields && Array.isArray(fields) && fields.length > 0) body.fields = fields;
-						if (message && Object.keys(message).length > 0) body.message = message;
-						if (name) body.name = name;
-						if (phone) body.phone = phone;
-						if (role) body.role = role;
-						if (sendEmail !== undefined) body.send_email = sendEmail;
-						if (sendSms !== undefined) body.send_sms = sendSms;
-						if (values && Object.keys(values).length > 0) body.values = values;
-						
-						// Debug log to see what's being sent to the API
-						this.logger.info(`DEBUG - DocuSeal API Request Body: ${JSON.stringify(body, null, 2)}`);
-						
+
+						// Add update fields
+						Object.assign(body, updateFields);
+
+						// Handle message field
+						if (body.message && typeof body.message === 'object') {
+							const messageData = body.message as IDataObject;
+							if (messageData.messageFields) {
+								body.message = messageData.messageFields;
+							}
+						}
+
+						// Add fields configuration
+						if (fieldsData.field) {
+							body.fields = fieldsData.field;
+						}
+
+						// Add values
+						if (valuesData.value) {
+							const values: IDataObject = {};
+							const valueItems = Array.isArray(valuesData.value) ? valuesData.value : [valuesData.value];
+							valueItems.forEach((item: any) => {
+								if (item.name && item.value !== undefined) {
+									values[item.name] = item.value;
+								}
+							});
+							body.values = values;
+						}
+
+						if (Object.keys(body).length === 0) {
+							throw new NodeOperationError(this.getNode(), 'At least one field must be updated', { itemIndex: i });
+						}
+
 						responseData = await docusealApiRequest.call(
 							this,
-							'PATCH',
+							'PUT',  // Correct HTTP method for submitter update
 							`/submitters/${submitterId}`,
+							body,
+						);
+					}
+				}
+
+				// Form operations
+				else if (resource === 'form') {
+					const submitterId = this.getNodeParameter('submitterId', i) as number;
+
+					// Get form started events
+					if (operation === 'getStarted') {
+						responseData = await docusealApiRequest.call(
+							this,
+							'GET',
+							`/submitters/${submitterId}/form_started`,
+						);
+					}
+
+					// Get form viewed events
+					else if (operation === 'getViewed') {
+						responseData = await docusealApiRequest.call(
+							this,
+							'GET',
+							`/submitters/${submitterId}/form_viewed`,
+						);
+					}
+				}
+
+				// AI Tool operations
+				else if (resource === 'aiTool') {
+					// Generate document
+					if (operation === 'generateDocument') {
+						const documentType = this.getNodeParameter('documentType', i) as string;
+						const description = this.getNodeParameter('description', i) as string;
+						const additionalOptions = this.getNodeParameter('additionalOptions', i, {}) as IDataObject;
+
+						const body: IDataObject = {
+							prompt: `${documentType}: ${description}`,
+						};
+
+						// Add additional options
+						if (additionalOptions.language) {
+							body.language = additionalOptions.language;
+						}
+						if (additionalOptions.style) {
+							body.style = additionalOptions.style;
+						}
+						if (additionalOptions.fields) {
+							body.fields = (additionalOptions.fields as string).split(',').map(f => f.trim());
+						}
+
+						responseData = await docusealApiRequest.call(
+							this,
+							'POST',
+							'/templates/generate',
 							body,
 						);
 					}

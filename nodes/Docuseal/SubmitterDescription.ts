@@ -1,6 +1,5 @@
 import type { INodeProperties } from 'n8n-workflow';
 
-// Submitter operations
 export const submitterOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
@@ -9,28 +8,26 @@ export const submitterOperations: INodeProperties[] = [
 		noDataExpression: true,
 		displayOptions: {
 			show: {
-				resource: [
-					'submitter',
-				],
+				resource: ['submitter'],
 			},
 		},
 		options: [
 			{
 				name: 'Get',
 				value: 'get',
-				description: 'Get a submitter.',
+				description: 'Get a submitter by ID',
 				action: 'Get a submitter',
 			},
 			{
-				name: 'Get List',
-				value: 'getList',
-				description: 'Get a list of submitters.',
-				action: 'Get a list of submitters',
+				name: 'Get Many',
+				value: 'getMany',
+				description: 'Get many submitters',
+				action: 'Get many submitters',
 			},
 			{
 				name: 'Update',
 				value: 'update',
-				description: 'Update a submitter.',
+				description: 'Update a submitter',
 				action: 'Update a submitter',
 			},
 		],
@@ -38,9 +35,8 @@ export const submitterOperations: INodeProperties[] = [
 	},
 ];
 
-// Submitter fields
 export const submitterFields: INodeProperties[] = [
-	// Submitter: Get by ID
+	// Get & Update operations
 	{
 		displayName: 'Submitter ID',
 		name: 'submitterId',
@@ -53,10 +49,10 @@ export const submitterFields: INodeProperties[] = [
 			},
 		},
 		default: 0,
-		description: 'ID of the submitter to retrieve.',
+		description: 'ID of the submitter',
 	},
 
-	// Submitter: Get List
+	// Get Many operation
 	{
 		displayName: 'Return All',
 		name: 'returnAll',
@@ -64,11 +60,11 @@ export const submitterFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['submitter'],
-				operation: ['getList'],
+				operation: ['getMany'],
 			},
 		},
 		default: false,
-		description: 'Whether to return all results or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -77,7 +73,7 @@ export const submitterFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['submitter'],
-				operation: ['getList'],
+				operation: ['getMany'],
 				returnAll: [false],
 			},
 		},
@@ -85,321 +81,283 @@ export const submitterFields: INodeProperties[] = [
 			minValue: 1,
 		},
 		default: 50,
-		description: 'Max number of results to return.',
+		description: 'Max number of results to return',
 	},
 	{
-		displayName: 'After ID',
-		name: 'after',
-		type: 'number',
+		displayName: 'Filters',
+		name: 'filters',
+		type: 'collection',
+		placeholder: 'Add Filter',
+		default: {},
 		displayOptions: {
 			show: {
 				resource: ['submitter'],
-				operation: ['getList'],
+				operation: ['getMany'],
 			},
 		},
-		default: 0,
-		description: 'Return submitters with ID greater than this value.',
-	},
-	{
-		displayName: 'Before ID',
-		name: 'before',
-		type: 'number',
-		displayOptions: {
-			show: {
-				resource: ['submitter'],
-				operation: ['getList'],
+		options: [
+			{
+				displayName: 'After ID',
+				name: 'after',
+				type: 'number',
+				default: 0,
+				description: 'Return submitters with ID greater than this value',
 			},
-		},
-		default: 0,
-		description: 'Return submitters with ID less than this value.',
-	},
-	{
-		displayName: 'Completed After',
-		name: 'completed_after',
-		type: 'dateTime',
-		displayOptions: {
-			show: {
-				resource: ['submitter'],
-				operation: ['getList'],
+			{
+				displayName: 'Before ID',
+				name: 'before',
+				type: 'number',
+				default: 0,
+				description: 'Return submitters with ID less than this value',
 			},
-		},
-		default: '',
-		description: 'Filter submitters that completed after this date and time.',
-	},
-	{
-		displayName: 'Completed Before',
-		name: 'completed_before',
-		type: 'dateTime',
-		displayOptions: {
-			show: {
-				resource: ['submitter'],
-				operation: ['getList'],
+			{
+				displayName: 'Completed After',
+				name: 'completed_after',
+				type: 'dateTime',
+				default: '',
+				description: 'Filter submitters completed after this date',
 			},
-		},
-		default: '',
-		description: 'Filter submitters that completed before this date and time.',
-	},
-	{
-		displayName: 'External ID',
-		name: 'external_id',
-		type: 'string',
-		displayOptions: {
-			show: {
-				resource: ['submitter'],
-				operation: ['getList'],
+			{
+				displayName: 'Completed Before',
+				name: 'completed_before',
+				type: 'dateTime',
+				default: '',
+				description: 'Filter submitters completed before this date',
 			},
-		},
-		default: '',
-		description: 'Filter submitters by external ID.',
-	},
-	{
-		displayName: 'Query',
-		name: 'q',
-		type: 'string',
-		displayOptions: {
-			show: {
-				resource: ['submitter'],
-				operation: ['getList'],
+			{
+				displayName: 'External ID',
+				name: 'external_id',
+				type: 'string',
+				default: '',
+				description: 'Filter by external ID',
 			},
-		},
-		default: '',
-		description: 'Filter submitters on name, email or phone partial match.',
-	},
-	{
-		displayName: 'Submission ID',
-		name: 'submission_id',
-		type: 'number',
-		displayOptions: {
-			show: {
-				resource: ['submitter'],
-				operation: ['getList'],
+			{
+				displayName: 'Search Query',
+				name: 'q',
+				type: 'string',
+				default: '',
+				description: 'Search by name, email or phone',
 			},
-		},
-		default: 0,
-		description: 'Filter submitters by submission ID.',
+			{
+				displayName: 'Submission ID',
+				name: 'submission_id',
+				type: 'number',
+				default: 0,
+				description: 'Filter by submission ID',
+			},
+		],
 	},
 
-	// Submitter: Update
+	// Update operation
 	{
-		displayName: 'Completed',
-		name: 'completed',
-		type: 'boolean',
+		displayName: 'Update Fields',
+		name: 'updateFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
 		displayOptions: {
 			show: {
 				resource: ['submitter'],
 				operation: ['update'],
 			},
 		},
-		default: false,
-		description: 'Whether to mark the submitter as completed and auto-signed via API',
-	},
-	{
-		displayName: 'Completed Redirect URL',
-		name: 'completed_redirect_url',
-		type: 'string',
-		displayOptions: {
-			show: {
-				resource: ['submitter'],
-				operation: ['update'],
+		options: [
+			{
+				displayName: 'Completed',
+				name: 'completed',
+				type: 'boolean',
+				default: false,
+				description: 'Whether to mark the submitter as completed',
 			},
-		},
-		default: '',
-		description: 'URL to redirect the submitter to after completion',
-	},
-	{
-		displayName: 'Email',
-		name: 'email',
-		type: 'string',
-		placeholder: 'name@email.com',
-		displayOptions: {
-			show: {
-				resource: ['submitter'],
-				operation: ['update'],
+			{
+				displayName: 'Completed Redirect URL',
+				name: 'completed_redirect_url',
+				type: 'string',
+				default: '',
+				placeholder: 'https://example.com/thank-you',
+				description: 'URL to redirect after completion',
 			},
-		},
-		default: '',
-		description: 'Email address of the submitter',
-	},
-	{
-		displayName: 'External ID',
-		name: 'external_id',
-		type: 'string',
-		displayOptions: {
-			show: {
-				resource: ['submitter'],
-				operation: ['update'],
+			{
+				displayName: 'Email',
+				name: 'email',
+				type: 'string',
+				placeholder: 'name@email.com',
+				default: '',
+				description: 'Update email address',
 			},
-		},
-		default: '',
-		description: 'Your application-specific unique string key to identify this submitter',
-	},
-	{
-		displayName: 'Fields',
-		name: 'fields',
-		type: 'json',
-		displayOptions: {
-			show: {
-				resource: ['submitter'],
-				operation: ['update'],
+			{
+				displayName: 'External ID',
+				name: 'external_id',
+				type: 'string',
+				default: '',
+				description: 'Update external ID',
 			},
-		},
-		default: '[]',
-		description: 'List of field configurations to update. Format: [{"name": "Field Name", "default_value": "Value", "readonly": false, "required": true, "preferences": {"font_size": 12, "align": "left"}}]',
-		typeOptions: {
-			jsonSchema: {
-				type: 'array',
-				items: {
-					type: 'object',
-					properties: {
-						name: {
-							type: 'string',
-							description: 'Name of the field as defined in the template'
-						},
-						default_value: {
-							type: 'string',
-							description: 'Default value to pre-fill for this field'
-						},
-						readonly: {
-							type: 'boolean',
-							description: 'Whether the field should be read-only'
-						},
-						required: {
-							type: 'boolean',
-							description: 'Whether the field is required to be filled'
-						},
-						preferences: {
-							type: 'object',
-							description: 'Visual preferences for the field',
-							properties: {
-								font_size: {
-									type: 'number',
-									description: 'Font size in pixels'
+			{
+				displayName: 'Message',
+				name: 'message',
+				type: 'fixedCollection',
+				default: {},
+				options: [
+					{
+						name: 'messageFields',
+						displayName: 'Message',
+						values: [
+							{
+								displayName: 'Subject',
+								name: 'subject',
+								type: 'string',
+								default: '',
+								description: 'Custom email subject',
+							},
+							{
+								displayName: 'Body',
+								name: 'body',
+								type: 'string',
+								typeOptions: {
+									rows: 5,
 								},
-								align: {
-									type: 'string',
-									description: 'Text alignment (left, center, right)'
-								}
-							}
-						}
+								default: '',
+								description: 'Custom email body',
+							},
+						],
 					},
-					required: ['name']
-				}
-			}
-		}
-	},
-	{
-		displayName: 'Message',
-		name: 'message',
-		type: 'json',
-		displayOptions: {
-			show: {
-				resource: ['submitter'],
-				operation: ['update'],
+				],
 			},
-		},
-		default: '{"subject": "", "body": ""}',
-		description: 'Custom email message for this submitter. Format: {"subject": "Custom email subject", "body": "Custom email body text"}',
+			{
+				displayName: 'Name',
+				name: 'name',
+				type: 'string',
+				default: '',
+				description: 'Update submitter name',
+			},
+			{
+				displayName: 'Phone',
+				name: 'phone',
+				type: 'string',
+				default: '',
+				placeholder: '+1234567890',
+				description: 'Update phone number',
+			},
+			{
+				displayName: 'Role',
+				name: 'role',
+				type: 'string',
+				default: '',
+				placeholder: 'e.g., Signer, Client, Witness',
+				description: 'Update submitter role',
+			},
+			{
+				displayName: 'Send Email',
+				name: 'send_email',
+				type: 'boolean',
+				default: false,
+				description: 'Whether to send email notification',
+			},
+			{
+				displayName: 'Send SMS',
+				name: 'send_sms',
+				type: 'boolean',
+				default: false,
+				description: 'Whether to send SMS notification',
+			},
+		],
+	},
+
+	// Fields configuration for update
+	{
+		displayName: 'Fields Configuration',
+		name: 'fields',
+		type: 'fixedCollection',
 		typeOptions: {
-			jsonSchema: {
-				type: 'object',
-				properties: {
-					subject: {
+			multipleValues: true,
+		},
+		displayOptions: {
+			show: {
+				resource: ['submitter'],
+				operation: ['update'],
+			},
+		},
+		default: {},
+		placeholder: 'Add Field Configuration',
+		description: 'Configure field settings',
+		options: [
+			{
+				name: 'field',
+				displayName: 'Field',
+				values: [
+					{
+						displayName: 'Field Name',
+						name: 'name',
 						type: 'string',
-						description: 'Custom email subject line'
+						default: '',
+						required: true,
+						description: 'Name of the field as defined in the template',
 					},
-					body: {
+					{
+						displayName: 'Default Value',
+						name: 'default_value',
 						type: 'string',
-						description: 'Custom email body text'
-					}
-				}
-			}
-		}
-	},
-	{
-		displayName: 'Name',
-		name: 'name',
-		type: 'string',
-		displayOptions: {
-			show: {
-				resource: ['submitter'],
-				operation: ['update'],
+						default: '',
+						description: 'Default value for the field',
+					},
+					{
+						displayName: 'Read Only',
+						name: 'readonly',
+						type: 'boolean',
+						default: false,
+						description: 'Whether the field is read-only',
+					},
+					{
+						displayName: 'Required',
+						name: 'required',
+						type: 'boolean',
+						default: false,
+						description: 'Whether the field is required',
+					},
+				],
 			},
-		},
-		default: '',
-		description: 'Name of the submitter',
+		],
 	},
+
+	// Values for update
 	{
-		displayName: 'Phone',
-		name: 'phone',
-		type: 'string',
-		displayOptions: {
-			show: {
-				resource: ['submitter'],
-				operation: ['update'],
-			},
-		},
-		default: '',
-		description: 'Phone number of the submitter',
-	},
-	{
-		displayName: 'Role',
-		name: 'role',
-		type: 'string',
-		displayOptions: {
-			show: {
-				resource: ['submitter'],
-				operation: ['update'],
-			},
-		},
-		default: '',
-		description: 'Role of the submitter',
-	},
-	{
-		displayName: 'Send Email',
-		name: 'send_email',
-		type: 'boolean',
-		displayOptions: {
-			show: {
-				resource: ['submitter'],
-				operation: ['update'],
-			},
-		},
-		default: false,
-		description: 'Whether to send an email notification to the submitter',
-	},
-	{
-		displayName: 'Send SMS',
-		name: 'send_sms',
-		type: 'boolean',
-		displayOptions: {
-			show: {
-				resource: ['submitter'],
-				operation: ['update'],
-			},
-		},
-		default: false,
-		description: 'Whether to send an SMS notification to the submitter',
-	},
-	{
-		displayName: 'Values',
+		displayName: 'Field Values',
 		name: 'values',
-		type: 'json',
+		type: 'fixedCollection',
+		typeOptions: {
+			multipleValues: true,
+		},
 		displayOptions: {
 			show: {
 				resource: ['submitter'],
 				operation: ['update'],
 			},
 		},
-		default: '{}',
-		description: 'Pre-filled values for fields. Format: {"Field Name": "Value"}',
-		typeOptions: {
-			jsonSchema: {
-				type: 'object',
-				additionalProperties: {
-					type: ['string', 'number', 'boolean'],
-					description: 'Field value'
-				}
-			}
-		}
+		default: {},
+		placeholder: 'Add Field Value',
+		description: 'Pre-fill field values',
+		options: [
+			{
+				name: 'value',
+				displayName: 'Value',
+				values: [
+					{
+						displayName: 'Field Name',
+						name: 'name',
+						type: 'string',
+						default: '',
+						required: true,
+						description: 'Name of the field',
+					},
+					{
+						displayName: 'Value',
+						name: 'value',
+						type: 'string',
+						default: '',
+						description: 'Value to set',
+					},
+				],
+			},
+		],
 	},
 ];

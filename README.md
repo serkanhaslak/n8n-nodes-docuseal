@@ -38,23 +38,45 @@ The package includes two powerful nodes:
 
 ### 1. DocuSeal
 
-The main API node with the following resource types:
+The main API node with comprehensive support for all DocuSeal API operations:
 
 #### Templates
 
 - **Get**: Retrieve a template by ID
-- **Get List**: Get templates with filtering options
+- **Get Many**: List templates with filtering options
+- **Create from PDF**: Create templates from PDF files
+- **Create from DOCX**: Create templates from Word documents
+- **Create from HTML**: Create templates from HTML content
+- **Clone**: Duplicate existing templates
+- **Merge**: Combine multiple templates into one
+- **Update**: Modify template properties
+- **Update Documents**: Replace template documents
+- **Archive**: Remove templates from active use
 
 #### Submissions
 
-- **Create**: Create a new document signing request
-- **Get**: Retrieve a submission by ID
-- **Get List**: List submissions with filtering options
-- **Archive**: Archive a submission
+- **Create**: Create new document signing requests from templates
+- **Create from PDF**: Create submissions directly from PDF files
+- **Create from HTML**: Create submissions from HTML content
+- **Get**: Retrieve submission details by ID
+- **Get Documents**: Download completed documents from submissions
+- **Get Many**: List submissions with advanced filtering
+- **Archive**: Archive completed submissions
+
+#### Submitters
+
+- **Get**: Retrieve submitter information by ID
+- **Get Many**: List submitters with filtering options
+- **Update**: Modify submitter details and field values
+
+#### Forms
+
+- **Get Started**: Track when forms are started
+- **Get Viewed**: Monitor form view events
 
 #### AI Tools
 
-- **Generate Document**: Create documents using AI based on descriptions
+- **Generate Document**: Create documents using AI with customizable prompts, languages, and styles
 
 ### 2. DocuSeal Trigger
 
@@ -78,26 +100,27 @@ The nodes use a custom credential type with the following fields:
 
 1. Add the **DocuSeal** node to your workflow
 2. Select the **Submission** resource and **Create** operation
-3. Specify a template ID and submitters information:
+3. Choose a template from the dropdown or specify an ID
+4. Add submitters using the intuitive UI (no JSON required!)
+5. Optionally pre-fill field values and set preferences
 
-```json
-[
-  {
-    "email": "signer@example.com",
-    "name": "John Doe",
-    "role": "Signer"
-  }
-]
-```
+### Creating Templates from Documents
 
-### Generating a Document with AI
+1. Add the **DocuSeal** node to your workflow
+2. Select the **Template** resource
+3. Choose **Create from PDF/DOCX/HTML** operation
+4. Upload your document or provide a URL
+5. Configure field settings and folder organization
+
+### Generating Documents with AI
 
 1. Add the **DocuSeal** node to your workflow
 2. Select the **AI Tool** resource and **Generate Document** operation
-3. Enter document type and description:
+3. Specify:
    - Document Type: "Non-disclosure agreement"
-   - Party Names: "Acme Inc., John Doe"
-   - Description: "Standard NDA for a contractor relationship"
+   - Description: "Standard NDA for a contractor relationship between Acme Inc. and John Doe"
+   - Language: Choose from 12 supported languages
+   - Style: Formal, Friendly, or Simple
 
 ### Listening for Document Completions
 

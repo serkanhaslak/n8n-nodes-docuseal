@@ -6,3 +6,7 @@ export declare function getTemplates(this: ILoadOptionsFunctions): Promise<Array
     name: string;
     value: number;
 }>>;
+export declare function prepareBinaryData(this: IExecuteFunctions, binaryPropertyName: string, itemIndex: number, fileName?: string): Promise<IDataObject>;
+export declare function buildSubmittersArray(submittersData: IDataObject): IDataObject[];
+export declare function buildFieldValues(fieldValuesData: IDataObject): IDataObject;
+export declare function formatDate(date: string): string;
