@@ -153,11 +153,14 @@ export const templateFields: INodeProperties[] = [
 				description: 'Filter templates by external ID',
 			},
 			{
-				displayName: 'Folder Name',
+				displayName: 'Folder Name or ID',
 				name: 'folder',
-				type: 'string',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getTemplateFolders',
+				},
 				default: '',
-				description: 'Filter templates by folder name',
+				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
 			},
 			{
 				displayName: 'Search Query',
@@ -343,11 +346,14 @@ export const templateFields: INodeProperties[] = [
 				description: 'Your custom identifier for the template',
 			},
 			{
-				displayName: 'Folder Name',
+				displayName: 'Folder Name or ID',
 				name: 'folder_name',
-				type: 'string',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getTemplateFolders',
+				},
 				default: '',
-				description: 'Folder to organize the template in',
+				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
 			},
 			{
 				displayName: 'Fields Configuration',
@@ -489,11 +495,14 @@ export const templateFields: INodeProperties[] = [
 				description: 'Update the external ID',
 			},
 			{
-				displayName: 'Folder Name',
+				displayName: 'Folder Name or ID',
 				name: 'folder_name',
-				type: 'string',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getTemplateFolders',
+				},
 				default: '',
-				description: 'Move template to a different folder',
+				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
 			},
 			{
 				displayName: 'Name',

@@ -26,19 +26,19 @@ exports.templateOperations = [
                 action: 'Clone a template',
             },
             {
-                name: 'Create from DOCX',
+                name: 'Create From DOCX',
                 value: 'createFromDocx',
                 description: 'Create a template from a Word document',
                 action: 'Create template from DOCX',
             },
             {
-                name: 'Create from HTML',
+                name: 'Create From HTML',
                 value: 'createFromHtml',
                 description: 'Create a template from HTML content',
                 action: 'Create template from HTML',
             },
             {
-                name: 'Create from PDF',
+                name: 'Create From PDF',
                 value: 'createFromPdf',
                 description: 'Create a template from a PDF file',
                 action: 'Create template from PDF',
@@ -118,7 +118,6 @@ exports.templateFields = [
         },
         typeOptions: {
             minValue: 1,
-            maxValue: 100,
         },
         default: 50,
         description: 'Max number of results to return',
@@ -151,11 +150,14 @@ exports.templateFields = [
                 description: 'Filter templates by external ID',
             },
             {
-                displayName: 'Folder Name',
+                displayName: 'Folder Name or ID',
                 name: 'folder',
-                type: 'string',
+                type: 'options',
+                typeOptions: {
+                    loadOptionsMethod: 'getTemplateFolders',
+                },
                 default: '',
-                description: 'Filter templates by folder name',
+                description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
             },
             {
                 displayName: 'Search Query',
@@ -331,11 +333,14 @@ exports.templateFields = [
                 description: 'Your custom identifier for the template',
             },
             {
-                displayName: 'Folder Name',
+                displayName: 'Folder Name or ID',
                 name: 'folder_name',
-                type: 'string',
+                type: 'options',
+                typeOptions: {
+                    loadOptionsMethod: 'getTemplateFolders',
+                },
                 default: '',
-                description: 'Folder to organize the template in',
+                description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
             },
             {
                 displayName: 'Fields Configuration',
@@ -473,11 +478,14 @@ exports.templateFields = [
                 description: 'Update the external ID',
             },
             {
-                displayName: 'Folder Name',
+                displayName: 'Folder Name or ID',
                 name: 'folder_name',
-                type: 'string',
+                type: 'options',
+                typeOptions: {
+                    loadOptionsMethod: 'getTemplateFolders',
+                },
                 default: '',
-                description: 'Move template to a different folder',
+                description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
             },
             {
                 displayName: 'Name',

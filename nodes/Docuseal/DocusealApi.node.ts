@@ -17,6 +17,7 @@ import {
 	docusealApiRequest,
 	docusealApiRequestAllItems,
 	getTemplates,
+	getTemplateFolders,
 	parseJsonInput,
 	prepareBinaryData,
 	buildSubmittersArray,
@@ -142,6 +143,16 @@ export class DocusealApi implements INodeType {
 			async getTemplates(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				try {
 					return await getTemplates.call(this);
+				} catch (error) {
+					// Return empty array on error
+					return [];
+				}
+			},
+			
+			// Get all folders for selection
+			async getTemplateFolders(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				try {
+					return await getTemplateFolders.call(this);
 				} catch (error) {
 					// Return empty array on error
 					return [];
@@ -467,9 +478,7 @@ export class DocusealApi implements INodeType {
 					else if (operation === 'create') {
 						const templateId = this.getNodeParameter('templateId', i) as number;
 						const submittersData = this.getNodeParameter('submitters', i) as IDataObject;
-						const fieldValuesData = this.getNodeParameter('fieldValues', i, {}) as IDataObject;
 						const additionalOptions = this.getNodeParameter('additionalOptions', i, {}) as IDataObject;
-						const preferences = this.getNodeParameter('preferences', i, {}) as IDataObject;
 
 						// Build submitters array
 						const submitters = buildSubmittersArray(submittersData);
@@ -477,7 +486,8 @@ export class DocusealApi implements INodeType {
 							throw new NodeOperationError(this.getNode(), 'At least one submitter is required', { itemIndex: i });
 						}
 
-						// Build field values
+						// Build field values from additional options
+						const fieldValuesData = additionalOptions.fieldValues as IDataObject || {};
 						const values = buildFieldValues(fieldValuesData);
 
 						// Build request body
@@ -491,7 +501,14 @@ export class DocusealApi implements INodeType {
 							body.values = values;
 						}
 
-						// Add preferences if any
+						// Add preferences from additional options
+						const preferences: IDataObject = {};
+						if (additionalOptions.bcc_completed) {
+							preferences.bcc_completed = additionalOptions.bcc_completed;
+						}
+						if (additionalOptions.reply_to) {
+							preferences.reply_to = additionalOptions.reply_to;
+						}
 						if (Object.keys(preferences).length > 0) {
 							body.preferences = preferences;
 						}

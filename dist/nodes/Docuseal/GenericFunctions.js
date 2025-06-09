@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.formatDate = exports.buildFieldValues = exports.buildSubmittersArray = exports.prepareBinaryData = exports.getTemplates = exports.parseJsonInput = exports.docusealApiRequestAllItems = exports.docusealApiRequest = void 0;
+exports.getTemplateFolders = exports.formatDate = exports.buildFieldValues = exports.buildSubmittersArray = exports.prepareBinaryData = exports.getTemplates = exports.parseJsonInput = exports.docusealApiRequestAllItems = exports.docusealApiRequest = void 0;
 const n8n_workflow_1 = require("n8n-workflow");
 async function docusealApiRequest(method, endpoint, body = {}, query = {}, options = {}) {
     const credentials = await this.getCredentials('docusealApi');
@@ -173,4 +173,28 @@ function formatDate(date) {
     return dateObj.toISOString();
 }
 exports.formatDate = formatDate;
+async function getTemplateFolders() {
+    const templates = await docusealApiRequestAllItems.call(this, 'GET', '/templates', {}, { limit: 100 });
+    if (!Array.isArray(templates)) {
+        return [];
+    }
+    const folders = new Set();
+    templates.forEach((template) => {
+        if (template.folder_name && template.folder_name.trim() !== '') {
+            folders.add(template.folder_name);
+        }
+    });
+    const folderOptions = Array.from(folders)
+        .sort()
+        .map(folder => ({
+        name: folder,
+        value: folder,
+    }));
+    folderOptions.unshift({
+        name: 'No Folder',
+        value: '',
+    });
+    return folderOptions;
+}
+exports.getTemplateFolders = getTemplateFolders;
 //# sourceMappingURL=GenericFunctions.js.map

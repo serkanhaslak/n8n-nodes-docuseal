@@ -77,12 +77,16 @@ exports.aiToolFields = [
                 default: 'en',
                 options: [
                     {
-                        name: 'English',
-                        value: 'en',
+                        name: 'Chinese (Simplified)',
+                        value: 'zh',
                     },
                     {
-                        name: 'Spanish',
-                        value: 'es',
+                        name: 'Dutch',
+                        value: 'nl',
+                    },
+                    {
+                        name: 'English',
+                        value: 'en',
                     },
                     {
                         name: 'French',
@@ -97,32 +101,28 @@ exports.aiToolFields = [
                         value: 'it',
                     },
                     {
-                        name: 'Portuguese',
-                        value: 'pt',
-                    },
-                    {
-                        name: 'Dutch',
-                        value: 'nl',
-                    },
-                    {
-                        name: 'Polish',
-                        value: 'pl',
-                    },
-                    {
-                        name: 'Russian',
-                        value: 'ru',
-                    },
-                    {
-                        name: 'Chinese (Simplified)',
-                        value: 'zh',
-                    },
-                    {
                         name: 'Japanese',
                         value: 'ja',
                     },
                     {
                         name: 'Korean',
                         value: 'ko',
+                    },
+                    {
+                        name: 'Polish',
+                        value: 'pl',
+                    },
+                    {
+                        name: 'Portuguese',
+                        value: 'pt',
+                    },
+                    {
+                        name: 'Russian',
+                        value: 'ru',
+                    },
+                    {
+                        name: 'Spanish',
+                        value: 'es',
                     },
                 ],
                 description: 'Language for the generated document',

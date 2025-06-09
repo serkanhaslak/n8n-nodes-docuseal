@@ -97,20 +97,6 @@ export const submitterFields: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'After ID',
-				name: 'after',
-				type: 'number',
-				default: 0,
-				description: 'Return submitters with ID greater than this value',
-			},
-			{
-				displayName: 'Before ID',
-				name: 'before',
-				type: 'number',
-				default: 0,
-				description: 'Return submitters with ID less than this value',
-			},
-			{
 				displayName: 'Completed After',
 				name: 'completed_after',
 				type: 'dateTime',

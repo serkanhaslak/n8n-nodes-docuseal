@@ -76,7 +76,6 @@ exports.submitterFields = [
         },
         typeOptions: {
             minValue: 1,
-            maxValue: 100,
         },
         default: 50,
         description: 'Max number of results to return',
@@ -94,20 +93,6 @@ exports.submitterFields = [
             },
         },
         options: [
-            {
-                displayName: 'After ID',
-                name: 'after',
-                type: 'number',
-                default: 0,
-                description: 'Return submitters with ID greater than this value',
-            },
-            {
-                displayName: 'Before ID',
-                name: 'before',
-                type: 'number',
-                default: 0,
-                description: 'Return submitters with ID less than this value',
-            },
             {
                 displayName: 'Completed After',
                 name: 'completed_after',
@@ -163,7 +148,7 @@ exports.submitterFields = [
                 name: 'completed',
                 type: 'boolean',
                 default: false,
-                description: 'Mark the submitter as completed',
+                description: 'Whether to mark the submitter as completed',
             },
             {
                 displayName: 'Completed Redirect URL',

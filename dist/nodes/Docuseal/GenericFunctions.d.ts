@@ -10,3 +10,7 @@ export declare function prepareBinaryData(this: IExecuteFunctions, binaryPropert
 export declare function buildSubmittersArray(submittersData: IDataObject): IDataObject[];
 export declare function buildFieldValues(fieldValuesData: IDataObject): IDataObject;
 export declare function formatDate(date: string): string;
+export declare function getTemplateFolders(this: ILoadOptionsFunctions): Promise<Array<{
+    name: string;
+    value: string;
+}>>;

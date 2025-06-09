@@ -26,13 +26,13 @@ exports.submissionOperations = [
                 action: 'Create a submission',
             },
             {
-                name: 'Create from HTML',
+                name: 'Create From HTML',
                 value: 'createFromHtml',
                 description: 'Create a submission from HTML content',
                 action: 'Create submission from HTML',
             },
             {
-                name: 'Create from PDF',
+                name: 'Create From PDF',
                 value: 'createFromPdf',
                 description: 'Create a submission from a PDF file',
                 action: 'Create submission from PDF',
@@ -100,7 +100,6 @@ exports.submissionFields = [
         },
         typeOptions: {
             minValue: 1,
-            maxValue: 100,
         },
         default: 50,
         description: 'Max number of results to return',
@@ -119,25 +118,11 @@ exports.submissionFields = [
         },
         options: [
             {
-                displayName: 'After ID',
-                name: 'after',
-                type: 'number',
-                default: 0,
-                description: 'Return results after this submission ID',
-            },
-            {
                 displayName: 'Archived',
                 name: 'archived',
                 type: 'boolean',
                 default: false,
                 description: 'Whether to include archived submissions',
-            },
-            {
-                displayName: 'Before ID',
-                name: 'before',
-                type: 'number',
-                default: 0,
-                description: 'Return results before this submission ID',
             },
             {
                 displayName: 'Search Query',
@@ -149,12 +134,8 @@ exports.submissionFields = [
             {
                 displayName: 'Status',
                 name: 'status',
-                type: 'options',
+                type: 'multiOptions',
                 options: [
-                    {
-                        name: 'All',
-                        value: '',
-                    },
                     {
                         name: 'Completed',
                         value: 'completed',
@@ -172,8 +153,8 @@ exports.submissionFields = [
                         value: 'pending',
                     },
                 ],
-                default: '',
-                description: 'Filter submissions by status',
+                default: [],
+                description: 'Filter submissions by status (select multiple)',
             },
             {
                 displayName: 'Template Folder',
@@ -206,7 +187,7 @@ exports.submissionFields = [
             },
         },
         default: '',
-        description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>',
+        description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
     },
     {
         displayName: 'Submitters',
@@ -320,46 +301,6 @@ exports.submissionFields = [
         ],
     },
     {
-        displayName: 'Field Values',
-        name: 'fieldValues',
-        type: 'fixedCollection',
-        typeOptions: {
-            multipleValues: true,
-        },
-        displayOptions: {
-            show: {
-                resource: ['submission'],
-                operation: ['create'],
-            },
-        },
-        default: {},
-        placeholder: 'Add Field Value',
-        description: 'Pre-fill document fields with values',
-        options: [
-            {
-                name: 'field',
-                displayName: 'Field',
-                values: [
-                    {
-                        displayName: 'Field Name',
-                        name: 'name',
-                        type: 'string',
-                        default: '',
-                        required: true,
-                        description: 'Name of the field in the template',
-                    },
-                    {
-                        displayName: 'Value',
-                        name: 'value',
-                        type: 'string',
-                        default: '',
-                        description: 'Value to pre-fill in the field',
-                    },
-                ],
-            },
-        ],
-    },
-    {
         displayName: 'Input Source',
         name: 'pdfSource',
         type: 'options',
@@ -447,6 +388,14 @@ exports.submissionFields = [
         },
         options: [
             {
+                displayName: 'BCC Completed',
+                name: 'bcc_completed',
+                type: 'string',
+                default: '',
+                placeholder: 'admin@example.com',
+                description: 'Email address to BCC when submission is completed',
+            },
+            {
                 displayName: 'Completed Redirect URL',
                 name: 'completed_redirect_url',
                 type: 'string',
@@ -467,6 +416,40 @@ exports.submissionFields = [
                 type: 'string',
                 default: '',
                 description: 'Your custom identifier for this submission',
+            },
+            {
+                displayName: 'Field Values',
+                name: 'fieldValues',
+                type: 'fixedCollection',
+                typeOptions: {
+                    multipleValues: true,
+                },
+                default: {},
+                placeholder: 'Add Field Value',
+                description: 'Pre-fill document fields with values',
+                options: [
+                    {
+                        name: 'field',
+                        displayName: 'Field',
+                        values: [
+                            {
+                                displayName: 'Field Name',
+                                name: 'name',
+                                type: 'string',
+                                default: '',
+                                required: true,
+                                description: 'Name of the field in the template',
+                            },
+                            {
+                                displayName: 'Value',
+                                name: 'value',
+                                type: 'string',
+                                default: '',
+                                description: 'Value to pre-fill in the field',
+                            },
+                        ],
+                    },
+                ],
             },
             {
                 displayName: 'Message',
@@ -493,7 +476,7 @@ exports.submissionFields = [
                                     rows: 5,
                                 },
                                 default: '',
-                                description: 'Custom email body. Available variables: {{template.name}}, {{submitter.link}}, {{account.name}}',
+                                description: 'Custom email body. Available variables: {{template.name}}, {{submitter.link}}, {{account.name}}.',
                             },
                         ],
                     },
@@ -526,49 +509,26 @@ exports.submissionFields = [
                 description: 'Document signing order',
             },
             {
-                displayName: 'Send Email',
-                name: 'send_email',
-                type: 'boolean',
-                default: true,
-                description: 'Whether to send email notifications',
-            },
-            {
-                displayName: 'Send SMS',
-                name: 'send_sms',
-                type: 'boolean',
-                default: false,
-                description: 'Whether to send SMS notifications',
-            },
-        ],
-    },
-    {
-        displayName: 'Document Preferences',
-        name: 'preferences',
-        type: 'collection',
-        placeholder: 'Add Preference',
-        default: {},
-        displayOptions: {
-            show: {
-                resource: ['submission'],
-                operation: ['create', 'createFromPdf', 'createFromHtml'],
-            },
-        },
-        options: [
-            {
-                displayName: 'Bcc Completed',
-                name: 'bcc_completed',
-                type: 'string',
-                default: '',
-                placeholder: 'admin@example.com',
-                description: 'Email address to BCC when submission is completed',
-            },
-            {
                 displayName: 'Reply To',
                 name: 'reply_to',
                 type: 'string',
                 default: '',
                 placeholder: 'support@example.com',
                 description: 'Reply-to email address for notifications',
+            },
+            {
+                displayName: 'Send Email',
+                name: 'send_email',
+                type: 'boolean',
+                default: true,
+                description: 'Whether to send email notifications globally',
+            },
+            {
+                displayName: 'Send SMS',
+                name: 'send_sms',
+                type: 'boolean',
+                default: false,
+                description: 'Whether to send SMS notifications globally',
             },
         ],
     },

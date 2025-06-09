@@ -258,3 +258,42 @@ export function formatDate(date: string): string {
 	const dateObj = new Date(date);
 	return dateObj.toISOString();
 }
+
+/**
+ * Get list of template folders for dropdown
+ */
+export async function getTemplateFolders(
+	this: ILoadOptionsFunctions,
+): Promise<Array<{ name: string; value: string }>> {
+	// Fetch all templates to extract unique folders
+	const templates = await docusealApiRequestAllItems.call(this, 'GET', '/templates', {}, { limit: 100 });
+	
+	if (!Array.isArray(templates)) {
+		return [];
+	}
+	
+	// Extract unique folder names
+	const folders = new Set<string>();
+	
+	templates.forEach((template: any) => {
+		if (template.folder_name && template.folder_name.trim() !== '') {
+			folders.add(template.folder_name);
+		}
+	});
+	
+	// Convert to options format
+	const folderOptions = Array.from(folders)
+		.sort() // Sort alphabetically
+		.map(folder => ({
+			name: folder,
+			value: folder,
+		}));
+	
+	// Add "No Folder" option at the beginning
+	folderOptions.unshift({
+		name: 'No Folder',
+		value: '',
+	});
+	
+	return folderOptions;
+}

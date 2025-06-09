@@ -103,6 +103,14 @@ class DocusealApi {
                         return [];
                     }
                 },
+                async getTemplateFolders() {
+                    try {
+                        return await GenericFunctions_1.getTemplateFolders.call(this);
+                    }
+                    catch (error) {
+                        return [];
+                    }
+                },
             },
         };
     }
@@ -234,7 +242,7 @@ class DocusealApi {
                         const templateId = this.getNodeParameter('templateId', i);
                         const updateFields = this.getNodeParameter('updateFields', i, {});
                         if (Object.keys(updateFields).length === 0) {
-                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'At least one field must be updated');
+                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'At least one field must be updated', { itemIndex: i });
                         }
                         responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'PUT', `/templates/${templateId}`, updateFields);
                     }
@@ -290,13 +298,12 @@ class DocusealApi {
                     else if (operation === 'create') {
                         const templateId = this.getNodeParameter('templateId', i);
                         const submittersData = this.getNodeParameter('submitters', i);
-                        const fieldValuesData = this.getNodeParameter('fieldValues', i, {});
                         const additionalOptions = this.getNodeParameter('additionalOptions', i, {});
-                        const preferences = this.getNodeParameter('preferences', i, {});
                         const submitters = (0, GenericFunctions_1.buildSubmittersArray)(submittersData);
                         if (submitters.length === 0) {
-                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'At least one submitter is required');
+                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'At least one submitter is required', { itemIndex: i });
                         }
+                        const fieldValuesData = additionalOptions.fieldValues || {};
                         const values = (0, GenericFunctions_1.buildFieldValues)(fieldValuesData);
                         const body = {
                             template_id: templateId,
@@ -304,6 +311,13 @@ class DocusealApi {
                         };
                         if (Object.keys(values).length > 0) {
                             body.values = values;
+                        }
+                        const preferences = {};
+                        if (additionalOptions.bcc_completed) {
+                            preferences.bcc_completed = additionalOptions.bcc_completed;
+                        }
+                        if (additionalOptions.reply_to) {
+                            preferences.reply_to = additionalOptions.reply_to;
                         }
                         if (Object.keys(preferences).length > 0) {
                             body.preferences = preferences;
@@ -343,7 +357,7 @@ class DocusealApi {
                         const additionalOptions = this.getNodeParameter('additionalOptions', i, {});
                         const submitters = (0, GenericFunctions_1.buildSubmittersArray)(submittersData);
                         if (submitters.length === 0) {
-                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'At least one submitter is required');
+                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'At least one submitter is required', { itemIndex: i });
                         }
                         const formData = {
                             submitters: JSON.stringify(submitters),
@@ -370,7 +384,7 @@ class DocusealApi {
                         const additionalOptions = this.getNodeParameter('additionalOptions', i, {});
                         const submitters = (0, GenericFunctions_1.buildSubmittersArray)(submittersData);
                         if (submitters.length === 0) {
-                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'At least one submitter is required');
+                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'At least one submitter is required', { itemIndex: i });
                         }
                         const body = {
                             html: htmlContent,
@@ -439,7 +453,7 @@ class DocusealApi {
                             body.values = values;
                         }
                         if (Object.keys(body).length === 0) {
-                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'At least one field must be updated');
+                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'At least one field must be updated', { itemIndex: i });
                         }
                         responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'PUT', `/submitters/${submitterId}`, body);
                     }
