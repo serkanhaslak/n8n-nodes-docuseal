@@ -94,6 +94,20 @@ exports.submitterFields = [
         },
         options: [
             {
+                displayName: 'After ID',
+                name: 'after',
+                type: 'number',
+                default: 0,
+                description: 'Fetch submitters with ID greater than this value (cursor-based pagination)',
+            },
+            {
+                displayName: 'Before ID',
+                name: 'before',
+                type: 'number',
+                default: 0,
+                description: 'Fetch submitters with ID less than this value (cursor-based pagination)',
+            },
+            {
                 displayName: 'Completed After',
                 name: 'completed_after',
                 type: 'dateTime',

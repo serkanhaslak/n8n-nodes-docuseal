@@ -121,11 +121,25 @@ export const submissionFields: INodeProperties[] = [
 		},
 		options: [
 			{
+				displayName: 'After ID',
+				name: 'after',
+				type: 'number',
+				default: 0,
+				description: 'Fetch submissions with ID greater than this value (cursor-based pagination)',
+			},
+			{
 				displayName: 'Archived',
 				name: 'archived',
 				type: 'boolean',
 				default: false,
 				description: 'Whether to include archived submissions',
+			},
+			{
+				displayName: 'Before ID',
+				name: 'before',
+				type: 'number',
+				default: 0,
+				description: 'Fetch submissions with ID less than this value (cursor-based pagination)',
 			},
 			{
 				displayName: 'Search Query',
@@ -160,11 +174,14 @@ export const submissionFields: INodeProperties[] = [
 				description: 'Filter submissions by status (select multiple)',
 			},
 			{
-				displayName: 'Template Folder',
+				displayName: 'Template Folder Name or ID',
 				name: 'template_folder',
-				type: 'string',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getTemplateFolders',
+				},
 				default: '',
-				description: 'Filter by template folder name',
+				description: 'Filter by template folder. Choose from the list, or specify a folder name using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 			},
 			{
 				displayName: 'Template ID',
