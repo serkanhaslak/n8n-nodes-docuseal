@@ -152,12 +152,9 @@ exports.templateFields = [
             {
                 displayName: 'Folder Name or ID',
                 name: 'folder',
-                type: 'options',
-                typeOptions: {
-                    loadOptionsMethod: 'getTemplateFolders',
-                },
+                type: 'string',
                 default: '',
-                description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+                description: 'Enter the folder name or ID to filter templates by folder',
             },
             {
                 displayName: 'Search Query',
@@ -335,12 +332,9 @@ exports.templateFields = [
             {
                 displayName: 'Folder Name or ID',
                 name: 'folder_name',
-                type: 'options',
-                typeOptions: {
-                    loadOptionsMethod: 'getTemplateFolders',
-                },
+                type: 'string',
                 default: '',
-                description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+                description: 'Enter the folder name or ID where the template should be created',
             },
             {
                 displayName: 'Fields Configuration',
@@ -480,12 +474,9 @@ exports.templateFields = [
             {
                 displayName: 'Folder Name or ID',
                 name: 'folder_name',
-                type: 'options',
-                typeOptions: {
-                    loadOptionsMethod: 'getTemplateFolders',
-                },
+                type: 'string',
                 default: '',
-                description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+                description: 'Enter the folder name or ID where the template should be created',
             },
             {
                 displayName: 'Name',

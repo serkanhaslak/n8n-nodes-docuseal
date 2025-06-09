@@ -31,23 +31,6 @@ class DocusealApi {
             ],
             properties: [
                 {
-                    displayName: 'Environment',
-                    name: 'environment',
-                    type: 'options',
-                    default: 'production',
-                    options: [
-                        {
-                            name: 'Production',
-                            value: 'production',
-                        },
-                        {
-                            name: 'Test',
-                            value: 'test',
-                        },
-                    ],
-                    description: 'Choose between production and test environment',
-                },
-                {
                     displayName: 'Resource',
                     name: 'resource',
                     type: 'options',
@@ -91,14 +74,6 @@ class DocusealApi {
                 async getTemplates() {
                     try {
                         return await GenericFunctions_1.getTemplates.call(this);
-                    }
-                    catch (error) {
-                        return [];
-                    }
-                },
-                async getTemplateFolders() {
-                    try {
-                        return await GenericFunctions_1.getTemplateFolders.call(this);
                     }
                     catch (error) {
                         return [];
@@ -299,8 +274,7 @@ class DocusealApi {
                         if (submitters.length === 0) {
                             throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'At least one submitter is required', { itemIndex: i });
                         }
-                        const fieldValuesData = additionalOptions.fieldValues || {};
-                        const values = (0, GenericFunctions_1.buildFieldValues)(fieldValuesData);
+                        const values = (0, GenericFunctions_1.buildFieldValues)(additionalOptions);
                         const body = {
                             template_id: templateId,
                             submitters,

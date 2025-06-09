@@ -1,27 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTemplateFolders = exports.formatDate = exports.buildFieldValues = exports.buildSubmittersArray = exports.prepareBinaryData = exports.getTemplates = exports.parseJsonInput = exports.docusealApiRequestAllItems = exports.docusealApiRequest = void 0;
+exports.formatDate = exports.buildFieldValues = exports.buildSubmittersArray = exports.prepareBinaryData = exports.getTemplates = exports.parseJsonInput = exports.docusealApiRequestAllItems = exports.docusealApiRequest = void 0;
 const n8n_workflow_1 = require("n8n-workflow");
 async function docusealApiRequest(method, endpoint, body = {}, query = {}, options = {}) {
     const credentials = await this.getCredentials('docusealApi');
     if (!credentials) {
         throw new Error('No credentials provided!');
     }
-    let environment = 'production';
-    try {
-        environment = this.getNodeParameter('environment', 0);
-    }
-    catch (error) {
-        if (credentials.testApiKey && !credentials.productionApiKey) {
-            environment = 'test';
-        }
-        else if (credentials.productionApiKey && !credentials.testApiKey) {
-            environment = 'production';
-        }
-        else {
-            environment = 'production';
-        }
-    }
+    const environment = credentials.environment || 'production';
     let apiKey = '';
     if (environment === 'production') {
         apiKey = credentials.productionApiKey;
@@ -102,14 +88,19 @@ function parseJsonInput(inputData) {
 }
 exports.parseJsonInput = parseJsonInput;
 async function getTemplates() {
-    const templates = await docusealApiRequest.call(this, 'GET', '/templates', {}, { limit: 100 });
-    if (!Array.isArray(templates)) {
+    try {
+        const templates = await docusealApiRequest.call(this, 'GET', '/templates', {}, { limit: 100 });
+        if (!Array.isArray(templates)) {
+            return [];
+        }
+        return templates.map((template) => ({
+            name: template.name || `Template ${template.id}`,
+            value: template.id,
+        }));
+    }
+    catch (error) {
         return [];
     }
-    return templates.map((template) => ({
-        name: template.name || `Template ${template.id}`,
-        value: template.id,
-    }));
 }
 exports.getTemplates = getTemplates;
 async function prepareBinaryData(binaryPropertyName, itemIndex, fileName) {
@@ -161,20 +152,31 @@ function buildSubmittersArray(submittersData) {
     });
 }
 exports.buildSubmittersArray = buildSubmittersArray;
-function buildFieldValues(fieldValuesData) {
-    if (!fieldValuesData.field) {
+function buildFieldValues(additionalOptions) {
+    const fieldValuesMode = additionalOptions.fieldValuesMode || 'individual';
+    if (fieldValuesMode === 'json') {
+        const fieldValuesJson = additionalOptions.fieldValuesJson;
+        if (fieldValuesJson) {
+            return parseJsonInput(fieldValuesJson);
+        }
         return {};
     }
-    const fieldItems = Array.isArray(fieldValuesData.field)
-        ? fieldValuesData.field
-        : [fieldValuesData.field];
-    const values = {};
-    fieldItems.forEach((item) => {
-        if (item.name && item.value !== undefined) {
-            values[item.name] = item.value;
+    else {
+        const fieldValuesData = additionalOptions.fieldValues;
+        if (!fieldValuesData || !fieldValuesData.field) {
+            return {};
         }
-    });
-    return values;
+        const fieldItems = Array.isArray(fieldValuesData.field)
+            ? fieldValuesData.field
+            : [fieldValuesData.field];
+        const values = {};
+        fieldItems.forEach((item) => {
+            if (item.name && item.value !== undefined) {
+                values[item.name] = item.value;
+            }
+        });
+        return values;
+    }
 }
 exports.buildFieldValues = buildFieldValues;
 function formatDate(date) {
@@ -184,35 +186,4 @@ function formatDate(date) {
     return dateObj.toISOString();
 }
 exports.formatDate = formatDate;
-async function getTemplateFolders() {
-    try {
-        const templates = await docusealApiRequestAllItems.call(this, 'GET', '/templates', {}, { limit: 100 });
-        if (!Array.isArray(templates)) {
-            console.warn('DocuSeal API returned non-array response for templates');
-            return [{ name: 'No Folder', value: '' }];
-        }
-        const folders = new Set();
-        templates.forEach((template) => {
-            if (template.folder_name && template.folder_name.trim() !== '') {
-                folders.add(template.folder_name);
-            }
-        });
-        const folderOptions = Array.from(folders)
-            .sort()
-            .map(folder => ({
-            name: folder,
-            value: folder,
-        }));
-        folderOptions.unshift({
-            name: 'No Folder',
-            value: '',
-        });
-        return folderOptions;
-    }
-    catch (error) {
-        console.error('Error fetching template folders:', error);
-        return [{ name: 'No Folder', value: '' }];
-    }
-}
-exports.getTemplateFolders = getTemplateFolders;
 //# sourceMappingURL=GenericFunctions.js.map

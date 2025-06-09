@@ -176,12 +176,9 @@ export const submissionFields: INodeProperties[] = [
 			{
 				displayName: 'Template Folder Name or ID',
 				name: 'template_folder',
-				type: 'options',
-				typeOptions: {
-					loadOptionsMethod: 'getTemplateFolders',
-				},
+				type: 'string',
 				default: '',
-				description: 'Filter by template folder. Choose from the list, or specify a folder name using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+				description: 'Enter the folder name or ID to filter submissions by template folder',
 			},
 			{
 				displayName: 'Template ID',
@@ -447,6 +444,25 @@ export const submissionFields: INodeProperties[] = [
 				description: 'Your custom identifier for this submission',
 			},
 			{
+				displayName: 'Field Values Input Mode',
+				name: 'fieldValuesMode',
+				type: 'options',
+				options: [
+					{
+						name: 'Individual Fields',
+						value: 'individual',
+						description: 'Set field values one by one',
+					},
+					{
+						name: 'JSON Object',
+						value: 'json',
+						description: 'Define all field values as a JSON object',
+					},
+				],
+				default: 'individual',
+				description: 'Choose how to define field values',
+			},
+			{
 				displayName: 'Field Values',
 				name: 'fieldValues',
 				type: 'fixedCollection',
@@ -456,6 +472,11 @@ export const submissionFields: INodeProperties[] = [
 				default: {},
 				placeholder: 'Add Field Value',
 				description: 'Pre-fill document fields with values',
+				displayOptions: {
+					show: {
+						fieldValuesMode: ['individual'],
+					},
+				},
 				options: [
 					{
 						name: 'field',
@@ -479,6 +500,19 @@ export const submissionFields: INodeProperties[] = [
 						],
 					},
 				],
+			},
+			{
+				displayName: 'Field Values JSON',
+				name: 'fieldValuesJson',
+				type: 'json',
+				default: '{}',
+				placeholder: '{"First Name": "John", "Last Name": "Doe", "Email": "john@example.com"}',
+				description: 'Define all field values as a JSON object with field names as keys and values as values',
+				displayOptions: {
+					show: {
+						fieldValuesMode: ['json'],
+					},
+				},
 			},
 			{
 				displayName: 'Message',

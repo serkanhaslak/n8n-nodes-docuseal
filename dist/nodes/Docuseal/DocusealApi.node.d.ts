@@ -5,7 +5,6 @@ export declare class DocusealApi implements INodeType {
     methods: {
         loadOptions: {
             getTemplates(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]>;
-            getTemplateFolders(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]>;
         };
     };
     execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]>;

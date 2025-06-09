@@ -17,7 +17,6 @@ import {
 	docusealApiRequest,
 	docusealApiRequestAllItems,
 	getTemplates,
-	getTemplateFolders,
 	parseJsonInput,
 	prepareBinaryData,
 	buildSubmittersArray,
@@ -69,23 +68,6 @@ export class DocusealApi implements INodeType {
 			},
 		],
 		properties: [
-			{
-				displayName: 'Environment',
-				name: 'environment',
-				type: 'options',
-				default: 'production',
-				options: [
-					{
-						name: 'Production',
-						value: 'production',
-					},
-					{
-						name: 'Test',
-						value: 'test',
-					},
-				],
-				description: 'Choose between production and test environment',
-			},
 			{
 				displayName: 'Resource',
 				name: 'resource',
@@ -140,15 +122,7 @@ export class DocusealApi implements INodeType {
 				}
 			},
 			
-			// Get all folders for selection
-			async getTemplateFolders(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				try {
-					return await getTemplateFolders.call(this);
-				} catch (error) {
-					// Return empty array on error
-					return [];
-				}
-			},
+
 		},
 	};
 
@@ -483,8 +457,7 @@ export class DocusealApi implements INodeType {
 						}
 
 						// Build field values from additional options
-						const fieldValuesData = additionalOptions.fieldValues as IDataObject || {};
-						const values = buildFieldValues(fieldValuesData);
+						const values = buildFieldValues(additionalOptions);
 
 						// Build request body
 						const body: IDataObject = {

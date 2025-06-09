@@ -9,12 +9,34 @@ export class DocusealApi implements ICredentialType {
 	documentationUrl = 'https://www.docuseal.com/docs/api';
 	properties: INodeProperties[] = [
 		{
+			displayName: 'Environment',
+			name: 'environment',
+			type: 'options',
+			options: [
+				{
+					name: 'Production',
+					value: 'production',
+				},
+				{
+					name: 'Test',
+					value: 'test',
+				},
+			],
+			default: 'production',
+			description: 'Choose whether to use the production or test environment',
+		},
+		{
 			displayName: 'Production API Key',
 			name: 'productionApiKey',
 			type: 'string',
 			typeOptions: { password: true },
 			default: '',
 			description: 'The DocuSeal production API key obtained from your DocuSeal account',
+			displayOptions: {
+				show: {
+					environment: ['production'],
+				},
+			},
 		},
 		{
 			displayName: 'Test API Key',
@@ -23,6 +45,11 @@ export class DocusealApi implements ICredentialType {
 			typeOptions: { password: true },
 			default: '',
 			description: 'The DocuSeal test API key for sandbox testing',
+			displayOptions: {
+				show: {
+					environment: ['test'],
+				},
+			},
 		},
 		{
 			displayName: 'Base URL',

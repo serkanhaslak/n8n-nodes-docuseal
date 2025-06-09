@@ -25,24 +25,8 @@ export async function docusealApiRequest(
 		throw new Error('No credentials provided!');
 	}
 
-	// Get environment (production or test)
-	let environment: string = 'production';
-	
-	try {
-		// Try to get the environment parameter from the current node parameters
-		environment = this.getNodeParameter('environment', 0) as string;
-	} catch (error) {
-		// For load options context, parameter might not be accessible
-		// Check credentials to determine default environment
-		if (credentials.testApiKey && !credentials.productionApiKey) {
-			environment = 'test';
-		} else if (credentials.productionApiKey && !credentials.testApiKey) {
-			environment = 'production';
-		} else {
-			// If both keys exist, default to production
-			environment = 'production';
-		}
-	}
+	// Get environment from credentials
+	const environment = (credentials.environment as string) || 'production';
 	
 	// Set API key based on environment
 	let apiKey = '';
@@ -158,18 +142,22 @@ export function parseJsonInput(inputData: string | object): object {
 export async function getTemplates(
 	this: ILoadOptionsFunctions,
 ): Promise<Array<{ name: string; value: number }>> {
-	// Make request to get templates - docusealApiRequest will handle the environment selection
-	const templates = await docusealApiRequest.call(this, 'GET', '/templates', {}, { limit: 100 });
-	
-	if (!Array.isArray(templates)) {
+	try {
+		// Make request to get templates - docusealApiRequest will handle the environment selection
+		const templates = await docusealApiRequest.call(this, 'GET', '/templates', {}, { limit: 100 });
+		
+		if (!Array.isArray(templates)) {
+			return [];
+		}
+		
+		// Transform API response to options format
+		return templates.map((template: any) => ({
+			name: template.name || `Template ${template.id}`,
+			value: template.id,
+		}));
+	} catch (error) {
 		return [];
 	}
-	
-	// Transform API response to options format
-	return templates.map((template: any) => ({
-		name: template.name || `Template ${template.id}`,
-		value: template.id,
-	}));
 }
 
 /**
@@ -236,26 +224,40 @@ export function buildSubmittersArray(submittersData: IDataObject): IDataObject[]
 }
 
 /**
- * Build field values object from fixedCollection format
+ * Build field values object from fixedCollection format or JSON input
  */
-export function buildFieldValues(fieldValuesData: IDataObject): IDataObject {
-	if (!fieldValuesData.field) {
-		return {};
-	}
-
-	const fieldItems = Array.isArray(fieldValuesData.field) 
-		? fieldValuesData.field 
-		: [fieldValuesData.field];
-
-	const values: IDataObject = {};
+export function buildFieldValues(additionalOptions: IDataObject): IDataObject {
+	// Check if field values mode is specified
+	const fieldValuesMode = additionalOptions.fieldValuesMode as string || 'individual';
 	
-	fieldItems.forEach((item: any) => {
-		if (item.name && item.value !== undefined) {
-			values[item.name] = item.value;
+	if (fieldValuesMode === 'json') {
+		// Handle JSON input mode
+		const fieldValuesJson = additionalOptions.fieldValuesJson as string | object;
+		if (fieldValuesJson) {
+			return parseJsonInput(fieldValuesJson) as IDataObject;
 		}
-	});
+		return {};
+	} else {
+		// Handle individual fields mode (legacy format)
+		const fieldValuesData = additionalOptions.fieldValues as IDataObject;
+		if (!fieldValuesData || !fieldValuesData.field) {
+			return {};
+		}
 
-	return values;
+		const fieldItems = Array.isArray(fieldValuesData.field) 
+			? fieldValuesData.field 
+			: [fieldValuesData.field];
+
+		const values: IDataObject = {};
+		
+		fieldItems.forEach((item: any) => {
+			if (item.name && item.value !== undefined) {
+				values[item.name] = item.value;
+			}
+		});
+
+		return values;
+	}
 }
 
 /**
@@ -267,50 +269,4 @@ export function formatDate(date: string): string {
 	// Convert to UTC format expected by API
 	const dateObj = new Date(date);
 	return dateObj.toISOString();
-}
-
-/**
- * Get list of template folders for dropdown
- */
-export async function getTemplateFolders(
-	this: ILoadOptionsFunctions,
-): Promise<Array<{ name: string; value: string }>> {
-	try {
-		// Fetch all templates to extract unique folders
-		const templates = await docusealApiRequestAllItems.call(this, 'GET', '/templates', {}, { limit: 100 });
-		
-		if (!Array.isArray(templates)) {
-			console.warn('DocuSeal API returned non-array response for templates');
-			return [{ name: 'No Folder', value: '' }];
-		}
-		
-		// Extract unique folder names
-		const folders = new Set<string>();
-		
-		templates.forEach((template: any) => {
-			if (template.folder_name && template.folder_name.trim() !== '') {
-				folders.add(template.folder_name);
-			}
-		});
-		
-		// Convert to options format
-		const folderOptions = Array.from(folders)
-			.sort() // Sort alphabetically
-			.map(folder => ({
-				name: folder,
-				value: folder,
-			}));
-		
-		// Add "No Folder" option at the beginning
-		folderOptions.unshift({
-			name: 'No Folder',
-			value: '',
-		});
-		
-		return folderOptions;
-	} catch (error) {
-		console.error('Error fetching template folders:', error);
-		// Return at least "No Folder" option on error
-		return [{ name: 'No Folder', value: '' }];
-	}
 }
