@@ -89,21 +89,38 @@ function parseJsonInput(inputData) {
 exports.parseJsonInput = parseJsonInput;
 async function getTemplates() {
     try {
-        const templates = await docusealApiRequest.call(this, 'GET', '/templates', {}, { limit: 100 });
-        console.log('Templates API response:', templates);
+        console.log('getTemplates: Starting to fetch templates...');
+        const templates = await docusealApiRequestAllItems.call(this, 'GET', '/templates', {}, {});
+        console.log('getTemplates: API response received:', {
+            templatesCount: Array.isArray(templates) ? templates.length : 'not an array',
+            templatesType: typeof templates,
+            firstTemplate: Array.isArray(templates) && templates.length > 0 ? templates[0] : null
+        });
         if (!Array.isArray(templates)) {
-            console.log('Templates response is not an array:', typeof templates);
+            console.error('getTemplates: Response is not an array:', templates);
             return [];
         }
-        const options = templates.map((template) => ({
-            name: template.name || `Template ${template.id}`,
-            value: template.id,
-        }));
-        console.log('Transformed template options:', options);
+        if (templates.length === 0) {
+            console.log('getTemplates: No templates found');
+            return [];
+        }
+        const options = templates.map((template) => {
+            const option = {
+                name: template.name || `Template ${template.id}`,
+                value: template.id,
+            };
+            console.log('getTemplates: Mapping template:', { id: template.id, name: template.name, option });
+            return option;
+        });
+        console.log('getTemplates: Final options array:', options);
         return options;
     }
     catch (error) {
-        console.error('Error fetching templates:', error);
+        console.error('getTemplates: Error occurred:', {
+            errorMessage: error instanceof Error ? error.message : String(error),
+            errorStack: error instanceof Error ? error.stack : undefined,
+            errorType: typeof error
+        });
         return [];
     }
 }
