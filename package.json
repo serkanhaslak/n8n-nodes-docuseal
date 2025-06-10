@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-docuseal",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Manage DocuSeal documents, templates, and submissions within n8n workflows.",
   "keywords": [
     "n8n-community-node-package",
@@ -66,7 +66,14 @@
     "deps:update": "npm update",
     "release:patch": "npm version patch && npm publish",
     "release:minor": "npm version minor && npm publish",
-    "release:major": "npm version major && npm publish"
+    "release:major": "npm version major && npm publish",
+    "version:patch": "node scripts/version.js patch",
+    "version:minor": "node scripts/version.js minor",
+    "version:major": "node scripts/version.js major",
+    "publish:local": "node scripts/publish.js --skip-versioning",
+    "release:patch:local": "node scripts/publish.js patch",
+    "release:minor:local": "node scripts/publish.js minor",
+    "release:major:local": "node scripts/publish.js major"
   },
   "files": [
     "dist/**/*",
@@ -126,8 +133,7 @@
       "axios@<0.30.0": ">=0.30.0",
       "pdfjs-dist@<=4.1.392": ">=4.2.67",
       "snowflake-sdk@>=1.10.0 <=2.0.3": ">=2.0.4",
-      "cross-spawn@>=7.0.0 <7.0.5": ">=7.0.5",
-      "xlsx@<0.20.2": ">=0.20.2"
+      "cross-spawn@>=7.0.0 <7.0.5": ">=7.0.5"
     }
   }
 }
