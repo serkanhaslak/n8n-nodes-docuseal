@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-docuseal",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Manage DocuSeal documents, templates, and submissions within n8n workflows.",
   "keywords": [
     "n8n-community-node-package",
