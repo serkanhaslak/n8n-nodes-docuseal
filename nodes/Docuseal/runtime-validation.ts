@@ -9,7 +9,11 @@ import type { ValidationResult, FileValidationOptions, UrlValidationOptions } fr
  * Runtime validation error class
  */
 export class ValidationError extends Error {
-	constructor(message: string, public readonly field?: string, public readonly value?: unknown) {
+	constructor(
+		message: string,
+		public readonly field?: string,
+		public readonly value?: unknown,
+	) {
 		super(message);
 		this.name = 'ValidationError';
 	}
@@ -228,7 +232,7 @@ export class SubmissionValidator extends BaseValidator {
 		}
 
 		const validStatuses = ['pending', 'completed', 'expired', 'cancelled'];
-		if (!validStatuses.includes(value.status )) {
+		if (!validStatuses.includes(value.status)) {
 			return this.createError(
 				`Invalid status. Must be one of: ${validStatuses.join(', ')}`,
 				'status',
@@ -307,7 +311,7 @@ export class FileValidator extends BaseValidator {
 			return this.createError('File must be a Buffer or string', 'file', typeof value);
 		}
 
-		const buffer = Buffer.isBuffer(value) ? value : Buffer.from(value , 'base64');
+		const buffer = Buffer.isBuffer(value) ? value : Buffer.from(value, 'base64');
 
 		// Check file size
 		if (buffer.length > this.options.maxSize) {

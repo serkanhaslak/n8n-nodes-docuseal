@@ -521,7 +521,9 @@ class DocusealApi {
             }
             catch (error) {
                 if (this.continueOnFail()) {
-                    returnData.push({ json: { error: error instanceof Error ? error.message : String(error) } });
+                    returnData.push({
+                        json: { error: error instanceof Error ? error.message : String(error) },
+                    });
                     continue;
                 }
                 throw error;

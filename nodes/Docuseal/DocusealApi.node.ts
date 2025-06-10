@@ -1,14 +1,14 @@
-import {
-	NodeOperationError,
-} from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
 
-import type { INodeTypeDescription ,
+import type {
+	INodeTypeDescription,
 	IExecuteFunctions,
 	INodeExecutionData,
 	INodeType,
 	IDataObject,
 	ILoadOptionsFunctions,
-	INodePropertyOptions} from 'n8n-workflow';
+	INodePropertyOptions,
+} from 'n8n-workflow';
 
 import {
 	docusealApiRequest,
@@ -140,8 +140,8 @@ export class DocusealApi implements INodeType {
 		// Process each item
 		for (let i = 0; i < items.length; i++) {
 			try {
-				const resource = this.getNodeParameter('resource', i) ;
-				const operation = this.getNodeParameter('operation', i) ;
+				const resource = this.getNodeParameter('resource', i);
+				const operation = this.getNodeParameter('operation', i);
 
 				// Template operations
 				if (resource === 'template') {
@@ -154,16 +154,12 @@ export class DocusealApi implements INodeType {
 
 					// Get list of templates
 					else if (operation === 'getMany') {
-						const returnAll = this.getNodeParameter('returnAll', i) ;
-						const filters = this.getNodeParameter('filters', i, {}) ;
+						const returnAll = this.getNodeParameter('returnAll', i);
+						const filters = this.getNodeParameter('filters', i, {});
 
 						if (returnAll) {
 							// Get performance options
-							const additionalFields = this.getNodeParameter(
-								'additionalFields',
-								i,
-								{},
-							) ;
+							const additionalFields = this.getNodeParameter('additionalFields', i, {});
 							const performanceOptions = {
 								batchSize: (additionalFields.batchSize as number) || 100,
 								maxItems: (additionalFields.maxItems as number) || 10000,
@@ -179,7 +175,7 @@ export class DocusealApi implements INodeType {
 								performanceOptions,
 							);
 						} else {
-							const limit = this.getNodeParameter('limit', i) ;
+							const limit = this.getNodeParameter('limit', i);
 							filters.limit = limit;
 							responseData = await docusealApiRequest.call(this, 'GET', '/templates', {}, filters);
 						}
@@ -189,18 +185,14 @@ export class DocusealApi implements INodeType {
 					else if (operation === 'createFromPdf') {
 						const name = this.getNodeParameter('name', i) as string;
 						const pdfSource = this.getNodeParameter('pdfSource', i) as string;
-						const additionalFields = this.getNodeParameter(
-							'additionalFields',
-							i,
-							{},
-						) ;
+						const additionalFields = this.getNodeParameter('additionalFields', i, {});
 
 						const formData: IDataObject = {
 							name,
 						};
 
 						if (pdfSource === 'binary') {
-							const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) ;
+							const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i);
 							const binaryData = await prepareBinaryData.call(this, binaryPropertyName, i);
 							formData.document = binaryData;
 						} else {
@@ -247,11 +239,7 @@ export class DocusealApi implements INodeType {
 					else if (operation === 'createFromDocx') {
 						const name = this.getNodeParameter('name', i) as string;
 						const docxSource = this.getNodeParameter('docxSource', i) as string;
-						const additionalFields = this.getNodeParameter(
-							'additionalFields',
-							i,
-							{},
-						) ;
+						const additionalFields = this.getNodeParameter('additionalFields', i, {});
 
 						const formData: IDataObject = {
 							name,
@@ -308,11 +296,7 @@ export class DocusealApi implements INodeType {
 					else if (operation === 'createFromHtml') {
 						const name = this.getNodeParameter('name', i) as string;
 						const htmlContent = this.getNodeParameter('htmlContent', i) as string;
-						const additionalFields = this.getNodeParameter(
-							'additionalFields',
-							i,
-							{},
-						) ;
+						const additionalFields = this.getNodeParameter('additionalFields', i, {});
 
 						const body: IDataObject = {
 							name,
@@ -340,11 +324,7 @@ export class DocusealApi implements INodeType {
 					else if (operation === 'clone') {
 						const templateId = this.getNodeParameter('templateId', i) as number;
 						const name = this.getNodeParameter('name', i) as string;
-						const additionalFields = this.getNodeParameter(
-							'additionalFields',
-							i,
-							{},
-						) ;
+						const additionalFields = this.getNodeParameter('additionalFields', i, {});
 
 						const body: IDataObject = {
 							name,
@@ -384,7 +364,7 @@ export class DocusealApi implements INodeType {
 					// Update template
 					else if (operation === 'update') {
 						const templateId = this.getNodeParameter('templateId', i) as number;
-						const updateFields = this.getNodeParameter('updateFields', i, {}) ;
+						const updateFields = this.getNodeParameter('updateFields', i, {});
 
 						if (Object.keys(updateFields).length === 0) {
 							throw new NodeOperationError(this.getNode(), 'At least one field must be updated', {
@@ -489,8 +469,8 @@ export class DocusealApi implements INodeType {
 
 					// Get list of submissions
 					else if (operation === 'getMany') {
-						const returnAll = this.getNodeParameter('returnAll', i) ;
-						const filters = this.getNodeParameter('filters', i, {}) ;
+						const returnAll = this.getNodeParameter('returnAll', i);
+						const filters = this.getNodeParameter('filters', i, {});
 
 						// Process status filter - convert array to comma-separated string if needed
 						if (filters.status && Array.isArray(filters.status)) {
@@ -499,11 +479,7 @@ export class DocusealApi implements INodeType {
 
 						if (returnAll) {
 							// Get performance options
-							const additionalFields = this.getNodeParameter(
-								'additionalFields',
-								i,
-								{},
-							) ;
+							const additionalFields = this.getNodeParameter('additionalFields', i, {});
 							const performanceOptions = {
 								batchSize: (additionalFields.batchSize as number) || 100,
 								maxItems: (additionalFields.maxItems as number) || 10000,
@@ -519,7 +495,7 @@ export class DocusealApi implements INodeType {
 								performanceOptions,
 							);
 						} else {
-							const limit = this.getNodeParameter('limit', i) ;
+							const limit = this.getNodeParameter('limit', i);
 							filters.limit = limit;
 							responseData = await docusealApiRequest.call(
 								this,
@@ -630,7 +606,7 @@ export class DocusealApi implements INodeType {
 						};
 
 						if (pdfSource === 'binary') {
-							const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) ;
+							const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i);
 							const binaryData = await prepareBinaryData.call(this, binaryPropertyName, i);
 							formData.document = binaryData;
 						} else {
@@ -655,7 +631,7 @@ export class DocusealApi implements INodeType {
 						}
 						if (
 							additionalOptions.send_email !== undefined &&
-				additionalOptions.send_email !== null
+							additionalOptions.send_email !== null
 						) {
 							formData.send_email = additionalOptions.send_email.toString();
 						}
@@ -727,8 +703,8 @@ export class DocusealApi implements INodeType {
 
 					// Get list of submitters
 					else if (operation === 'getMany') {
-						const returnAll = this.getNodeParameter('returnAll', i) ;
-						const filters = this.getNodeParameter('filters', i, {}) ;
+						const returnAll = this.getNodeParameter('returnAll', i);
+						const filters = this.getNodeParameter('filters', i, {});
 
 						// Format date filters
 						if (filters.completed_after) {
@@ -740,11 +716,7 @@ export class DocusealApi implements INodeType {
 
 						if (returnAll) {
 							// Get performance options
-							const additionalFields = this.getNodeParameter(
-								'additionalFields',
-								i,
-								{},
-							) ;
+							const additionalFields = this.getNodeParameter('additionalFields', i, {});
 							const performanceOptions = {
 								batchSize: (additionalFields.batchSize as number) || 100,
 								maxItems: (additionalFields.maxItems as number) || 10000,
@@ -760,7 +732,7 @@ export class DocusealApi implements INodeType {
 								performanceOptions,
 							);
 						} else {
-							const limit = this.getNodeParameter('limit', i) ;
+							const limit = this.getNodeParameter('limit', i);
 							filters.limit = limit;
 							responseData = await docusealApiRequest.call(this, 'GET', '/submitters', {}, filters);
 						}
@@ -769,7 +741,7 @@ export class DocusealApi implements INodeType {
 					// Update submitter
 					else if (operation === 'update') {
 						const submitterId = this.getNodeParameter('submitterId', i) as number;
-						const updateFields = this.getNodeParameter('updateFields', i, {}) ;
+						const updateFields = this.getNodeParameter('updateFields', i, {});
 						const fieldsData = this.getNodeParameter('fields', i, {}) as IDataObject;
 						const valuesData = this.getNodeParameter('values', i, {}) as IDataObject;
 
@@ -852,7 +824,9 @@ export class DocusealApi implements INodeType {
 				returnData.push(...executionData);
 			} catch (error) {
 				if (this.continueOnFail()) {
-					returnData.push({ json: { error: error instanceof Error ? error.message : String(error) } });
+					returnData.push({
+						json: { error: error instanceof Error ? error.message : String(error) },
+					});
 					continue;
 				}
 				throw error;

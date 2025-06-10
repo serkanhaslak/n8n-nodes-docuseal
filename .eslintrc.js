@@ -11,10 +11,7 @@ module.exports = {
 		jest: true,
 	},
 
-	extends: [
-		'eslint:recommended',
-		'plugin:@typescript-eslint/recommended',
-	],
+	extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
 
 	parser: '@typescript-eslint/parser',
 
@@ -66,8 +63,8 @@ module.exports = {
 		'comma-dangle': ['error', 'always-multiline'],
 		semi: ['error', 'always'],
 		quotes: ['error', 'single', { avoidEscape: true }],
-		indent: ['error', 'tab'],
-		'max-len': ['error', { code: 120, ignoreUrls: true, ignoreStrings: true }],
+		indent: 'off',
+		'max-len': 'off',
 		'no-trailing-spaces': 'error',
 		'eol-last': 'error',
 

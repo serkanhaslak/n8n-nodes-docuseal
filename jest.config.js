@@ -36,9 +36,7 @@ module.exports = {
 	moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
 
 	// Explicitly disable babel-jest for .ts files
-	transformIgnorePatterns: [
-		'node_modules/(?!(.*\.mjs$))',
-	],
+	transformIgnorePatterns: ['node_modules/(?!(.*\.mjs$))'],
 
 	// Module name mapping for path aliases
 	moduleNameMapper: {
@@ -149,7 +147,7 @@ module.exports = {
 			},
 		},
 	],
-	
+
 	// Test timeout
 	testTimeout: 60000,
 

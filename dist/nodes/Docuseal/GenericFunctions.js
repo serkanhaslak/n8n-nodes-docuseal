@@ -105,7 +105,12 @@ function validateUrl(url) {
         const isPrivateClass2 = hostname.startsWith('10.');
         const isPrivateClass3 = Boolean(hostname.match(/^172\.(1[6-9]|2[0-9]|3[0-1])\./));
         const isLinkLocal = hostname.startsWith('169.254.');
-        if (isLocalhost || isLoopback || isPrivateClass1 || isPrivateClass2 || isPrivateClass3 || isLinkLocal) {
+        if (isLocalhost ||
+            isLoopback ||
+            isPrivateClass1 ||
+            isPrivateClass2 ||
+            isPrivateClass3 ||
+            isLinkLocal) {
             return {
                 isValid: false,
                 message: 'URLs pointing to localhost or private networks are not allowed',

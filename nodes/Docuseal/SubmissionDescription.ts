@@ -182,7 +182,8 @@ export const submissionFields: INodeProperties[] = [
 				},
 				options: [],
 				default: '',
-				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
+				description:
+					'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
 			},
 		],
 	},
@@ -276,7 +277,8 @@ export const submissionFields: INodeProperties[] = [
 			},
 		},
 		default: '',
-		description: 'Select template from the dropdown list. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
+		description:
+			'Select template from the dropdown list. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
 	},
 	// Template by ID
 	{
@@ -399,7 +401,8 @@ export const submissionFields: INodeProperties[] = [
 								default: '[]',
 								placeholder:
 									'[{"name": "First Name", "default_value": "John", "readonly": true}, {"name": "Last Name", "default_value": "Doe", "readonly": false}]',
-								description: 'Array of field objects to pre-fill. Each field should have: name (string), default_value (string), readonly (boolean, optional).',
+								description:
+									'Array of field objects to pre-fill. Each field should have: name (string), default_value (string), readonly (boolean, optional).',
 							},
 						],
 					},

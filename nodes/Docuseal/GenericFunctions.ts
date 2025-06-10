@@ -194,7 +194,14 @@ export function validateUrl(url: string): { isValid: boolean; message?: string }
 		const isPrivateClass3 = Boolean(hostname.match(/^172\.(1[6-9]|2[0-9]|3[0-1])\./));
 		const isLinkLocal = hostname.startsWith('169.254.');
 
-		if (isLocalhost || isLoopback || isPrivateClass1 || isPrivateClass2 || isPrivateClass3 || isLinkLocal) {
+		if (
+			isLocalhost ||
+			isLoopback ||
+			isPrivateClass1 ||
+			isPrivateClass2 ||
+			isPrivateClass3 ||
+			isLinkLocal
+		) {
 			return {
 				isValid: false,
 				message: 'URLs pointing to localhost or private networks are not allowed',
@@ -496,104 +503,105 @@ function getEnhancedErrorMessage(
 	// Handle different types of errors
 	if (error.statusCode) {
 		switch (error.statusCode) {
-		case 400:
-			return {
-				...baseMessage,
-				message: 'Bad Request - Invalid parameters',
-				description: `The request to ${endpoint} contains invalid parameters. Please check your input data.`,
-				httpCode: '400',
-				details: error.message || error.body,
-			};
-		case 401:
-			return {
-				...baseMessage,
-				message: 'Authentication failed',
-				description: `Invalid API key for ${environment} environment. Please verify your DocuSeal credentials.`,
-				httpCode: '401',
-				details: error.message || error.body,
-			};
-		case 403:
-			return {
-				...baseMessage,
-				message: 'Access forbidden',
-				description: `Insufficient permissions to access ${endpoint}. Please check your API key permissions.`,
-				httpCode: '403',
-				details: error.message || error.body,
-			};
-		case 404:
-			return {
-				...baseMessage,
-				message: 'Resource not found',
-				description: `The requested resource at ${endpoint} was not found. ` +
-					'Please verify the endpoint and resource ID.',
-				httpCode: '404',
-				details: error.message || error.body,
-			};
-		case 429:
-			return {
-				...baseMessage,
-				message: 'Rate limit exceeded',
-				description:
+			case 400:
+				return {
+					...baseMessage,
+					message: 'Bad Request - Invalid parameters',
+					description: `The request to ${endpoint} contains invalid parameters. Please check your input data.`,
+					httpCode: '400',
+					details: error.message || error.body,
+				};
+			case 401:
+				return {
+					...baseMessage,
+					message: 'Authentication failed',
+					description: `Invalid API key for ${environment} environment. Please verify your DocuSeal credentials.`,
+					httpCode: '401',
+					details: error.message || error.body,
+				};
+			case 403:
+				return {
+					...baseMessage,
+					message: 'Access forbidden',
+					description: `Insufficient permissions to access ${endpoint}. Please check your API key permissions.`,
+					httpCode: '403',
+					details: error.message || error.body,
+				};
+			case 404:
+				return {
+					...baseMessage,
+					message: 'Resource not found',
+					description:
+						`The requested resource at ${endpoint} was not found. ` +
+						'Please verify the endpoint and resource ID.',
+					httpCode: '404',
+					details: error.message || error.body,
+				};
+			case 429:
+				return {
+					...baseMessage,
+					message: 'Rate limit exceeded',
+					description:
 						'Too many requests sent to DocuSeal API. Please wait before making additional requests.',
-				httpCode: '429',
-				details: error.message || error.body,
-			};
-		case 500:
-			return {
-				...baseMessage,
-				message: 'Internal server error',
-				description: 'DocuSeal API encountered an internal error. Please try again later.',
-				httpCode: '500',
-				details: error.message || error.body,
-			};
-		default:
-			return {
-				...baseMessage,
-				message: `HTTP ${error.statusCode} Error`,
-				description: `Request to ${endpoint} failed with status ${error.statusCode}`,
-				httpCode: error.statusCode.toString(),
-				details: error.message || error.body,
-			};
+					httpCode: '429',
+					details: error.message || error.body,
+				};
+			case 500:
+				return {
+					...baseMessage,
+					message: 'Internal server error',
+					description: 'DocuSeal API encountered an internal error. Please try again later.',
+					httpCode: '500',
+					details: error.message || error.body,
+				};
+			default:
+				return {
+					...baseMessage,
+					message: `HTTP ${error.statusCode} Error`,
+					description: `Request to ${endpoint} failed with status ${error.statusCode}`,
+					httpCode: error.statusCode.toString(),
+					details: error.message || error.body,
+				};
 		}
 	}
 
 	// Handle network errors
 	if (error.code) {
 		switch (error.code) {
-		case 'ECONNRESET':
-			return {
-				...baseMessage,
-				message: 'Connection reset',
-				description:
+			case 'ECONNRESET':
+				return {
+					...baseMessage,
+					message: 'Connection reset',
+					description:
 						'The connection to DocuSeal API was reset. This is usually a temporary network issue.',
-				httpCode: 'NETWORK_ERROR',
-				details: error.message,
-			};
-		case 'ENOTFOUND':
-			return {
-				...baseMessage,
-				message: 'DNS resolution failed',
-				description:
+					httpCode: 'NETWORK_ERROR',
+					details: error.message,
+				};
+			case 'ENOTFOUND':
+				return {
+					...baseMessage,
+					message: 'DNS resolution failed',
+					description:
 						'Could not resolve DocuSeal API hostname. Please check your internet connection.',
-				httpCode: 'NETWORK_ERROR',
-				details: error.message,
-			};
-		case 'ETIMEDOUT':
-			return {
-				...baseMessage,
-				message: 'Request timeout',
-				description: 'The request to DocuSeal API timed out. Please try again.',
-				httpCode: 'TIMEOUT',
-				details: error.message,
-			};
-		default:
-			return {
-				...baseMessage,
-				message: `Network error: ${error.code}`,
-				description: 'A network error occurred while connecting to DocuSeal API.',
-				httpCode: 'NETWORK_ERROR',
-				details: error.message,
-			};
+					httpCode: 'NETWORK_ERROR',
+					details: error.message,
+				};
+			case 'ETIMEDOUT':
+				return {
+					...baseMessage,
+					message: 'Request timeout',
+					description: 'The request to DocuSeal API timed out. Please try again.',
+					httpCode: 'TIMEOUT',
+					details: error.message,
+				};
+			default:
+				return {
+					...baseMessage,
+					message: `Network error: ${error.code}`,
+					description: 'A network error occurred while connecting to DocuSeal API.',
+					httpCode: 'NETWORK_ERROR',
+					details: error.message,
+				};
 		}
 	}
 
@@ -921,7 +929,7 @@ export function parseJsonInput(inputData: string | object): object {
 			throw new Error('Invalid JSON input. Please provide valid JSON.');
 		}
 	}
-	return inputData ;
+	return inputData;
 }
 
 /**

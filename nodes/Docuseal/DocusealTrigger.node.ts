@@ -147,8 +147,8 @@ To complete the setup:
 4. Click "Add Webhook"
 5. Enter the webhook URL: \`${webhookUrl}\`
 6. Select the event type${
-	eventType === 'all' ? 's you want to trigger this workflow' : `: ${eventType}`
-}
+					eventType === 'all' ? 's you want to trigger this workflow' : `: ${eventType}`
+				}
 7. Save the webhook configuration
 
 For security purposes, DocuSeal may provide a signing secret for your webhook. 
@@ -205,7 +205,7 @@ If available, save this secret for future use with webhook validation.`;
 		}
 
 		// Process the webhook data
-		const bodyData = this.getBodyData() ;
+		const bodyData = this.getBodyData();
 		const eventType = this.getNodeParameter('eventType') as string;
 		const additionalFields = this.getNodeParameter('additionalFields', {}) as IDataObject;
 
