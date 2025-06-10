@@ -1,7 +1,4 @@
-import {
-	ICredentialType,
-	INodeProperties,
-} from 'n8n-workflow';
+import type { ICredentialType, INodeProperties } from 'n8n-workflow';
 
 export class DocusealApi implements ICredentialType {
 	name = 'docusealApi';
@@ -31,7 +28,8 @@ export class DocusealApi implements ICredentialType {
 			type: 'string',
 			typeOptions: { password: true },
 			default: '',
-			description: 'The DocuSeal production API key obtained from your DocuSeal account',
+			description:
+				'The DocuSeal production API key obtained from your DocuSeal account. Must be at least 20 characters long and contain only alphanumeric characters, hyphens, and underscores.',
 			displayOptions: {
 				show: {
 					environment: ['production'],
@@ -44,7 +42,8 @@ export class DocusealApi implements ICredentialType {
 			type: 'string',
 			typeOptions: { password: true },
 			default: '',
-			description: 'The DocuSeal test API key for sandbox testing',
+			description:
+				'The DocuSeal test API key for sandbox testing. Must be at least 20 characters long and contain only alphanumeric characters, hyphens, and underscores.',
 			displayOptions: {
 				show: {
 					environment: ['test'],
@@ -56,7 +55,7 @@ export class DocusealApi implements ICredentialType {
 			name: 'baseUrl',
 			type: 'string',
 			default: 'https://api.docuseal.com',
-			description: 'The base URL for DocuSeal API calls',
+			description: 'The base URL for DocuSeal API calls. Must be a valid HTTPS URL.',
 		},
 	];
 }

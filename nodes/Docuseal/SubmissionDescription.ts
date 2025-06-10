@@ -174,18 +174,60 @@ export const submissionFields: INodeProperties[] = [
 				description: 'Filter submissions by status (select multiple)',
 			},
 			{
-				displayName: 'Template Folder Name or ID',
-				name: 'template_folder',
-				type: 'string',
+				displayName: 'Template Name or ID',
+				name: 'template_id',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getTemplates',
+				},
+				options: [],
 				default: '',
-				description: 'Enter the folder name or ID to filter submissions by template folder',
+				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
+			},
+		],
+	},
+	{
+		displayName: 'Additional Fields',
+		name: 'additionalFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['submission'],
+				operation: ['getMany'],
+				returnAll: [true],
+			},
+		},
+		options: [
+			{
+				displayName: 'Batch Size',
+				name: 'batchSize',
+				type: 'number',
+				default: 100,
+				typeOptions: {
+					minValue: 10,
+					maxValue: 500,
+				},
+				description: 'Number of items to fetch per API request (10-500)',
 			},
 			{
-				displayName: 'Template ID',
-				name: 'template_id',
+				displayName: 'Max Items',
+				name: 'maxItems',
 				type: 'number',
-				default: 0,
-				description: 'Filter submissions by template ID',
+				default: 10000,
+				typeOptions: {
+					minValue: 100,
+					maxValue: 50000,
+				},
+				description: 'Maximum total items to fetch to prevent memory issues (100-50000)',
+			},
+			{
+				displayName: 'Memory Optimized',
+				name: 'memoryOptimized',
+				type: 'boolean',
+				default: false,
+				description: 'Whether to use memory-optimized processing for large datasets',
 			},
 		],
 	},
@@ -219,7 +261,7 @@ export const submissionFields: INodeProperties[] = [
 	},
 	// Template from list
 	{
-		displayName: 'Template Name',
+		displayName: 'Template Name or ID',
 		name: 'templateId',
 		type: 'options',
 		typeOptions: {
@@ -234,7 +276,7 @@ export const submissionFields: INodeProperties[] = [
 			},
 		},
 		default: '',
-		description: 'Select template from the dropdown list',
+		description: 'Select template from the dropdown list. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
 	},
 	// Template by ID
 	{
@@ -351,12 +393,13 @@ export const submissionFields: INodeProperties[] = [
 								description: 'Whether to send SMS notification to this submitter',
 							},
 							{
-								displayName: 'Values',
-								name: 'values',
+								displayName: 'Fields',
+								name: 'fields',
 								type: 'json',
-								default: '{}',
-								placeholder: '{"First Name": "John", "Last Name": "Doe"}',
-								description: 'Pre-filled values for this submitter\'s fields',
+								default: '[]',
+								placeholder:
+									'[{"name": "First Name", "default_value": "John", "readonly": true}, {"name": "Last Name", "default_value": "Doe", "readonly": false}]',
+								description: 'Array of field objects to pre-fill. Each field should have: name (string), default_value (string), readonly (boolean, optional).',
 							},
 						],
 					},
@@ -438,7 +481,8 @@ export const submissionFields: INodeProperties[] = [
 		type: 'json',
 		default: '{}',
 		placeholder: '{"First Name": "John", "Last Name": "Doe", "Email": "john@example.com"}',
-		description: 'Define all field values as a JSON object with field names as keys and values as values',
+		description:
+			'Define all field values as a JSON object with field names as keys and values as values',
 		displayOptions: {
 			show: {
 				resource: ['submission'],
@@ -596,7 +640,8 @@ export const submissionFields: INodeProperties[] = [
 									rows: 5,
 								},
 								default: '',
-								description: 'Custom email body. Available variables: {{template.name}}, {{submitter.link}}, {{account.name}}.',
+								description:
+									'Custom email body. Available variables: {{template.name}}, {{submitter.link}}, {{account.name}}.',
 							},
 						],
 					},

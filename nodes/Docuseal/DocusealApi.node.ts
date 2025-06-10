@@ -1,17 +1,14 @@
 import {
-	IExecuteFunctions,
-	INodeExecutionData,
-	INodeType,
-	NodeConnectionType,
-	IDataObject,
-	ILoadOptionsFunctions,
-	INodePropertyOptions,
 	NodeOperationError,
 } from 'n8n-workflow';
 
-import type {
-	INodeTypeDescription,
-} from 'n8n-workflow';
+import type { INodeTypeDescription ,
+	IExecuteFunctions,
+	INodeExecutionData,
+	INodeType,
+	IDataObject,
+	ILoadOptionsFunctions,
+	INodePropertyOptions} from 'n8n-workflow';
 
 import {
 	docusealApiRequest,
@@ -22,29 +19,23 @@ import {
 	buildSubmittersArray,
 	buildFieldValues,
 	formatDate,
+	validateUrl,
 } from './GenericFunctions';
 
-import {
-	templateOperations,
-	templateFields,
-} from './TemplateDescription';
+import { templateOperations, templateFields } from './TemplateDescription';
 
-import {
-	submissionOperations,
-	submissionFields,
-} from './SubmissionDescription';
+import { submissionOperations, submissionFields } from './SubmissionDescription';
 
-import {
-	submitterOperations,
-	submitterFields,
-} from './SubmitterDescription';
+import { submitterOperations, submitterFields } from './SubmitterDescription';
 
-import {
-	formOperations,
-	formFields,
-} from './FormDescription';
+import { formOperations, formFields } from './FormDescription';
 
-
+/**
+ * DocuSeal API Node for n8n
+ * Provides integration with DocuSeal document management platform
+ * Supports operations for templates, submissions, submitters, and forms
+ * @implements {INodeType}
+ */
 export class DocusealApi implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'DocuSeal',
@@ -57,9 +48,8 @@ export class DocusealApi implements INodeType {
 		defaults: {
 			name: 'DocuSeal',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
-		// @ts-ignore - usableAsTool not in official types yet
+		inputs: [{ type: 'main' as any }],
+		outputs: [{ type: 'main' as any }],
 		usableAsTool: true,
 		credentials: [
 			{
@@ -112,10 +102,18 @@ export class DocusealApi implements INodeType {
 		],
 	};
 
-	// Load options methods
+	/**
+	 * Load options methods for dynamic dropdown population
+	 * Provides data for n8n UI dropdowns and selection fields
+	 */
 	methods = {
 		loadOptions: {
-			// Get all templates for selection
+			/**
+			 * Get all templates for selection dropdown
+			 * Fetches available templates from DocuSeal API for UI selection
+			 * @param this - The n8n load options context
+			 * @returns Promise resolving to array of template options
+			 */
 			async getTemplates(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				try {
 					return await getTemplates.call(this);
@@ -124,12 +122,16 @@ export class DocusealApi implements INodeType {
 					return [];
 				}
 			},
-			
-
 		},
 	};
 
-	// Execute method
+	/**
+	 * Execute method - main entry point for node execution
+	 * Processes workflow items and executes DocuSeal API operations
+	 * @param this - The n8n execution context
+	 * @returns Promise resolving to array of execution data arrays
+	 * @throws {NodeOperationError} When operation fails or parameters are invalid
+	 */
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
@@ -138,45 +140,48 @@ export class DocusealApi implements INodeType {
 		// Process each item
 		for (let i = 0; i < items.length; i++) {
 			try {
-				const resource = this.getNodeParameter('resource', i) as string;
-				const operation = this.getNodeParameter('operation', i) as string;
+				const resource = this.getNodeParameter('resource', i) ;
+				const operation = this.getNodeParameter('operation', i) ;
 
 				// Template operations
 				if (resource === 'template') {
 					// Get template by ID
 					if (operation === 'get') {
 						const templateId = this.getNodeParameter('templateId', i) as number;
-						
-						responseData = await docusealApiRequest.call(
-							this,
-							'GET',
-							`/templates/${templateId}`,
-						);
+
+						responseData = await docusealApiRequest.call(this, 'GET', `/templates/${templateId}`);
 					}
-					
+
 					// Get list of templates
 					else if (operation === 'getMany') {
-						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
-						const filters = this.getNodeParameter('filters', i, {}) as IDataObject;
-						
+						const returnAll = this.getNodeParameter('returnAll', i) ;
+						const filters = this.getNodeParameter('filters', i, {}) ;
+
 						if (returnAll) {
+							// Get performance options
+							const additionalFields = this.getNodeParameter(
+								'additionalFields',
+								i,
+								{},
+							) ;
+							const performanceOptions = {
+								batchSize: (additionalFields.batchSize as number) || 100,
+								maxItems: (additionalFields.maxItems as number) || 10000,
+								memoryOptimized: (additionalFields.memoryOptimized as boolean) || false,
+							};
+
 							responseData = await docusealApiRequestAllItems.call(
 								this,
 								'GET',
 								'/templates',
 								{},
 								filters,
+								performanceOptions,
 							);
 						} else {
-							const limit = this.getNodeParameter('limit', i) as number;
+							const limit = this.getNodeParameter('limit', i) ;
 							filters.limit = limit;
-							responseData = await docusealApiRequest.call(
-								this,
-								'GET',
-								'/templates',
-								{},
-								filters,
-							);
+							responseData = await docusealApiRequest.call(this, 'GET', '/templates', {}, filters);
 						}
 					}
 
@@ -184,23 +189,43 @@ export class DocusealApi implements INodeType {
 					else if (operation === 'createFromPdf') {
 						const name = this.getNodeParameter('name', i) as string;
 						const pdfSource = this.getNodeParameter('pdfSource', i) as string;
-						const additionalFields = this.getNodeParameter('additionalFields', i, {}) as IDataObject;
+						const additionalFields = this.getNodeParameter(
+							'additionalFields',
+							i,
+							{},
+						) ;
 
 						const formData: IDataObject = {
 							name,
 						};
 
 						if (pdfSource === 'binary') {
-							const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
+							const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) ;
 							const binaryData = await prepareBinaryData.call(this, binaryPropertyName, i);
 							formData.document = binaryData;
 						} else {
-							formData.document_url = this.getNodeParameter('fileUrl', i) as string;
+							const fileUrl = this.getNodeParameter('fileUrl', i) as string;
+							// Validate URL for security
+							const urlValidation = validateUrl(fileUrl);
+							if (!urlValidation.isValid) {
+								throw new NodeOperationError(
+									this.getNode(),
+									`Invalid file URL: ${urlValidation.message}`,
+									{
+										itemIndex: i,
+									},
+								);
+							}
+							formData.document_url = fileUrl;
 						}
 
 						// Add additional fields
-						if (additionalFields.external_id) formData.external_id = additionalFields.external_id;
-						if (additionalFields.folder_name) formData.folder_name = additionalFields.folder_name;
+						if (additionalFields.external_id) {
+							formData.external_id = additionalFields.external_id;
+						}
+						if (additionalFields.folder_name) {
+							formData.folder_name = additionalFields.folder_name;
+						}
 						if (additionalFields.fields) {
 							const fieldsData = additionalFields.fields as IDataObject;
 							if (fieldsData.field) {
@@ -222,23 +247,46 @@ export class DocusealApi implements INodeType {
 					else if (operation === 'createFromDocx') {
 						const name = this.getNodeParameter('name', i) as string;
 						const docxSource = this.getNodeParameter('docxSource', i) as string;
-						const additionalFields = this.getNodeParameter('additionalFields', i, {}) as IDataObject;
+						const additionalFields = this.getNodeParameter(
+							'additionalFields',
+							i,
+							{},
+						) ;
 
 						const formData: IDataObject = {
 							name,
 						};
 
 						if (docxSource === 'binary') {
-							const binaryPropertyName = this.getNodeParameter('binaryPropertyNameDocx', i) as string;
+							const binaryPropertyName = this.getNodeParameter(
+								'binaryPropertyNameDocx',
+								i,
+							) as string;
 							const binaryData = await prepareBinaryData.call(this, binaryPropertyName, i);
 							formData.document = binaryData;
 						} else {
-							formData.document_url = this.getNodeParameter('fileUrlDocx', i) as string;
+							const fileUrl = this.getNodeParameter('fileUrlDocx', i) as string;
+							// Validate URL for security
+							const urlValidation = validateUrl(fileUrl);
+							if (!urlValidation.isValid) {
+								throw new NodeOperationError(
+									this.getNode(),
+									`Invalid file URL: ${urlValidation.message}`,
+									{
+										itemIndex: i,
+									},
+								);
+							}
+							formData.document_url = fileUrl;
 						}
 
 						// Add additional fields
-						if (additionalFields.external_id) formData.external_id = additionalFields.external_id;
-						if (additionalFields.folder_name) formData.folder_name = additionalFields.folder_name;
+						if (additionalFields.external_id) {
+							formData.external_id = additionalFields.external_id;
+						}
+						if (additionalFields.folder_name) {
+							formData.folder_name = additionalFields.folder_name;
+						}
 						if (additionalFields.fields) {
 							const fieldsData = additionalFields.fields as IDataObject;
 							if (fieldsData.field) {
@@ -260,7 +308,11 @@ export class DocusealApi implements INodeType {
 					else if (operation === 'createFromHtml') {
 						const name = this.getNodeParameter('name', i) as string;
 						const htmlContent = this.getNodeParameter('htmlContent', i) as string;
-						const additionalFields = this.getNodeParameter('additionalFields', i, {}) as IDataObject;
+						const additionalFields = this.getNodeParameter(
+							'additionalFields',
+							i,
+							{},
+						) ;
 
 						const body: IDataObject = {
 							name,
@@ -268,8 +320,12 @@ export class DocusealApi implements INodeType {
 						};
 
 						// Add additional fields
-						if (additionalFields.external_id) body.external_id = additionalFields.external_id;
-						if (additionalFields.folder_name) body.folder_name = additionalFields.folder_name;
+						if (additionalFields.external_id) {
+							body.external_id = additionalFields.external_id;
+						}
+						if (additionalFields.folder_name) {
+							body.folder_name = additionalFields.folder_name;
+						}
 						if (additionalFields.fields) {
 							const fieldsData = additionalFields.fields as IDataObject;
 							if (fieldsData.field) {
@@ -277,26 +333,29 @@ export class DocusealApi implements INodeType {
 							}
 						}
 
-						responseData = await docusealApiRequest.call(
-							this,
-							'POST',
-							'/templates/html',
-							body,
-						);
+						responseData = await docusealApiRequest.call(this, 'POST', '/templates/html', body);
 					}
 
 					// Clone template
 					else if (operation === 'clone') {
 						const templateId = this.getNodeParameter('templateId', i) as number;
 						const name = this.getNodeParameter('name', i) as string;
-						const additionalFields = this.getNodeParameter('additionalFields', i, {}) as IDataObject;
+						const additionalFields = this.getNodeParameter(
+							'additionalFields',
+							i,
+							{},
+						) ;
 
 						const body: IDataObject = {
 							name,
 						};
 
-						if (additionalFields.external_id) body.external_id = additionalFields.external_id;
-						if (additionalFields.folder_name) body.folder_name = additionalFields.folder_name;
+						if (additionalFields.external_id) {
+							body.external_id = additionalFields.external_id;
+						}
+						if (additionalFields.folder_name) {
+							body.folder_name = additionalFields.folder_name;
+						}
 
 						responseData = await docusealApiRequest.call(
 							this,
@@ -310,8 +369,8 @@ export class DocusealApi implements INodeType {
 					else if (operation === 'merge') {
 						const templateIds = (this.getNodeParameter('templateIds', i) as string)
 							.split(',')
-							.map(id => parseInt(id.trim()))
-							.filter(id => !isNaN(id));
+							.map((id) => parseInt(id.trim()))
+							.filter((id) => !isNaN(id));
 						const name = this.getNodeParameter('mergedName', i) as string;
 
 						const body: IDataObject = {
@@ -319,21 +378,18 @@ export class DocusealApi implements INodeType {
 							name,
 						};
 
-						responseData = await docusealApiRequest.call(
-							this,
-							'POST',
-							'/templates/merge',
-							body,
-						);
+						responseData = await docusealApiRequest.call(this, 'POST', '/templates/merge', body);
 					}
 
 					// Update template
 					else if (operation === 'update') {
 						const templateId = this.getNodeParameter('templateId', i) as number;
-						const updateFields = this.getNodeParameter('updateFields', i, {}) as IDataObject;
+						const updateFields = this.getNodeParameter('updateFields', i, {}) ;
 
 						if (Object.keys(updateFields).length === 0) {
-							throw new NodeOperationError(this.getNode(), 'At least one field must be updated', { itemIndex: i });
+							throw new NodeOperationError(this.getNode(), 'At least one field must be updated', {
+								itemIndex: i,
+							});
 						}
 
 						responseData = await docusealApiRequest.call(
@@ -354,7 +410,7 @@ export class DocusealApi implements INodeType {
 						if (documentsSource === 'binary') {
 							const binaryProperties = (this.getNodeParameter('binaryProperties', i) as string)
 								.split(',')
-								.map(prop => prop.trim());
+								.map((prop) => prop.trim());
 
 							for (const [index, propertyName] of binaryProperties.entries()) {
 								const binaryData = await prepareBinaryData.call(this, propertyName, i);
@@ -363,7 +419,22 @@ export class DocusealApi implements INodeType {
 						} else {
 							const fileUrls = (this.getNodeParameter('fileUrls', i) as string)
 								.split(',')
-								.map(url => url.trim());
+								.map((url) => url.trim())
+								.filter((url) => url.length > 0);
+
+							// Validate all URLs for security
+							for (const url of fileUrls) {
+								const urlValidation = validateUrl(url);
+								if (!urlValidation.isValid) {
+									throw new NodeOperationError(
+										this.getNode(),
+										`Invalid file URL '${url}': ${urlValidation.message}`,
+										{
+											itemIndex: i,
+										},
+									);
+								}
+							}
 
 							fileUrls.forEach((url, index) => {
 								formData[`document_urls[${index}]`] = url;
@@ -383,7 +454,7 @@ export class DocusealApi implements INodeType {
 					// Archive template
 					else if (operation === 'archive') {
 						const templateId = this.getNodeParameter('templateId', i) as number;
-						
+
 						responseData = await docusealApiRequest.call(
 							this,
 							'DELETE',
@@ -391,51 +462,64 @@ export class DocusealApi implements INodeType {
 						);
 					}
 				}
-				
+
 				// Submission operations
 				else if (resource === 'submission') {
 					// Get submission by ID
 					if (operation === 'get') {
 						const submissionId = this.getNodeParameter('submissionId', i) as number;
-						
+
 						responseData = await docusealApiRequest.call(
 							this,
 							'GET',
 							`/submissions/${submissionId}`,
 						);
 					}
-					
+
 					// Get submission documents
 					else if (operation === 'getDocuments') {
 						const submissionId = this.getNodeParameter('submissionId', i) as number;
-						
+
 						responseData = await docusealApiRequest.call(
 							this,
 							'GET',
 							`/submissions/${submissionId}/documents`,
 						);
 					}
-					
+
 					// Get list of submissions
 					else if (operation === 'getMany') {
-						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
-						const filters = this.getNodeParameter('filters', i, {}) as IDataObject;
-						
+						const returnAll = this.getNodeParameter('returnAll', i) ;
+						const filters = this.getNodeParameter('filters', i, {}) ;
+
 						// Process status filter - convert array to comma-separated string if needed
 						if (filters.status && Array.isArray(filters.status)) {
 							filters.status = (filters.status as string[]).join(',');
 						}
-						
+
 						if (returnAll) {
+							// Get performance options
+							const additionalFields = this.getNodeParameter(
+								'additionalFields',
+								i,
+								{},
+							) ;
+							const performanceOptions = {
+								batchSize: (additionalFields.batchSize as number) || 100,
+								maxItems: (additionalFields.maxItems as number) || 10000,
+								memoryOptimized: (additionalFields.memoryOptimized as boolean) || false,
+							};
+
 							responseData = await docusealApiRequestAllItems.call(
 								this,
 								'GET',
 								'/submissions',
 								{},
 								filters,
+								performanceOptions,
 							);
 						} else {
-							const limit = this.getNodeParameter('limit', i) as number;
+							const limit = this.getNodeParameter('limit', i) ;
 							filters.limit = limit;
 							responseData = await docusealApiRequest.call(
 								this,
@@ -446,17 +530,23 @@ export class DocusealApi implements INodeType {
 							);
 						}
 					}
-					
+
 					// Create submission
 					else if (operation === 'create') {
 						const templateId = this.getNodeParameter('templateId', i) as number;
 						const submittersData = this.getNodeParameter('submitters', i) as IDataObject;
-						const additionalOptions = this.getNodeParameter('additionalOptions', i, {}) as IDataObject;
+						const additionalOptions = this.getNodeParameter(
+							'additionalOptions',
+							i,
+							{},
+						) as IDataObject;
 
 						// Build submitters array
 						const submitters = buildSubmittersArray(submittersData);
 						if (submitters.length === 0) {
-							throw new NodeOperationError(this.getNode(), 'At least one submitter is required', { itemIndex: i });
+							throw new NodeOperationError(this.getNode(), 'At least one submitter is required', {
+								itemIndex: i,
+							});
 						}
 
 						// Build field values from additional options
@@ -514,24 +604,25 @@ export class DocusealApi implements INodeType {
 							body.send_sms = additionalOptions.send_sms;
 						}
 
-						responseData = await docusealApiRequest.call(
-							this,
-							'POST',
-							'/submissions',
-							body,
-						);
+						responseData = await docusealApiRequest.call(this, 'POST', '/submissions', body);
 					}
 
 					// Create submission from PDF
 					else if (operation === 'createFromPdf') {
 						const pdfSource = this.getNodeParameter('pdfSource', i) as string;
 						const submittersData = this.getNodeParameter('submitters', i) as IDataObject;
-						const additionalOptions = this.getNodeParameter('additionalOptions', i, {}) as IDataObject;
+						const additionalOptions = this.getNodeParameter(
+							'additionalOptions',
+							i,
+							{},
+						) as IDataObject;
 
 						// Build submitters array
 						const submitters = buildSubmittersArray(submittersData);
 						if (submitters.length === 0) {
-							throw new NodeOperationError(this.getNode(), 'At least one submitter is required', { itemIndex: i });
+							throw new NodeOperationError(this.getNode(), 'At least one submitter is required', {
+								itemIndex: i,
+							});
 						}
 
 						const formData: IDataObject = {
@@ -539,18 +630,33 @@ export class DocusealApi implements INodeType {
 						};
 
 						if (pdfSource === 'binary') {
-							const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
+							const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) ;
 							const binaryData = await prepareBinaryData.call(this, binaryPropertyName, i);
 							formData.document = binaryData;
 						} else {
-							formData.document_url = this.getNodeParameter('fileUrl', i) as string;
+							const fileUrl = this.getNodeParameter('fileUrl', i) as string;
+							// Validate URL for security
+							const urlValidation = validateUrl(fileUrl);
+							if (!urlValidation.isValid) {
+								throw new NodeOperationError(
+									this.getNode(),
+									`Invalid file URL: ${urlValidation.message}`,
+									{
+										itemIndex: i,
+									},
+								);
+							}
+							formData.document_url = fileUrl;
 						}
 
 						// Add additional options
 						if (additionalOptions.external_id) {
 							formData.external_id = additionalOptions.external_id;
 						}
-						if (additionalOptions.send_email !== undefined && additionalOptions.send_email !== null) {
+						if (
+							additionalOptions.send_email !== undefined &&
+				additionalOptions.send_email !== null
+						) {
 							formData.send_email = additionalOptions.send_email.toString();
 						}
 
@@ -568,12 +674,18 @@ export class DocusealApi implements INodeType {
 					else if (operation === 'createFromHtml') {
 						const htmlContent = this.getNodeParameter('htmlContent', i) as string;
 						const submittersData = this.getNodeParameter('submitters', i) as IDataObject;
-						const additionalOptions = this.getNodeParameter('additionalOptions', i, {}) as IDataObject;
+						const additionalOptions = this.getNodeParameter(
+							'additionalOptions',
+							i,
+							{},
+						) as IDataObject;
 
 						// Build submitters array
 						const submitters = buildSubmittersArray(submittersData);
 						if (submitters.length === 0) {
-							throw new NodeOperationError(this.getNode(), 'At least one submitter is required', { itemIndex: i });
+							throw new NodeOperationError(this.getNode(), 'At least one submitter is required', {
+								itemIndex: i,
+							});
 						}
 
 						const body: IDataObject = {
@@ -589,18 +701,13 @@ export class DocusealApi implements INodeType {
 							body.send_email = additionalOptions.send_email;
 						}
 
-						responseData = await docusealApiRequest.call(
-							this,
-							'POST',
-							'/submissions/html',
-							body,
-						);
+						responseData = await docusealApiRequest.call(this, 'POST', '/submissions/html', body);
 					}
-					
+
 					// Archive submission
 					else if (operation === 'archive') {
 						const submissionId = this.getNodeParameter('submissionId', i) as number;
-						
+
 						responseData = await docusealApiRequest.call(
 							this,
 							'DELETE',
@@ -608,24 +715,20 @@ export class DocusealApi implements INodeType {
 						);
 					}
 				}
-				
+
 				// Submitter operations
 				else if (resource === 'submitter') {
 					// Get submitter by ID
 					if (operation === 'get') {
 						const submitterId = this.getNodeParameter('submitterId', i) as number;
-						
-						responseData = await docusealApiRequest.call(
-							this,
-							'GET',
-							`/submitters/${submitterId}`,
-						);
+
+						responseData = await docusealApiRequest.call(this, 'GET', `/submitters/${submitterId}`);
 					}
-					
+
 					// Get list of submitters
 					else if (operation === 'getMany') {
-						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
-						const filters = this.getNodeParameter('filters', i, {}) as IDataObject;
+						const returnAll = this.getNodeParameter('returnAll', i) ;
+						const filters = this.getNodeParameter('filters', i, {}) ;
 
 						// Format date filters
 						if (filters.completed_after) {
@@ -634,32 +737,39 @@ export class DocusealApi implements INodeType {
 						if (filters.completed_before) {
 							filters.completed_before = formatDate(filters.completed_before as string);
 						}
-						
+
 						if (returnAll) {
+							// Get performance options
+							const additionalFields = this.getNodeParameter(
+								'additionalFields',
+								i,
+								{},
+							) ;
+							const performanceOptions = {
+								batchSize: (additionalFields.batchSize as number) || 100,
+								maxItems: (additionalFields.maxItems as number) || 10000,
+								memoryOptimized: (additionalFields.memoryOptimized as boolean) || false,
+							};
+
 							responseData = await docusealApiRequestAllItems.call(
 								this,
 								'GET',
 								'/submitters',
 								{},
 								filters,
+								performanceOptions,
 							);
 						} else {
-							const limit = this.getNodeParameter('limit', i) as number;
+							const limit = this.getNodeParameter('limit', i) ;
 							filters.limit = limit;
-							responseData = await docusealApiRequest.call(
-								this,
-								'GET',
-								'/submitters',
-								{},
-								filters,
-							);
+							responseData = await docusealApiRequest.call(this, 'GET', '/submitters', {}, filters);
 						}
 					}
-					
+
 					// Update submitter
 					else if (operation === 'update') {
 						const submitterId = this.getNodeParameter('submitterId', i) as number;
-						const updateFields = this.getNodeParameter('updateFields', i, {}) as IDataObject;
+						const updateFields = this.getNodeParameter('updateFields', i, {}) ;
 						const fieldsData = this.getNodeParameter('fields', i, {}) as IDataObject;
 						const valuesData = this.getNodeParameter('values', i, {}) as IDataObject;
 
@@ -684,7 +794,9 @@ export class DocusealApi implements INodeType {
 						// Add values
 						if (valuesData.value) {
 							const values: IDataObject = {};
-							const valueItems = Array.isArray(valuesData.value) ? valuesData.value : [valuesData.value];
+							const valueItems = Array.isArray(valuesData.value)
+								? valuesData.value
+								: [valuesData.value];
 							valueItems.forEach((item: any) => {
 								if (item.name && item.value !== undefined) {
 									values[item.name] = item.value;
@@ -694,12 +806,14 @@ export class DocusealApi implements INodeType {
 						}
 
 						if (Object.keys(body).length === 0) {
-							throw new NodeOperationError(this.getNode(), 'At least one field must be updated', { itemIndex: i });
+							throw new NodeOperationError(this.getNode(), 'At least one field must be updated', {
+								itemIndex: i,
+							});
 						}
 
 						responseData = await docusealApiRequest.call(
 							this,
-							'PUT',  // Correct HTTP method for submitter update
+							'PUT', // Correct HTTP method for submitter update
 							`/submitters/${submitterId}`,
 							body,
 						);
@@ -729,17 +843,16 @@ export class DocusealApi implements INodeType {
 					}
 				}
 
-
 				// Add response data to output array
 				const executionData = this.helpers.constructExecutionMetaData(
 					this.helpers.returnJsonArray(responseData as IDataObject | IDataObject[]),
 					{ itemData: { item: i } },
 				);
-				
+
 				returnData.push(...executionData);
 			} catch (error) {
 				if (this.continueOnFail()) {
-					returnData.push({ json: { error: error.message } });
+					returnData.push({ json: { error: error instanceof Error ? error.message : String(error) } });
 					continue;
 				}
 				throw error;

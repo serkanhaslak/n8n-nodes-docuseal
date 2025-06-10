@@ -168,6 +168,51 @@ export const templateFields: INodeProperties[] = [
 			},
 		],
 	},
+	{
+		displayName: 'Additional Fields',
+		name: 'additionalFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['template'],
+				operation: ['getMany'],
+				returnAll: [true],
+			},
+		},
+		options: [
+			{
+				displayName: 'Batch Size',
+				name: 'batchSize',
+				type: 'number',
+				default: 100,
+				typeOptions: {
+					minValue: 10,
+					maxValue: 500,
+				},
+				description: 'Number of items to fetch per API request (10-500)',
+			},
+			{
+				displayName: 'Max Items',
+				name: 'maxItems',
+				type: 'number',
+				default: 10000,
+				typeOptions: {
+					minValue: 100,
+					maxValue: 50000,
+				},
+				description: 'Maximum total items to fetch to prevent memory issues (100-50000)',
+			},
+			{
+				displayName: 'Memory Optimized',
+				name: 'memoryOptimized',
+				type: 'boolean',
+				default: false,
+				description: 'Whether to use memory-optimized processing for large datasets',
+			},
+		],
+	},
 
 	// Create from PDF operation
 	{

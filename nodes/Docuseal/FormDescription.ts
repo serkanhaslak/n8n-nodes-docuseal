@@ -19,7 +19,7 @@ export const formOperations: INodeProperties[] = [
 				action: 'Get form started events',
 			},
 			{
-				name: 'Get Viewed', 
+				name: 'Get Viewed',
 				value: 'getViewed',
 				description: 'Get form events when form is viewed',
 				action: 'Get form viewed events',

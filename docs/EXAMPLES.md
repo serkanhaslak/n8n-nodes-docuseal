@@ -1,10 +1,12 @@
 # DocuSeal Node Usage Examples
 
-This document provides practical examples of how to use the DocuSeal nodes in your n8n workflows.
+This document provides practical examples of how to use the DocuSeal nodes in
+your n8n workflows.
 
 ## 1. Creating a Document Signing Request
 
-This example demonstrates how to create a document signing request in DocuSeal using an existing template.
+This example demonstrates how to create a document signing request in DocuSeal
+using an existing template.
 
 ### Workflow Steps
 
@@ -40,11 +42,14 @@ For the DocuSeal node:
      ```
    - **Send Email**: true
 
-This workflow will create a new document signing request using a pre-existing template, pre-fill fields with data from the previous node, and send an email to the recipient.
+This workflow will create a new document signing request using a pre-existing
+template, pre-fill fields with data from the previous node, and send an email to
+the recipient.
 
 ## 2. Document Signing Webhook Automation
 
-This example shows how to set up a workflow that triggers when a document is signed in DocuSeal.
+This example shows how to set up a workflow that triggers when a document is
+signed in DocuSeal.
 
 ### Workflow Steps
 
@@ -68,11 +73,13 @@ For the DocuSeal Trigger node:
    - Event: submission.completed
    - Format: JSON
 
-This workflow will automatically trigger whenever a document is completed in DocuSeal, allowing you to process the signed document or notify team members.
+This workflow will automatically trigger whenever a document is completed in
+DocuSeal, allowing you to process the signed document or notify team members.
 
 ## 3. Retrieving and Processing Templates
 
-This example demonstrates how to list all available templates and process them in a workflow.
+This example demonstrates how to list all available templates and process them
+in a workflow.
 
 ### Workflow Steps
 
@@ -86,11 +93,14 @@ This example demonstrates how to list all available templates and process them i
 2. **Operation**: Get List
 3. **Return All**: True
 
-This workflow will retrieve all templates from your DocuSeal account and process them one by one, allowing you to perform operations like backing up templates or generating reports.
+This workflow will retrieve all templates from your DocuSeal account and process
+them one by one, allowing you to perform operations like backing up templates or
+generating reports.
 
 ## 4. AI-Driven Document Creation
 
-This example shows how to use the DocuSeal node with n8n's AI Agent to create document signing requests based on natural language instructions.
+This example shows how to use the DocuSeal node with n8n's AI Agent to create
+document signing requests based on natural language instructions.
 
 ### Workflow Steps
 
@@ -101,18 +111,22 @@ This example shows how to use the DocuSeal node with n8n's AI Agent to create do
 ### AI Agent Configuration
 
 1. Configure the AI Agent to use DocuSeal as a tool
-2. Send instructions like: "Create a document signing request for John Doe (john@example.com) using the NDA template"
+2. Send instructions like: "Create a document signing request for John Doe
+   (john@example.com) using the NDA template"
 
 The AI Agent will:
+
 1. Find the appropriate template
 2. Create the submission with the correct recipient information
 3. Return a confirmation with the signing link
 
-This workflow demonstrates the power of combining AI with document automation to create a conversational interface for document signing.
+This workflow demonstrates the power of combining AI with document automation to
+create a conversational interface for document signing.
 
 ## 5. Multi-Party Document Signing
 
-This example shows how to create a document that requires multiple signers in a specific order.
+This example shows how to create a document that requires multiple signers in a
+specific order.
 
 ### Workflow Steps
 
@@ -143,16 +157,19 @@ This example shows how to create a document that requires multiple signers in a 
    - **Order**: "preserved"
    - **Send Email**: true
 
-This will create a sequential signing flow where the second party receives the document only after the first party has signed.
+This will create a sequential signing flow where the second party receives the
+document only after the first party has signed.
 
 ## 6. Updating a Submitter
 
-You can update a submitter's details, pre-fill form fields, or re-send email notifications using the DocuSeal node:
+You can update a submitter's details, pre-fill form fields, or re-send email
+notifications using the DocuSeal node:
 
 1. Add a **DocuSeal** node to your workflow
 2. Select **Submitter** as the Resource
 3. Select **Update** as the Operation
-4. Enter the **Submitter ID** (you can get this from a previous submission creation or from DocuSeal's interface)
+4. Enter the **Submitter ID** (you can get this from a previous submission
+   creation or from DocuSeal's interface)
 5. Configure the update fields:
 
 ### Example: Update submitter email and pre-fill fields
@@ -201,14 +218,17 @@ You can update a submitter's details, pre-fill form fields, or re-send email not
 
 ## 7. Getting a Submitter
 
-You can retrieve detailed information about a specific submitter using the DocuSeal node:
+You can retrieve detailed information about a specific submitter using the
+DocuSeal node:
 
 1. Add a **DocuSeal** node to your workflow
 2. Select **Submitter** as the Resource
 3. Select **Get** as the Operation
-4. Enter the **Submitter ID** (you can get this from a previous submission creation or from DocuSeal's interface)
+4. Enter the **Submitter ID** (you can get this from a previous submission
+   creation or from DocuSeal's interface)
 
 This will return detailed information about the submitter, including:
+
 - Contact information (name, email, phone)
 - Status (completed, archived)
 - Submission details
@@ -236,7 +256,8 @@ To retrieve all submitters associated with a particular submission:
 
 To search for submitters by name, email, or phone:
 
-1. Add the **Query** filter with your search term (e.g., "john" or "example.com")
+1. Add the **Query** filter with your search term (e.g., "john" or
+   "example.com")
 2. Set a reasonable limit (e.g., 50)
 
 ### Example: Get Recently Completed Submissions
@@ -251,4 +272,5 @@ To find submitters who completed their submissions within a specific date range:
 For efficient pagination through large result sets:
 
 1. First request: Set a limit (e.g., 50)
-2. Subsequent requests: Use the last ID from the previous response as the **After ID** filter
+2. Subsequent requests: Use the last ID from the previous response as the
+   **After ID** filter

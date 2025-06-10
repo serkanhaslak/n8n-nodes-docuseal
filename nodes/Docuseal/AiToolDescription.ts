@@ -38,7 +38,8 @@ export const aiToolFields: INodeProperties[] = [
 		},
 		default: '',
 		placeholder: 'e.g., Non-disclosure agreement, Employment contract, Invoice',
-		description: 'The type of document to generate (e.g., "Non-disclosure agreement", "Employment contract", "Invoice", "Purchase agreement")',
+		description:
+			'The type of document to generate (e.g., "Non-disclosure agreement", "Employment contract", "Invoice", "Purchase agreement")',
 	},
 	{
 		displayName: 'Document Description',
@@ -56,7 +57,8 @@ export const aiToolFields: INodeProperties[] = [
 		},
 		default: '',
 		placeholder: 'e.g., Standard NDA for a contractor relationship between Acme Inc. and John Doe',
-		description: 'Detailed description of the document content and requirements. Include party names, specific terms, and any special clauses needed.',
+		description:
+			'Detailed description of the document content and requirements. Include party names, specific terms, and any special clauses needed.',
 	},
 	{
 		displayName: 'Additional Options',
@@ -90,7 +92,7 @@ export const aiToolFields: INodeProperties[] = [
 						value: 'en',
 					},
 					{
-						name: 'French', 
+						name: 'French',
 						value: 'fr',
 					},
 					{
@@ -155,7 +157,8 @@ export const aiToolFields: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				placeholder: 'e.g., signature, date, name, address',
-				description: 'Comma-separated list of fields to include in the document (e.g., "signature, date, name, company, address")',
+				description:
+					'Comma-separated list of fields to include in the document (e.g., "signature, date, name, company, address")',
 			},
 		],
 	},

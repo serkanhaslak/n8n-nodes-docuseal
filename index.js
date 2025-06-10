@@ -4,7 +4,5 @@ module.exports = {
 		require('./dist/nodes/Docuseal/DocusealTrigger.node.js'),
 		require('./dist/nodes/Docuseal/DocusealAiTool.node.js'),
 	],
-	credentialTypes: [
-		require('./dist/credentials/DocusealApi.credentials.js'),
-	],
+	credentialTypes: [require('./dist/credentials/DocusealApi.credentials.js')],
 };

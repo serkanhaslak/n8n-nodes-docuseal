@@ -1,13 +1,18 @@
-import {
+import type {
 	IHookFunctions,
 	IWebhookFunctions,
 	IDataObject,
 	INodeType,
 	INodeTypeDescription,
 	IWebhookResponseData,
-	NodeConnectionType,
 } from 'n8n-workflow';
 
+/**
+ * DocuSeal Trigger Node for n8n
+ * Handles webhook events from DocuSeal platform
+ * Supports various event types like submission completion, form opening, etc.
+ * @implements {INodeType}
+ */
 export class DocusealTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'DocuSeal Trigger',
@@ -20,7 +25,7 @@ export class DocusealTrigger implements INodeType {
 			name: 'DocuSeal Trigger',
 		},
 		inputs: [],
-		outputs: [NodeConnectionType.Main],
+		outputs: [{ type: 'main' as any }],
 		credentials: [
 			{
 				name: 'docusealApi',
@@ -106,13 +111,18 @@ export class DocusealTrigger implements INodeType {
 						name: 'includeSubmissionData',
 						type: 'boolean',
 						default: false,
-						description: 'Whether to fetch the full submission data when a submission event is received',
+						description:
+							'Whether to fetch the full submission data when a submission event is received',
 					},
 				],
 			},
 		],
 	};
 
+	/**
+	 * Webhook methods for managing DocuSeal webhook lifecycle
+	 * Handles creation, deletion, and verification of webhooks
+	 */
 	webhookMethods = {
 		default: {
 			async checkExists(this: IHookFunctions): Promise<boolean> {
@@ -136,7 +146,9 @@ To complete the setup:
 3. Navigate to the Webhooks tab
 4. Click "Add Webhook"
 5. Enter the webhook URL: \`${webhookUrl}\`
-6. Select the event type${eventType === 'all' ? 's you want to trigger this workflow' : ': ' + eventType}
+6. Select the event type${
+	eventType === 'all' ? 's you want to trigger this workflow' : `: ${eventType}`
+}
 7. Save the webhook configuration
 
 For security purposes, DocuSeal may provide a signing secret for your webhook. 
@@ -175,9 +187,15 @@ If available, save this secret for future use with webhook validation.`;
 		},
 	};
 
+	/**
+	 * Webhook handler method - processes incoming DocuSeal webhook events
+	 * Validates event types, optionally fetches additional data, and returns processed data
+	 * @param this - The n8n webhook execution context
+	 * @returns Promise resolving to webhook response data for the workflow
+	 */
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 		const webhookName = this.getWebhookName();
-		
+
 		// Handle setup/verification requests
 		if (webhookName === 'setup') {
 			// Return an OK status for setup/verification
@@ -187,12 +205,12 @@ If available, save this secret for future use with webhook validation.`;
 		}
 
 		// Process the webhook data
-		const bodyData = this.getBodyData() as IDataObject;
+		const bodyData = this.getBodyData() ;
 		const eventType = this.getNodeParameter('eventType') as string;
 		const additionalFields = this.getNodeParameter('additionalFields', {}) as IDataObject;
-		
+
 		// Validate webhook signature if available
-		// DocuSeal documentation doesn't mention a signature validation method, 
+		// DocuSeal documentation doesn't mention a signature validation method,
 		// but if it becomes available, we'll implement it here
 		/*
 		const headerData = this.getHeaderData() as IDataObject;
@@ -206,23 +224,23 @@ If available, save this secret for future use with webhook validation.`;
 		// Check if the event type matches what we're listening for
 		if (bodyData.event && eventType !== 'all' && bodyData.event !== eventType) {
 			// If event type doesn't match, ignore this webhook call
-			return { 
+			return {
 				noWebhookResponse: true,
 			};
 		}
 
 		// Prepare the data to return
 		let responseData: IDataObject | IDataObject[] = bodyData;
-		
+
 		// Optionally fetch additional data
 		if (additionalFields.includeSubmissionData === true && bodyData.submission_id) {
 			try {
 				// Get the credentials
 				const credentials = await this.getCredentials('docusealApi');
-				
+
 				// Get environment setting (production or test)
 				const environment = this.getNodeParameter('environment', 'production') as string;
-				
+
 				// Determine which API key to use
 				let apiKey = '';
 				if (environment === 'production') {
@@ -230,10 +248,10 @@ If available, save this secret for future use with webhook validation.`;
 				} else {
 					apiKey = credentials.testApiKey as string;
 				}
-				
+
 				// Set base URL
-				const baseUrl = credentials.baseUrl as string || 'https://api.docuseal.com';
-				
+				const baseUrl = (credentials.baseUrl as string) || 'https://api.docuseal.com';
+
 				// Make API request directly since we can't use docusealApiRequest here
 				const submissionData = await this.helpers.request({
 					method: 'GET',
@@ -243,7 +261,7 @@ If available, save this secret for future use with webhook validation.`;
 					},
 					json: true,
 				});
-				
+
 				// Merge with existing webhook data
 				responseData = {
 					...bodyData,
@@ -257,9 +275,7 @@ If available, save this secret for future use with webhook validation.`;
 
 		// Return the data to be used in the workflow
 		return {
-			workflowData: [
-				this.helpers.returnJsonArray(responseData),
-			],
+			workflowData: [this.helpers.returnJsonArray(responseData)],
 		};
 	}
 }

@@ -1,6 +1,7 @@
 # n8n-nodes-docuseal Development Guide
 
-This guide documents important lessons learned, potential pitfalls, and best practices for developing and maintaining the n8n-nodes-docuseal project.
+This guide documents important lessons learned, potential pitfalls, and best
+practices for developing and maintaining the n8n-nodes-docuseal project.
 
 ## Project Architecture
 
@@ -19,9 +20,12 @@ The package follows a standard n8n community node structure:
 
 ### Node Input/Output Configuration
 
-One of the most challenging aspects of developing n8n custom nodes is handling the proper TypeScript typing for node inputs and outputs. There's often a conflict between TypeScript type requirements and ESLint rules specific to n8n.
+One of the most challenging aspects of developing n8n custom nodes is handling
+the proper TypeScript typing for node inputs and outputs. There's often a
+conflict between TypeScript type requirements and ESLint rules specific to n8n.
 
-**Problem**: The n8n node input/output format has changed across different versions of the n8n-workflow package. This can lead to conflicts between:
+**Problem**: The n8n node input/output format has changed across different
+versions of the n8n-workflow package. This can lead to conflicts between:
 
 - TypeScript type definitions requiring `NodeConnectionType.Main`
 - ESLint rules expecting `['main']` string array format
@@ -63,16 +67,18 @@ options: [
     // ...
   },
   // Additional options in alphabetical order...
-]
+];
 ```
 
 ## AI Integration Best Practices
 
-When developing nodes that will be used with n8n's AI Agent feature, follow these best practices:
+When developing nodes that will be used with n8n's AI Agent feature, follow
+these best practices:
 
 ### 1. Detailed Parameter Descriptions
 
-Provide comprehensive descriptions for all parameters, especially for complex JSON inputs:
+Provide comprehensive descriptions for all parameters, especially for complex
+JSON inputs:
 
 ```typescript
 {
@@ -94,7 +100,8 @@ description: 'JSON object with field values. Example: {"First Name": "John", "Si
 
 ### 3. Use the Tool Specification
 
-To make your node available as an AI tool, include the toolSpecification property:
+To make your node available as an AI tool, include the toolSpecification
+property:
 
 ```typescript
 // @ts-ignore
@@ -109,7 +116,8 @@ toolSpecification: {
 
 ## Environment Handling
 
-For credentials that support multiple environments (like production/test), ensure you properly handle environment selection:
+For credentials that support multiple environments (like production/test),
+ensure you properly handle environment selection:
 
 ```typescript
 // Get environment (production or test)
@@ -165,11 +173,13 @@ Ensure your package.json includes:
 ## Publishing Best Practices
 
 1. **Pre-Publish Checklist**:
+
    - All linting errors resolved or specific rules disabled
    - Example/starter code removed
    - All new features properly documented in README.md
 
 2. **Version Management**:
+
    - Follow semantic versioning
    - Update version in package.json before publishing
 

@@ -1,6 +1,8 @@
 # n8n-nodes-docuseal
 
-This package contains n8n nodes for [DocuSeal](https://www.docuseal.com), a document signing solution. The integration allows you to easily create document signing requests and monitor document submissions within your n8n workflows.
+This package contains n8n nodes for [DocuSeal](https://www.docuseal.com), a
+document signing solution. The integration allows you to easily create document
+signing requests and monitor document submissions within your n8n workflows.
 
 ## Features
 
@@ -12,18 +14,21 @@ The main API node that allows you to:
 
 - **Template Management**: Create, retrieve, and manage document templates
 - **Submission Handling**: Create and manage document submissions
-- **Submitter Management**: 
+- **Submitter Management**:
   - Update submitter details, pre-fill fields, and control email notifications
   - Retrieve individual submitter details
-  - List and filter submitters by various criteria (submission ID, completion date, search terms)
+  - List and filter submitters by various criteria (submission ID, completion
+    date, search terms)
 - **Webhook Integration**: Receive real-time updates on document status changes
-- **AI Integration**: Enhanced compatibility with n8n AI Agents including Google Gemini, OpenAI, and other LLM models
+- **AI Integration**: Enhanced compatibility with n8n AI Agents including Google
+  Gemini, OpenAI, and other LLM models
 
 ### 2. DocuSeal Trigger
 
 A webhook-based trigger node that:
 
-- Listens for DocuSeal events (submission completions, submission creations, submitter events)
+- Listens for DocuSeal events (submission completions, submission creations,
+  submitter events)
 - Provides detailed setup instructions for configuring webhooks in DocuSeal
 - Can fetch additional submission details when events are received
 
@@ -51,13 +56,16 @@ The nodes use a custom credential type that supports:
 
 - **Production API Key**: For your production DocuSeal environment
 - **Test API Key**: For your test/sandbox DocuSeal environment
-- **Base URL**: Configurable API endpoint (defaults to [https://api.docuseal.com](https://api.docuseal.com))
+- **Base URL**: Configurable API endpoint (defaults to
+  [https://api.docuseal.com](https://api.docuseal.com))
 
-You can easily switch between test and production environments within the node settings.
+You can easily switch between test and production environments within the node
+settings.
 
 ## AI Integration
 
-The DocuSeal node is optimized for use with n8n's AI Agent feature, allowing AI-driven document workflows. The node includes:
+The DocuSeal node is optimized for use with n8n's AI Agent feature, allowing
+AI-driven document workflows. The node includes:
 
 - Detailed parameter descriptions for AI to understand JSON formats
 - Examples showing proper structuring of complex JSON objects
@@ -67,29 +75,44 @@ The DocuSeal node is optimized for use with n8n's AI Agent feature, allowing AI-
 
 The implementation follows best practices from core n8n nodes:
 
-- **Modular Structure**: Operations and parameters are organized into separate resource description files
-- **Shared Utilities**: Common API functions are centralized in GenericFunctions.ts
-- **Environment Support**: Easily toggle between test and production environments
+- **Modular Structure**: Operations and parameters are organized into separate
+  resource description files
+- **Shared Utilities**: Common API functions are centralized in
+  GenericFunctions.ts
+- **Environment Support**: Easily toggle between test and production
+  environments
 - **Error Handling**: Robust error management with helpful messages
 
 ## Development
 
-For contributors and developers interested in enhancing these nodes, see [DEVELOPMENT.md](./DEVELOPMENT.md) for guidelines, best practices, and common issues.
+For contributors and developers interested in enhancing these nodes, see
+[DEVELOPMENT.md](./DEVELOPMENT.md) for guidelines, best practices, and common
+issues.
 
 ## Usage Examples
 
-See [EXAMPLES.md](./EXAMPLES.md) for common workflow scenarios and how to implement them.
+See [EXAMPLES.md](./EXAMPLES.md) for common workflow scenarios and how to
+implement them.
 
 ## Version History
 
-- **v0.8.2**: Added strict validation for submitter data (`email`, `role`) in 'Create Submission' operation to prevent API calls with invalid data and ensure errors are thrown in n8n.
-- **v0.8.1**: Fixed submitters data handling to prevent default values and added detailed error logging
-- **v0.8.0**: Fixed submission creation to properly format field values according to DocuSeal API requirements
-- **v0.7.8**: Fixed JSON data handling for form submissions with proper recursive parsing
-- **v0.7.7**: Added Gemini-specific compatibility with simplified parameter structure
-- **v0.7.6**: Made critical parameters required for AI agent visibility and improved tool specification
-- **v0.7.5**: Enhanced field descriptions for AI agents with detailed formatting examples
-- **v0.7.4**: Improved AI agent accessibility by moving all nested parameters to top level
+- **v0.8.2**: Added strict validation for submitter data (`email`, `role`) in
+  'Create Submission' operation to prevent API calls with invalid data and
+  ensure errors are thrown in n8n.
+- **v0.8.1**: Fixed submitters data handling to prevent default values and added
+  detailed error logging
+- **v0.8.0**: Fixed submission creation to properly format field values
+  according to DocuSeal API requirements
+- **v0.7.8**: Fixed JSON data handling for form submissions with proper
+  recursive parsing
+- **v0.7.7**: Added Gemini-specific compatibility with simplified parameter
+  structure
+- **v0.7.6**: Made critical parameters required for AI agent visibility and
+  improved tool specification
+- **v0.7.5**: Enhanced field descriptions for AI agents with detailed formatting
+  examples
+- **v0.7.4**: Improved AI agent accessibility by moving all nested parameters to
+  top level
 - **v0.7.3**: Improved AI agent field handling for complex form data
 - **v0.7.2**: Fixed parameter naming for Google Gemini AI compatibility
 - **v0.7.1**: Fixed schema definitions for Google Gemini AI compatibility

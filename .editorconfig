@@ -1,5 +1,10 @@
+# EditorConfig is awesome: https://EditorConfig.org
+# Enhanced configuration for n8n-nodes-docuseal project
+
+# Top-most EditorConfig file
 root = true
 
+# All files
 [*]
 charset = utf-8
 indent_style = tab
@@ -7,14 +12,87 @@ indent_size = 2
 end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
+max_line_length = 100
 
+# TypeScript and JavaScript files
+[*.{ts,js,mts,cts,mjs,cjs}]
+indent_style = tab
+indent_size = 2
+max_line_length = 100
+
+# JSON files
+[*.json]
+indent_style = space
+indent_size = 2
+max_line_length = 80
+
+# Package.json (special formatting)
 [package.json]
 indent_style = space
 indent_size = 2
+max_line_length = 120
 
-[*.md]
-trim_trailing_whitespace = false
-
-[*.yml]
+# YAML files
+[*.{yml,yaml}]
 indent_style = space
 indent_size = 2
+max_line_length = 80
+
+# Markdown files
+[*.md]
+indent_style = space
+indent_size = 2
+max_line_length = 80
+trim_trailing_whitespace = false
+
+# XML files
+[*.xml]
+indent_style = space
+indent_size = 2
+max_line_length = 120
+
+# HTML files
+[*.html]
+indent_style = space
+indent_size = 2
+max_line_length = 120
+
+# CSS and SCSS files
+[*.{css,scss,sass}]
+indent_style = space
+indent_size = 2
+max_line_length = 100
+
+# Shell scripts
+[*.{sh,bash}]
+indent_style = space
+indent_size = 2
+max_line_length = 100
+
+# Docker files
+[{Dockerfile,Dockerfile.*}]
+indent_style = space
+indent_size = 2
+max_line_length = 100
+
+# Test files
+[*.{test,spec}.{ts,js}]
+indent_style = tab
+indent_size = 2
+max_line_length = 120
+
+# Configuration files
+[*.{ini,cfg,conf}]
+indent_style = space
+indent_size = 2
+
+# Environment files
+[.env*]
+indent_style = space
+indent_size = 2
+max_line_length = 100
+
+# Makefile
+[{Makefile,makefile,GNUmakefile}]
+indent_style = tab
+indent_size = 4

@@ -9,78 +9,88 @@ const SubmitterDescription_1 = require("./SubmitterDescription");
 const FormDescription_1 = require("./FormDescription");
 class DocusealApi {
     constructor() {
-        this.description = {
-            displayName: 'DocuSeal',
-            name: 'docusealApi',
-            icon: 'file:docuseal.svg',
-            group: ['transform'],
-            version: 1,
-            subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-            description: 'Create documents, manage templates, and handle submissions with DocuSeal',
-            defaults: {
-                name: 'DocuSeal',
-            },
-            inputs: ["main"],
-            outputs: ["main"],
-            usableAsTool: true,
-            credentials: [
-                {
-                    name: 'docusealApi',
-                    required: true,
+        Object.defineProperty(this, "description", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: {
+                displayName: 'DocuSeal',
+                name: 'docusealApi',
+                icon: 'file:docuseal.svg',
+                group: ['transform'],
+                version: 1,
+                subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
+                description: 'Create documents, manage templates, and handle submissions with DocuSeal',
+                defaults: {
+                    name: 'DocuSeal',
                 },
-            ],
-            properties: [
-                {
-                    displayName: 'Resource',
-                    name: 'resource',
-                    type: 'options',
-                    noDataExpression: true,
-                    options: [
-                        {
-                            name: 'Form',
-                            value: 'form',
-                            description: 'Work with form events',
-                        },
-                        {
-                            name: 'Submission',
-                            value: 'submission',
-                            description: 'Create and manage document submissions',
-                        },
-                        {
-                            name: 'Submitter',
-                            value: 'submitter',
-                            description: 'Manage submitters and their data',
-                        },
-                        {
-                            name: 'Template',
-                            value: 'template',
-                            description: 'Create and manage document templates',
-                        },
-                    ],
-                    default: 'submission',
+                inputs: [{ type: 'main' }],
+                outputs: [{ type: 'main' }],
+                usableAsTool: true,
+                credentials: [
+                    {
+                        name: 'docusealApi',
+                        required: true,
+                    },
+                ],
+                properties: [
+                    {
+                        displayName: 'Resource',
+                        name: 'resource',
+                        type: 'options',
+                        noDataExpression: true,
+                        options: [
+                            {
+                                name: 'Form',
+                                value: 'form',
+                                description: 'Work with form events',
+                            },
+                            {
+                                name: 'Submission',
+                                value: 'submission',
+                                description: 'Create and manage document submissions',
+                            },
+                            {
+                                name: 'Submitter',
+                                value: 'submitter',
+                                description: 'Manage submitters and their data',
+                            },
+                            {
+                                name: 'Template',
+                                value: 'template',
+                                description: 'Create and manage document templates',
+                            },
+                        ],
+                        default: 'submission',
+                    },
+                    ...TemplateDescription_1.templateOperations,
+                    ...TemplateDescription_1.templateFields,
+                    ...SubmissionDescription_1.submissionOperations,
+                    ...SubmissionDescription_1.submissionFields,
+                    ...SubmitterDescription_1.submitterOperations,
+                    ...SubmitterDescription_1.submitterFields,
+                    ...FormDescription_1.formOperations,
+                    ...FormDescription_1.formFields,
+                ],
+            }
+        });
+        Object.defineProperty(this, "methods", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: {
+                loadOptions: {
+                    async getTemplates() {
+                        try {
+                            return await GenericFunctions_1.getTemplates.call(this);
+                        }
+                        catch (error) {
+                            return [];
+                        }
+                    },
                 },
-                ...TemplateDescription_1.templateOperations,
-                ...TemplateDescription_1.templateFields,
-                ...SubmissionDescription_1.submissionOperations,
-                ...SubmissionDescription_1.submissionFields,
-                ...SubmitterDescription_1.submitterOperations,
-                ...SubmitterDescription_1.submitterFields,
-                ...FormDescription_1.formOperations,
-                ...FormDescription_1.formFields,
-            ],
-        };
-        this.methods = {
-            loadOptions: {
-                async getTemplates() {
-                    try {
-                        return await GenericFunctions_1.getTemplates.call(this);
-                    }
-                    catch (error) {
-                        return [];
-                    }
-                },
-            },
-        };
+            }
+        });
     }
     async execute() {
         const items = this.getInputData();
@@ -99,7 +109,13 @@ class DocusealApi {
                         const returnAll = this.getNodeParameter('returnAll', i);
                         const filters = this.getNodeParameter('filters', i, {});
                         if (returnAll) {
-                            responseData = await GenericFunctions_1.docusealApiRequestAllItems.call(this, 'GET', '/templates', {}, filters);
+                            const additionalFields = this.getNodeParameter('additionalFields', i, {});
+                            const performanceOptions = {
+                                batchSize: additionalFields.batchSize || 100,
+                                maxItems: additionalFields.maxItems || 10000,
+                                memoryOptimized: additionalFields.memoryOptimized || false,
+                            };
+                            responseData = await GenericFunctions_1.docusealApiRequestAllItems.call(this, 'GET', '/templates', {}, filters, performanceOptions);
                         }
                         else {
                             const limit = this.getNodeParameter('limit', i);
@@ -120,12 +136,21 @@ class DocusealApi {
                             formData.document = binaryData;
                         }
                         else {
-                            formData.document_url = this.getNodeParameter('fileUrl', i);
+                            const fileUrl = this.getNodeParameter('fileUrl', i);
+                            const urlValidation = (0, GenericFunctions_1.validateUrl)(fileUrl);
+                            if (!urlValidation.isValid) {
+                                throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Invalid file URL: ${urlValidation.message}`, {
+                                    itemIndex: i,
+                                });
+                            }
+                            formData.document_url = fileUrl;
                         }
-                        if (additionalFields.external_id)
+                        if (additionalFields.external_id) {
                             formData.external_id = additionalFields.external_id;
-                        if (additionalFields.folder_name)
+                        }
+                        if (additionalFields.folder_name) {
                             formData.folder_name = additionalFields.folder_name;
+                        }
                         if (additionalFields.fields) {
                             const fieldsData = additionalFields.fields;
                             if (fieldsData.field) {
@@ -147,12 +172,21 @@ class DocusealApi {
                             formData.document = binaryData;
                         }
                         else {
-                            formData.document_url = this.getNodeParameter('fileUrlDocx', i);
+                            const fileUrl = this.getNodeParameter('fileUrlDocx', i);
+                            const urlValidation = (0, GenericFunctions_1.validateUrl)(fileUrl);
+                            if (!urlValidation.isValid) {
+                                throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Invalid file URL: ${urlValidation.message}`, {
+                                    itemIndex: i,
+                                });
+                            }
+                            formData.document_url = fileUrl;
                         }
-                        if (additionalFields.external_id)
+                        if (additionalFields.external_id) {
                             formData.external_id = additionalFields.external_id;
-                        if (additionalFields.folder_name)
+                        }
+                        if (additionalFields.folder_name) {
                             formData.folder_name = additionalFields.folder_name;
+                        }
                         if (additionalFields.fields) {
                             const fieldsData = additionalFields.fields;
                             if (fieldsData.field) {
@@ -169,10 +203,12 @@ class DocusealApi {
                             name,
                             html: htmlContent,
                         };
-                        if (additionalFields.external_id)
+                        if (additionalFields.external_id) {
                             body.external_id = additionalFields.external_id;
-                        if (additionalFields.folder_name)
+                        }
+                        if (additionalFields.folder_name) {
                             body.folder_name = additionalFields.folder_name;
+                        }
                         if (additionalFields.fields) {
                             const fieldsData = additionalFields.fields;
                             if (fieldsData.field) {
@@ -188,17 +224,19 @@ class DocusealApi {
                         const body = {
                             name,
                         };
-                        if (additionalFields.external_id)
+                        if (additionalFields.external_id) {
                             body.external_id = additionalFields.external_id;
-                        if (additionalFields.folder_name)
+                        }
+                        if (additionalFields.folder_name) {
                             body.folder_name = additionalFields.folder_name;
+                        }
                         responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'POST', `/templates/${templateId}/clone`, body);
                     }
                     else if (operation === 'merge') {
                         const templateIds = this.getNodeParameter('templateIds', i)
                             .split(',')
-                            .map(id => parseInt(id.trim()))
-                            .filter(id => !isNaN(id));
+                            .map((id) => parseInt(id.trim()))
+                            .filter((id) => !isNaN(id));
                         const name = this.getNodeParameter('mergedName', i);
                         const body = {
                             template_ids: templateIds,
@@ -210,7 +248,9 @@ class DocusealApi {
                         const templateId = this.getNodeParameter('templateId', i);
                         const updateFields = this.getNodeParameter('updateFields', i, {});
                         if (Object.keys(updateFields).length === 0) {
-                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'At least one field must be updated', { itemIndex: i });
+                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'At least one field must be updated', {
+                                itemIndex: i,
+                            });
                         }
                         responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'PUT', `/templates/${templateId}`, updateFields);
                     }
@@ -221,7 +261,7 @@ class DocusealApi {
                         if (documentsSource === 'binary') {
                             const binaryProperties = this.getNodeParameter('binaryProperties', i)
                                 .split(',')
-                                .map(prop => prop.trim());
+                                .map((prop) => prop.trim());
                             for (const [index, propertyName] of binaryProperties.entries()) {
                                 const binaryData = await GenericFunctions_1.prepareBinaryData.call(this, propertyName, i);
                                 formData[`documents[${index}]`] = binaryData;
@@ -230,7 +270,16 @@ class DocusealApi {
                         else {
                             const fileUrls = this.getNodeParameter('fileUrls', i)
                                 .split(',')
-                                .map(url => url.trim());
+                                .map((url) => url.trim())
+                                .filter((url) => url.length > 0);
+                            for (const url of fileUrls) {
+                                const urlValidation = (0, GenericFunctions_1.validateUrl)(url);
+                                if (!urlValidation.isValid) {
+                                    throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Invalid file URL '${url}': ${urlValidation.message}`, {
+                                        itemIndex: i,
+                                    });
+                                }
+                            }
                             fileUrls.forEach((url, index) => {
                                 formData[`document_urls[${index}]`] = url;
                             });
@@ -258,7 +307,13 @@ class DocusealApi {
                             filters.status = filters.status.join(',');
                         }
                         if (returnAll) {
-                            responseData = await GenericFunctions_1.docusealApiRequestAllItems.call(this, 'GET', '/submissions', {}, filters);
+                            const additionalFields = this.getNodeParameter('additionalFields', i, {});
+                            const performanceOptions = {
+                                batchSize: additionalFields.batchSize || 100,
+                                maxItems: additionalFields.maxItems || 10000,
+                                memoryOptimized: additionalFields.memoryOptimized || false,
+                            };
+                            responseData = await GenericFunctions_1.docusealApiRequestAllItems.call(this, 'GET', '/submissions', {}, filters, performanceOptions);
                         }
                         else {
                             const limit = this.getNodeParameter('limit', i);
@@ -272,7 +327,9 @@ class DocusealApi {
                         const additionalOptions = this.getNodeParameter('additionalOptions', i, {});
                         const submitters = (0, GenericFunctions_1.buildSubmittersArray)(submittersData);
                         if (submitters.length === 0) {
-                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'At least one submitter is required', { itemIndex: i });
+                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'At least one submitter is required', {
+                                itemIndex: i,
+                            });
                         }
                         const values = (0, GenericFunctions_1.buildFieldValues)(this.getNodeParameter('', 0));
                         const body = {
@@ -327,7 +384,9 @@ class DocusealApi {
                         const additionalOptions = this.getNodeParameter('additionalOptions', i, {});
                         const submitters = (0, GenericFunctions_1.buildSubmittersArray)(submittersData);
                         if (submitters.length === 0) {
-                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'At least one submitter is required', { itemIndex: i });
+                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'At least one submitter is required', {
+                                itemIndex: i,
+                            });
                         }
                         const formData = {
                             submitters: JSON.stringify(submitters),
@@ -338,12 +397,20 @@ class DocusealApi {
                             formData.document = binaryData;
                         }
                         else {
-                            formData.document_url = this.getNodeParameter('fileUrl', i);
+                            const fileUrl = this.getNodeParameter('fileUrl', i);
+                            const urlValidation = (0, GenericFunctions_1.validateUrl)(fileUrl);
+                            if (!urlValidation.isValid) {
+                                throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Invalid file URL: ${urlValidation.message}`, {
+                                    itemIndex: i,
+                                });
+                            }
+                            formData.document_url = fileUrl;
                         }
                         if (additionalOptions.external_id) {
                             formData.external_id = additionalOptions.external_id;
                         }
-                        if (additionalOptions.send_email !== undefined && additionalOptions.send_email !== null) {
+                        if (additionalOptions.send_email !== undefined &&
+                            additionalOptions.send_email !== null) {
                             formData.send_email = additionalOptions.send_email.toString();
                         }
                         responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'POST', '/submissions/pdf', {}, {}, { formData });
@@ -354,7 +421,9 @@ class DocusealApi {
                         const additionalOptions = this.getNodeParameter('additionalOptions', i, {});
                         const submitters = (0, GenericFunctions_1.buildSubmittersArray)(submittersData);
                         if (submitters.length === 0) {
-                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'At least one submitter is required', { itemIndex: i });
+                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'At least one submitter is required', {
+                                itemIndex: i,
+                            });
                         }
                         const body = {
                             html: htmlContent,
@@ -388,7 +457,13 @@ class DocusealApi {
                             filters.completed_before = (0, GenericFunctions_1.formatDate)(filters.completed_before);
                         }
                         if (returnAll) {
-                            responseData = await GenericFunctions_1.docusealApiRequestAllItems.call(this, 'GET', '/submitters', {}, filters);
+                            const additionalFields = this.getNodeParameter('additionalFields', i, {});
+                            const performanceOptions = {
+                                batchSize: additionalFields.batchSize || 100,
+                                maxItems: additionalFields.maxItems || 10000,
+                                memoryOptimized: additionalFields.memoryOptimized || false,
+                            };
+                            responseData = await GenericFunctions_1.docusealApiRequestAllItems.call(this, 'GET', '/submitters', {}, filters, performanceOptions);
                         }
                         else {
                             const limit = this.getNodeParameter('limit', i);
@@ -414,7 +489,9 @@ class DocusealApi {
                         }
                         if (valuesData.value) {
                             const values = {};
-                            const valueItems = Array.isArray(valuesData.value) ? valuesData.value : [valuesData.value];
+                            const valueItems = Array.isArray(valuesData.value)
+                                ? valuesData.value
+                                : [valuesData.value];
                             valueItems.forEach((item) => {
                                 if (item.name && item.value !== undefined) {
                                     values[item.name] = item.value;
@@ -423,7 +500,9 @@ class DocusealApi {
                             body.values = values;
                         }
                         if (Object.keys(body).length === 0) {
-                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'At least one field must be updated', { itemIndex: i });
+                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'At least one field must be updated', {
+                                itemIndex: i,
+                            });
                         }
                         responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'PUT', `/submitters/${submitterId}`, body);
                     }
@@ -442,7 +521,7 @@ class DocusealApi {
             }
             catch (error) {
                 if (this.continueOnFail()) {
-                    returnData.push({ json: { error: error.message } });
+                    returnData.push({ json: { error: error instanceof Error ? error.message : String(error) } });
                     continue;
                 }
                 throw error;
