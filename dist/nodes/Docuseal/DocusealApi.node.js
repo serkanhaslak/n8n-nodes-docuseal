@@ -111,11 +111,13 @@ class DocusealApi {
                         filters.limit = limit;
                         try {
                             responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'GET', '/templates', {}, filters);
-                            if (responseData && typeof responseData === 'object' && 'data' in responseData && Array.isArray(responseData.data)) {
+                            if (responseData &&
+                                typeof responseData === 'object' &&
+                                'data' in responseData &&
+                                Array.isArray(responseData.data)) {
                                 responseData = responseData.data;
                             }
                             else if (!Array.isArray(responseData)) {
-                                console.warn('Unexpected DocuSeal API response format:', responseData);
                                 responseData = [];
                             }
                             if (!Array.isArray(responseData)) {
@@ -312,7 +314,10 @@ class DocusealApi {
                         filters.limit = limit;
                         try {
                             responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'GET', '/submissions', {}, filters);
-                            if (responseData && typeof responseData === 'object' && 'data' in responseData && Array.isArray(responseData.data)) {
+                            if (responseData &&
+                                typeof responseData === 'object' &&
+                                'data' in responseData &&
+                                Array.isArray(responseData.data)) {
                                 responseData = responseData.data;
                             }
                             else if (!Array.isArray(responseData)) {
@@ -461,7 +466,10 @@ class DocusealApi {
                         filters.limit = limit;
                         try {
                             responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'GET', '/submitters', {}, filters);
-                            if (responseData && typeof responseData === 'object' && 'data' in responseData && Array.isArray(responseData.data)) {
+                            if (responseData &&
+                                typeof responseData === 'object' &&
+                                'data' in responseData &&
+                                Array.isArray(responseData.data)) {
                                 responseData = responseData.data;
                             }
                             else if (!Array.isArray(responseData)) {

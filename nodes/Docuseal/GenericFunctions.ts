@@ -392,7 +392,6 @@ export async function docusealApiRequest(
 		timeout: 30000, // 30 second timeout
 	};
 
-
 	// Add options if any
 	if (Object.keys(options).length > 0) {
 		Object.assign(requestOptions, options);

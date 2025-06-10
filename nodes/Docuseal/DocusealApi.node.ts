@@ -156,20 +156,24 @@ export class DocusealApi implements INodeType {
 						const filters = this.getNodeParameter('filters', i, {});
 						const limit = this.getNodeParameter('limit', i);
 						filters.limit = limit;
-						
+
 						try {
 							responseData = await docusealApiRequest.call(this, 'GET', '/templates', {}, filters);
-							
+
 							// Handle DocuSeal API response structure
-							if (responseData && typeof responseData === 'object' && 'data' in responseData && Array.isArray((responseData as any).data)) {
+							if (
+								responseData &&
+								typeof responseData === 'object' &&
+								'data' in responseData &&
+								Array.isArray((responseData as any).data)
+							) {
 								// DocuSeal returns { data: [...], pagination: {...} }
 								responseData = (responseData as any).data;
 							} else if (!Array.isArray(responseData)) {
-								// If response is not an array and doesn't have data property, it might be an error
-								console.warn('Unexpected DocuSeal API response format:', responseData);
+								// If response is not an array and doesn't have data property, set empty array
 								responseData = [];
 							}
-							
+
 							// Ensure we always return an array
 							if (!Array.isArray(responseData)) {
 								responseData = [];
@@ -178,7 +182,7 @@ export class DocusealApi implements INodeType {
 							throw new NodeOperationError(
 								this.getNode(),
 								`Failed to retrieve templates: ${(error as Error).message}`,
-								{ itemIndex: i }
+								{ itemIndex: i },
 							);
 						}
 					}
@@ -480,12 +484,23 @@ export class DocusealApi implements INodeType {
 
 						const limit = this.getNodeParameter('limit', i);
 						filters.limit = limit;
-						
+
 						try {
-							responseData = await docusealApiRequest.call(this, 'GET', '/submissions', {}, filters);
-							
+							responseData = await docusealApiRequest.call(
+								this,
+								'GET',
+								'/submissions',
+								{},
+								filters,
+							);
+
 							// Handle DocuSeal API response structure
-							if (responseData && typeof responseData === 'object' && 'data' in responseData && Array.isArray((responseData as any).data)) {
+							if (
+								responseData &&
+								typeof responseData === 'object' &&
+								'data' in responseData &&
+								Array.isArray((responseData as any).data)
+							) {
 								responseData = (responseData as any).data;
 							} else if (!Array.isArray(responseData)) {
 								responseData = [];
@@ -494,7 +509,7 @@ export class DocusealApi implements INodeType {
 							throw new NodeOperationError(
 								this.getNode(),
 								`Failed to retrieve submissions: ${(error as Error).message}`,
-								{ itemIndex: i }
+								{ itemIndex: i },
 							);
 						}
 					}
@@ -707,12 +722,17 @@ export class DocusealApi implements INodeType {
 
 						const limit = this.getNodeParameter('limit', i);
 						filters.limit = limit;
-						
+
 						try {
 							responseData = await docusealApiRequest.call(this, 'GET', '/submitters', {}, filters);
-							
+
 							// Handle DocuSeal API response structure
-							if (responseData && typeof responseData === 'object' && 'data' in responseData && Array.isArray((responseData as any).data)) {
+							if (
+								responseData &&
+								typeof responseData === 'object' &&
+								'data' in responseData &&
+								Array.isArray((responseData as any).data)
+							) {
 								responseData = (responseData as any).data;
 							} else if (!Array.isArray(responseData)) {
 								responseData = [];
@@ -721,7 +741,7 @@ export class DocusealApi implements INodeType {
 							throw new NodeOperationError(
 								this.getNode(),
 								`Failed to retrieve submitters: ${(error as Error).message}`,
-								{ itemIndex: i }
+								{ itemIndex: i },
 							);
 						}
 					}
