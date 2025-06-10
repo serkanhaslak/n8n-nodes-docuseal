@@ -93,19 +93,6 @@ exports.templateFields = [
         description: 'ID of the template',
     },
     {
-        displayName: 'Return All',
-        name: 'returnAll',
-        type: 'boolean',
-        displayOptions: {
-            show: {
-                resource: ['template'],
-                operation: ['getMany'],
-            },
-        },
-        default: false,
-        description: 'Whether to return all results or only up to a given limit',
-    },
-    {
         displayName: 'Limit',
         name: 'limit',
         type: 'number',
@@ -113,11 +100,11 @@ exports.templateFields = [
             show: {
                 resource: ['template'],
                 operation: ['getMany'],
-                returnAll: [false],
             },
         },
         typeOptions: {
             minValue: 1,
+            maxValue: 500,
         },
         default: 50,
         description: 'Max number of results to return',
@@ -162,51 +149,6 @@ exports.templateFields = [
                 type: 'string',
                 default: '',
                 description: 'Search templates by name',
-            },
-        ],
-    },
-    {
-        displayName: 'Additional Fields',
-        name: 'additionalFields',
-        type: 'collection',
-        placeholder: 'Add Field',
-        default: {},
-        displayOptions: {
-            show: {
-                resource: ['template'],
-                operation: ['getMany'],
-                returnAll: [true],
-            },
-        },
-        options: [
-            {
-                displayName: 'Batch Size',
-                name: 'batchSize',
-                type: 'number',
-                default: 100,
-                typeOptions: {
-                    minValue: 10,
-                    maxValue: 500,
-                },
-                description: 'Number of items to fetch per API request (10-500)',
-            },
-            {
-                displayName: 'Max Items',
-                name: 'maxItems',
-                type: 'number',
-                default: 10000,
-                typeOptions: {
-                    minValue: 100,
-                    maxValue: 50000,
-                },
-                description: 'Maximum total items to fetch to prevent memory issues (100-50000)',
-            },
-            {
-                displayName: 'Memory Optimized',
-                name: 'memoryOptimized',
-                type: 'boolean',
-                default: false,
-                description: 'Whether to use memory-optimized processing for large datasets',
             },
         ],
     },

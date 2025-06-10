@@ -106,22 +106,10 @@ class DocusealApi {
                         responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'GET', `/templates/${templateId}`);
                     }
                     else if (operation === 'getMany') {
-                        const returnAll = this.getNodeParameter('returnAll', i);
                         const filters = this.getNodeParameter('filters', i, {});
-                        if (returnAll) {
-                            const additionalFields = this.getNodeParameter('additionalFields', i, {});
-                            const performanceOptions = {
-                                batchSize: additionalFields.batchSize || 100,
-                                maxItems: additionalFields.maxItems || 10000,
-                                memoryOptimized: additionalFields.memoryOptimized || false,
-                            };
-                            responseData = await GenericFunctions_1.docusealApiRequestAllItems.call(this, 'GET', '/templates', {}, filters, performanceOptions);
-                        }
-                        else {
-                            const limit = this.getNodeParameter('limit', i);
-                            filters.limit = limit;
-                            responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'GET', '/templates', {}, filters);
-                        }
+                        const limit = this.getNodeParameter('limit', i);
+                        filters.limit = limit;
+                        responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'GET', '/templates', {}, filters);
                     }
                     else if (operation === 'createFromPdf') {
                         const name = this.getNodeParameter('name', i);
@@ -301,25 +289,13 @@ class DocusealApi {
                         responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'GET', `/submissions/${submissionId}/documents`);
                     }
                     else if (operation === 'getMany') {
-                        const returnAll = this.getNodeParameter('returnAll', i);
                         const filters = this.getNodeParameter('filters', i, {});
                         if (filters.status && Array.isArray(filters.status)) {
                             filters.status = filters.status.join(',');
                         }
-                        if (returnAll) {
-                            const additionalFields = this.getNodeParameter('additionalFields', i, {});
-                            const performanceOptions = {
-                                batchSize: additionalFields.batchSize || 100,
-                                maxItems: additionalFields.maxItems || 10000,
-                                memoryOptimized: additionalFields.memoryOptimized || false,
-                            };
-                            responseData = await GenericFunctions_1.docusealApiRequestAllItems.call(this, 'GET', '/submissions', {}, filters, performanceOptions);
-                        }
-                        else {
-                            const limit = this.getNodeParameter('limit', i);
-                            filters.limit = limit;
-                            responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'GET', '/submissions', {}, filters);
-                        }
+                        const limit = this.getNodeParameter('limit', i);
+                        filters.limit = limit;
+                        responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'GET', '/submissions', {}, filters);
                     }
                     else if (operation === 'create') {
                         const templateId = this.getNodeParameter('templateId', i);
@@ -448,7 +424,6 @@ class DocusealApi {
                         responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'GET', `/submitters/${submitterId}`);
                     }
                     else if (operation === 'getMany') {
-                        const returnAll = this.getNodeParameter('returnAll', i);
                         const filters = this.getNodeParameter('filters', i, {});
                         if (filters.completed_after) {
                             filters.completed_after = (0, GenericFunctions_1.formatDate)(filters.completed_after);
@@ -456,20 +431,9 @@ class DocusealApi {
                         if (filters.completed_before) {
                             filters.completed_before = (0, GenericFunctions_1.formatDate)(filters.completed_before);
                         }
-                        if (returnAll) {
-                            const additionalFields = this.getNodeParameter('additionalFields', i, {});
-                            const performanceOptions = {
-                                batchSize: additionalFields.batchSize || 100,
-                                maxItems: additionalFields.maxItems || 10000,
-                                memoryOptimized: additionalFields.memoryOptimized || false,
-                            };
-                            responseData = await GenericFunctions_1.docusealApiRequestAllItems.call(this, 'GET', '/submitters', {}, filters, performanceOptions);
-                        }
-                        else {
-                            const limit = this.getNodeParameter('limit', i);
-                            filters.limit = limit;
-                            responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'GET', '/submitters', {}, filters);
-                        }
+                        const limit = this.getNodeParameter('limit', i);
+                        filters.limit = limit;
+                        responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'GET', '/submitters', {}, filters);
                     }
                     else if (operation === 'update') {
                         const submitterId = this.getNodeParameter('submitterId', i);

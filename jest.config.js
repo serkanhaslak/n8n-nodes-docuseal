@@ -27,7 +27,6 @@ module.exports = {
 			{
 				tsconfig: 'tsconfig.json',
 				useESM: false,
-				isolatedModules: true,
 			},
 		],
 	},
@@ -125,7 +124,6 @@ module.exports = {
 					{
 						tsconfig: 'tsconfig.json',
 						useESM: false,
-						isolatedModules: true,
 					},
 				],
 			},
@@ -141,7 +139,6 @@ module.exports = {
 					{
 						tsconfig: 'tsconfig.json',
 						useESM: false,
-						isolatedModules: true,
 					},
 				],
 			},

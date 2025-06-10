@@ -1,3 +1,4 @@
+import type { IHookFunctions } from 'n8n-workflow';
 import { DocusealTrigger } from '../../nodes/Docuseal/DocusealTrigger.node';
 
 describe('DocusealTrigger.node', () => {
@@ -70,6 +71,98 @@ describe('DocusealTrigger.node', () => {
 			expect(docusealTrigger.webhookMethods.setup).toBeDefined();
 		});
 
+		describe('Default Webhook Methods', () => {
+			let mockHookFunctions: Partial<IHookFunctions>;
+
+			beforeEach(() => {
+				mockHookFunctions = {
+					getNodeWebhookUrl: jest.fn().mockReturnValue('https://webhook.example.com/webhook'),
+					getNodeParameter: jest.fn().mockReturnValue('all'),
+					logger: {
+						info: jest.fn(),
+						error: jest.fn(),
+						warn: jest.fn(),
+						debug: jest.fn(),
+						verbose: jest.fn(),
+					} as any,
+				} as any;
+			});
+
+			it('should not check webhook existence', async () => {
+				const result = await docusealTrigger.webhookMethods.default.checkExists.call(
+					mockHookFunctions as IHookFunctions
+				);
+				expect(result).toBe(false);
+			});
+
+			it('should create webhook with instructions', async () => {
+				const result = await docusealTrigger.webhookMethods.default.create.call(
+					mockHookFunctions as IHookFunctions
+				);
+
+				expect(result).toBe(true);
+				expect(mockHookFunctions.getNodeWebhookUrl).toHaveBeenCalledWith('default');
+				expect(mockHookFunctions.getNodeParameter).toHaveBeenCalledWith('eventType');
+				expect(mockHookFunctions.logger?.info).toHaveBeenCalledWith(
+					expect.stringContaining('DocuSeal Webhook Setup')
+				);
+			});
+
+			it('should create webhook with specific event type instructions', async () => {
+				(mockHookFunctions.getNodeParameter as jest.Mock).mockReturnValue('submission.completed');
+
+				const result = await docusealTrigger.webhookMethods.default.create.call(
+					mockHookFunctions as IHookFunctions
+				);
+
+				expect(result).toBe(true);
+				expect(mockHookFunctions.logger?.info).toHaveBeenCalledWith(
+					expect.stringContaining('submission.completed')
+				);
+			});
+
+			it('should delete webhook with instructions', async () => {
+				const result = await docusealTrigger.webhookMethods.default.delete.call(
+					mockHookFunctions as IHookFunctions
+				);
+
+				expect(result).toBe(true);
+				expect(mockHookFunctions.getNodeWebhookUrl).toHaveBeenCalledWith('default');
+				expect(mockHookFunctions.logger?.info).toHaveBeenCalledWith(
+					expect.stringContaining('Please delete the webhook')
+				);
+			});
+		});
+
+		describe('Setup Webhook Methods', () => {
+			let mockHookFunctions: Partial<IHookFunctions>;
+
+			beforeEach(() => {
+				mockHookFunctions = {} as any;
+			});
+
+			it('should not check setup webhook existence', async () => {
+				const result = await docusealTrigger.webhookMethods.setup.checkExists.call(
+					mockHookFunctions as IHookFunctions
+				);
+				expect(result).toBe(false);
+			});
+
+			it('should create setup webhook', async () => {
+				const result = await docusealTrigger.webhookMethods.setup.create.call(
+					mockHookFunctions as IHookFunctions
+				);
+				expect(result).toBe(true);
+			});
+
+			it('should delete setup webhook', async () => {
+				const result = await docusealTrigger.webhookMethods.setup.delete.call(
+					mockHookFunctions as IHookFunctions
+				);
+				expect(result).toBe(true);
+			});
+		});
+
 		it('should process webhook data correctly', async () => {
 			const mockWebhookFunctions = {
 				getWebhookName: jest.fn().mockReturnValue('default'),
@@ -120,6 +213,249 @@ describe('DocusealTrigger.node', () => {
 
 			expect(result).toBeDefined();
 			expect(result.webhookResponse).toBe('Webhook setup successful');
+		});
+
+		it('should filter events based on event type', async () => {
+			const mockWebhookFunctions = {
+				getWebhookName: jest.fn().mockReturnValue('default'),
+				getBodyData: jest.fn().mockReturnValue({
+					event: 'submission.created',
+					submission_id: 123,
+				}),
+				getNodeParameter: jest.fn().mockImplementation((param: string) => {
+					if (param === 'eventType') {
+						return 'submission.completed'; // Different from event in body
+					}
+					if (param === 'additionalFields') {
+						return {};
+					}
+					return null;
+				}),
+			} as any;
+
+			const result = await docusealTrigger.webhook.call(mockWebhookFunctions);
+
+			expect(result).toBeDefined();
+			expect(result.noWebhookResponse).toBe(true);
+		});
+
+		it('should fetch additional submission data when requested', async () => {
+			const mockSubmissionData = { id: 123, status: 'completed', submitters: [] };
+			const mockWebhookFunctions = {
+				getWebhookName: jest.fn().mockReturnValue('default'),
+				getBodyData: jest.fn().mockReturnValue({
+					event: 'submission.completed',
+					submission_id: 123,
+				}),
+				getNodeParameter: jest.fn().mockImplementation((param: string, _defaultValue?: any) => {
+					if (param === 'eventType') {
+						return 'all';
+					}
+					if (param === 'additionalFields') {
+						return { includeSubmissionData: true };
+					}
+					if (param === 'environment') {
+						return _defaultValue || 'production';
+					}
+					return null;
+				}),
+				getCredentials: jest.fn().mockResolvedValue({
+					productionApiKey: 'prod-key',
+					testApiKey: 'test-key',
+					baseUrl: 'https://api.docuseal.com',
+				}),
+				helpers: {
+					request: jest.fn().mockResolvedValue(mockSubmissionData),
+					returnJsonArray: jest
+						.fn()
+						.mockImplementation((data: any) => (Array.isArray(data) ? data : [data])),
+				},
+				logger: {
+					error: jest.fn(),
+				} as any,
+			} as any;
+
+			const result = await docusealTrigger.webhook.call(mockWebhookFunctions);
+
+			expect(result.workflowData).toBeDefined();
+			expect(mockWebhookFunctions.getCredentials).toHaveBeenCalledWith('docusealApi');
+			expect(mockWebhookFunctions.helpers.request).toHaveBeenCalledWith({
+				method: 'GET',
+				uri: 'https://api.docuseal.com/submissions/123',
+				headers: {
+					'X-Auth-Token': 'prod-key',
+				},
+				json: true,
+			});
+		});
+
+		it('should use test API key for test environment', async () => {
+			const mockSubmissionData = { id: 123, status: 'completed' };
+			const mockWebhookFunctions = {
+				getWebhookName: jest.fn().mockReturnValue('default'),
+				getBodyData: jest.fn().mockReturnValue({
+					event: 'submission.completed',
+					submission_id: 123,
+				}),
+				getNodeParameter: jest.fn().mockImplementation((param: string, _defaultValue?: any) => {
+					if (param === 'eventType') {
+						return 'all';
+					}
+					if (param === 'additionalFields') {
+						return { includeSubmissionData: true };
+					}
+					if (param === 'environment') {
+						return 'test';
+					}
+					return null;
+				}),
+				getCredentials: jest.fn().mockResolvedValue({
+					productionApiKey: 'prod-key',
+					testApiKey: 'test-key',
+					baseUrl: 'https://api.docuseal.com',
+				}),
+				helpers: {
+					request: jest.fn().mockResolvedValue(mockSubmissionData),
+					returnJsonArray: jest
+						.fn()
+						.mockImplementation((data: any) => (Array.isArray(data) ? data : [data])),
+				},
+				logger: {
+					error: jest.fn(),
+				} as any,
+			} as any;
+
+			void await docusealTrigger.webhook.call(mockWebhookFunctions);
+
+			expect(mockWebhookFunctions.helpers.request).toHaveBeenCalledWith(
+				expect.objectContaining({
+					headers: {
+						'X-Auth-Token': 'test-key',
+					},
+				})
+			);
+		});
+
+		it('should handle API request errors gracefully', async () => {
+			const mockWebhookFunctions = {
+				getWebhookName: jest.fn().mockReturnValue('default'),
+				getBodyData: jest.fn().mockReturnValue({
+					event: 'submission.completed',
+					submission_id: 123,
+				}),
+				getNodeParameter: jest.fn().mockImplementation((param: string, _defaultValue?: any) => {
+					if (param === 'eventType') {
+						return 'all';
+					}
+					if (param === 'additionalFields') {
+						return { includeSubmissionData: true };
+					}
+					if (param === 'environment') {
+						return _defaultValue || 'production';
+					}
+					return null;
+				}),
+				getCredentials: jest.fn().mockResolvedValue({
+					productionApiKey: 'prod-key',
+					testApiKey: 'test-key',
+					baseUrl: 'https://api.docuseal.com',
+				}),
+				helpers: {
+					request: jest.fn().mockRejectedValue(new Error('API Error')),
+					returnJsonArray: jest
+						.fn()
+						.mockImplementation((data: any) => (Array.isArray(data) ? data : [data])),
+				},
+				logger: {
+					error: jest.fn(),
+				} as any,
+			} as any;
+
+			const result = await docusealTrigger.webhook.call(mockWebhookFunctions);
+
+			expect(result.workflowData).toBeDefined();
+			expect(mockWebhookFunctions.logger.error).toHaveBeenCalledWith(
+				'Failed to fetch submission details',
+				expect.objectContaining({ error: expect.any(Error) })
+			);
+		});
+
+		it('should use default base URL when not provided', async () => {
+			const mockSubmissionData = { id: 123, status: 'completed' };
+			const mockWebhookFunctions = {
+				getWebhookName: jest.fn().mockReturnValue('default'),
+				getBodyData: jest.fn().mockReturnValue({
+					event: 'submission.completed',
+					submission_id: 123,
+				}),
+				getNodeParameter: jest.fn().mockImplementation((param: string, _defaultValue?: any) => {
+					if (param === 'eventType') {
+						return 'all';
+					}
+					if (param === 'additionalFields') {
+						return { includeSubmissionData: true };
+					}
+					if (param === 'environment') {
+						return _defaultValue || 'production';
+					}
+					return null;
+				}),
+				getCredentials: jest.fn().mockResolvedValue({
+					productionApiKey: 'prod-key',
+					testApiKey: 'test-key',
+					// No baseUrl provided
+				}),
+				helpers: {
+					request: jest.fn().mockResolvedValue(mockSubmissionData),
+					returnJsonArray: jest
+						.fn()
+						.mockImplementation((data: any) => (Array.isArray(data) ? data : [data])),
+				},
+				logger: {
+					error: jest.fn(),
+				} as any,
+			} as any;
+
+			void await docusealTrigger.webhook.call(mockWebhookFunctions);
+
+			expect(mockWebhookFunctions.helpers.request).toHaveBeenCalledWith(
+				expect.objectContaining({
+					uri: 'https://api.docuseal.com/submissions/123',
+				})
+			);
+		});
+
+		it('should not fetch additional data when submission_id is missing', async () => {
+			const mockWebhookFunctions = {
+				getWebhookName: jest.fn().mockReturnValue('default'),
+				getBodyData: jest.fn().mockReturnValue({
+					event: 'submission.completed',
+					// No submission_id
+				}),
+				getNodeParameter: jest.fn().mockImplementation((param: string, _defaultValue?: any) => {
+					if (param === 'eventType') {
+						return 'all';
+					}
+					if (param === 'additionalFields') {
+						return { includeSubmissionData: true };
+					}
+					if (param === 'environment') {
+						return _defaultValue || 'production';
+					}
+					return null;
+				}),
+				helpers: {
+					returnJsonArray: jest
+						.fn()
+						.mockImplementation((data: any) => (Array.isArray(data) ? data : [data])),
+				},
+			} as any;
+
+			const result = await docusealTrigger.webhook.call(mockWebhookFunctions);
+
+			expect(result.workflowData).toBeDefined();
+			// Should not call getCredentials since no submission_id
+			expect(mockWebhookFunctions.getCredentials).toBeUndefined();
 		});
 	});
 

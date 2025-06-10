@@ -75,19 +75,6 @@ exports.submissionFields = [
         description: 'ID of the submission',
     },
     {
-        displayName: 'Return All',
-        name: 'returnAll',
-        type: 'boolean',
-        displayOptions: {
-            show: {
-                resource: ['submission'],
-                operation: ['getMany'],
-            },
-        },
-        default: false,
-        description: 'Whether to return all results or only up to a given limit',
-    },
-    {
         displayName: 'Limit',
         name: 'limit',
         type: 'number',
@@ -95,11 +82,11 @@ exports.submissionFields = [
             show: {
                 resource: ['submission'],
                 operation: ['getMany'],
-                returnAll: [false],
             },
         },
         typeOptions: {
             minValue: 1,
+            maxValue: 500,
         },
         default: 50,
         description: 'Max number of results to return',
@@ -180,51 +167,6 @@ exports.submissionFields = [
                 options: [],
                 default: '',
                 description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
-            },
-        ],
-    },
-    {
-        displayName: 'Additional Fields',
-        name: 'additionalFields',
-        type: 'collection',
-        placeholder: 'Add Field',
-        default: {},
-        displayOptions: {
-            show: {
-                resource: ['submission'],
-                operation: ['getMany'],
-                returnAll: [true],
-            },
-        },
-        options: [
-            {
-                displayName: 'Batch Size',
-                name: 'batchSize',
-                type: 'number',
-                default: 100,
-                typeOptions: {
-                    minValue: 10,
-                    maxValue: 500,
-                },
-                description: 'Number of items to fetch per API request (10-500)',
-            },
-            {
-                displayName: 'Max Items',
-                name: 'maxItems',
-                type: 'number',
-                default: 10000,
-                typeOptions: {
-                    minValue: 100,
-                    maxValue: 50000,
-                },
-                description: 'Maximum total items to fetch to prevent memory issues (100-50000)',
-            },
-            {
-                displayName: 'Memory Optimized',
-                name: 'memoryOptimized',
-                type: 'boolean',
-                default: false,
-                description: 'Whether to use memory-optimized processing for large datasets',
             },
         ],
     },

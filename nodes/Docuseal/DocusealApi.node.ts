@@ -12,7 +12,6 @@ import type {
 
 import {
 	docusealApiRequest,
-	docusealApiRequestAllItems,
 	getTemplates,
 	parseJsonInput,
 	prepareBinaryData,
@@ -154,31 +153,10 @@ export class DocusealApi implements INodeType {
 
 					// Get list of templates
 					else if (operation === 'getMany') {
-						const returnAll = this.getNodeParameter('returnAll', i);
 						const filters = this.getNodeParameter('filters', i, {});
-
-						if (returnAll) {
-							// Get performance options
-							const additionalFields = this.getNodeParameter('additionalFields', i, {});
-							const performanceOptions = {
-								batchSize: (additionalFields.batchSize as number) || 100,
-								maxItems: (additionalFields.maxItems as number) || 10000,
-								memoryOptimized: (additionalFields.memoryOptimized as boolean) || false,
-							};
-
-							responseData = await docusealApiRequestAllItems.call(
-								this,
-								'GET',
-								'/templates',
-								{},
-								filters,
-								performanceOptions,
-							);
-						} else {
-							const limit = this.getNodeParameter('limit', i);
-							filters.limit = limit;
-							responseData = await docusealApiRequest.call(this, 'GET', '/templates', {}, filters);
-						}
+						const limit = this.getNodeParameter('limit', i);
+						filters.limit = limit;
+						responseData = await docusealApiRequest.call(this, 'GET', '/templates', {}, filters);
 					}
 
 					// Create template from PDF
@@ -469,7 +447,6 @@ export class DocusealApi implements INodeType {
 
 					// Get list of submissions
 					else if (operation === 'getMany') {
-						const returnAll = this.getNodeParameter('returnAll', i);
 						const filters = this.getNodeParameter('filters', i, {});
 
 						// Process status filter - convert array to comma-separated string if needed
@@ -477,34 +454,15 @@ export class DocusealApi implements INodeType {
 							filters.status = (filters.status as string[]).join(',');
 						}
 
-						if (returnAll) {
-							// Get performance options
-							const additionalFields = this.getNodeParameter('additionalFields', i, {});
-							const performanceOptions = {
-								batchSize: (additionalFields.batchSize as number) || 100,
-								maxItems: (additionalFields.maxItems as number) || 10000,
-								memoryOptimized: (additionalFields.memoryOptimized as boolean) || false,
-							};
-
-							responseData = await docusealApiRequestAllItems.call(
-								this,
-								'GET',
-								'/submissions',
-								{},
-								filters,
-								performanceOptions,
-							);
-						} else {
-							const limit = this.getNodeParameter('limit', i);
-							filters.limit = limit;
-							responseData = await docusealApiRequest.call(
-								this,
-								'GET',
-								'/submissions',
-								{},
-								filters,
-							);
-						}
+						const limit = this.getNodeParameter('limit', i);
+						filters.limit = limit;
+						responseData = await docusealApiRequest.call(
+							this,
+							'GET',
+							'/submissions',
+							{},
+							filters,
+						);
 					}
 
 					// Create submission
@@ -703,7 +661,6 @@ export class DocusealApi implements INodeType {
 
 					// Get list of submitters
 					else if (operation === 'getMany') {
-						const returnAll = this.getNodeParameter('returnAll', i);
 						const filters = this.getNodeParameter('filters', i, {});
 
 						// Format date filters
@@ -714,28 +671,9 @@ export class DocusealApi implements INodeType {
 							filters.completed_before = formatDate(filters.completed_before as string);
 						}
 
-						if (returnAll) {
-							// Get performance options
-							const additionalFields = this.getNodeParameter('additionalFields', i, {});
-							const performanceOptions = {
-								batchSize: (additionalFields.batchSize as number) || 100,
-								maxItems: (additionalFields.maxItems as number) || 10000,
-								memoryOptimized: (additionalFields.memoryOptimized as boolean) || false,
-							};
-
-							responseData = await docusealApiRequestAllItems.call(
-								this,
-								'GET',
-								'/submitters',
-								{},
-								filters,
-								performanceOptions,
-							);
-						} else {
-							const limit = this.getNodeParameter('limit', i);
-							filters.limit = limit;
-							responseData = await docusealApiRequest.call(this, 'GET', '/submitters', {}, filters);
-						}
+						const limit = this.getNodeParameter('limit', i);
+						filters.limit = limit;
+						responseData = await docusealApiRequest.call(this, 'GET', '/submitters', {}, filters);
 					}
 
 					// Update submitter
