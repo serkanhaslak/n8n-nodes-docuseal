@@ -346,11 +346,19 @@ describe('runtime-validation', () => {
 		});
 
 		it('should create all validator types', () => {
-			expect(ValidationFactory.createApiCredentialsValidator()).toBeInstanceOf(ApiCredentialsValidator);
+			expect(ValidationFactory.createApiCredentialsValidator()).toBeInstanceOf(
+				ApiCredentialsValidator,
+			);
 			expect(ValidationFactory.createTemplateValidator()).toBeInstanceOf(TemplateValidator);
 			expect(ValidationFactory.createSubmissionValidator()).toBeInstanceOf(SubmissionValidator);
 			expect(ValidationFactory.createSubmitterValidator()).toBeInstanceOf(SubmitterValidator);
-			expect(ValidationFactory.createFileValidator({ maxSize: 1024, requireSignature: false, allowedTypes: [] })).toBeInstanceOf(FileValidator);
+			expect(
+				ValidationFactory.createFileValidator({
+					maxSize: 1024,
+					requireSignature: false,
+					allowedTypes: [],
+				}),
+			).toBeInstanceOf(FileValidator);
 		});
 	});
 
@@ -358,24 +366,24 @@ describe('runtime-validation', () => {
 		it('should validate multiple values successfully', () => {
 			const emailValidator = new EmailValidator();
 			const urlValidator = new UrlValidator();
-			
+
 			const result = ValidationUtils.validateMultiple([
 				{ value: 'test@example.com', validator: emailValidator, field: 'email' },
 				{ value: 'https://example.com', validator: urlValidator, field: 'url' },
 			]);
-			
+
 			expect(result).toEqual({ isValid: true });
 		});
 
 		it('should fail on first invalid value', () => {
 			const emailValidator = new EmailValidator();
 			const urlValidator = new UrlValidator();
-			
+
 			const result = ValidationUtils.validateMultiple([
 				{ value: 'invalid-email', validator: emailValidator, field: 'email' },
 				{ value: 'https://example.com', validator: urlValidator, field: 'url' },
 			]);
-			
+
 			expect(result.isValid).toBe(false);
 			expect(result.error).toContain('email:');
 		});

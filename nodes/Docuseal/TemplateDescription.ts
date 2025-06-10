@@ -107,7 +107,6 @@ export const templateFields: INodeProperties[] = [
 		},
 		typeOptions: {
 			minValue: 1,
-			maxValue: 500,
 		},
 		default: 50,
 		description: 'Max number of results to return',

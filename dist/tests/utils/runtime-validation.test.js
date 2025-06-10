@@ -290,7 +290,11 @@ describe('runtime-validation', () => {
             expect(runtime_validation_1.ValidationFactory.createTemplateValidator()).toBeInstanceOf(runtime_validation_1.TemplateValidator);
             expect(runtime_validation_1.ValidationFactory.createSubmissionValidator()).toBeInstanceOf(runtime_validation_1.SubmissionValidator);
             expect(runtime_validation_1.ValidationFactory.createSubmitterValidator()).toBeInstanceOf(runtime_validation_1.SubmitterValidator);
-            expect(runtime_validation_1.ValidationFactory.createFileValidator({ maxSize: 1024, requireSignature: false, allowedTypes: [] })).toBeInstanceOf(runtime_validation_1.FileValidator);
+            expect(runtime_validation_1.ValidationFactory.createFileValidator({
+                maxSize: 1024,
+                requireSignature: false,
+                allowedTypes: [],
+            })).toBeInstanceOf(runtime_validation_1.FileValidator);
         });
     });
     describe('ValidationUtils', () => {

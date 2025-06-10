@@ -262,7 +262,7 @@ describe('DocusealTrigger.node', () => {
                     error: jest.fn(),
                 },
             };
-            void await docusealTrigger.webhook.call(mockWebhookFunctions);
+            void (await docusealTrigger.webhook.call(mockWebhookFunctions));
             expect(mockWebhookFunctions.helpers.request).toHaveBeenCalledWith(expect.objectContaining({
                 headers: {
                     'X-Auth-Token': 'test-key',
@@ -341,7 +341,7 @@ describe('DocusealTrigger.node', () => {
                     error: jest.fn(),
                 },
             };
-            void await docusealTrigger.webhook.call(mockWebhookFunctions);
+            void (await docusealTrigger.webhook.call(mockWebhookFunctions));
             expect(mockWebhookFunctions.helpers.request).toHaveBeenCalledWith(expect.objectContaining({
                 uri: 'https://api.docuseal.com/submissions/123',
             }));

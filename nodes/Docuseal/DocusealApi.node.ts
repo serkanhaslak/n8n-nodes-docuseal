@@ -456,13 +456,7 @@ export class DocusealApi implements INodeType {
 
 						const limit = this.getNodeParameter('limit', i);
 						filters.limit = limit;
-						responseData = await docusealApiRequest.call(
-							this,
-							'GET',
-							'/submissions',
-							{},
-							filters,
-						);
+						responseData = await docusealApiRequest.call(this, 'GET', '/submissions', {}, filters);
 					}
 
 					// Create submission

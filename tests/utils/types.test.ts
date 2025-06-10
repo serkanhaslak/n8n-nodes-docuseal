@@ -77,7 +77,7 @@ describe('types', () => {
 
 			it('should return true for submission with all statuses', () => {
 				const statuses = ['pending', 'completed', 'expired', 'cancelled'];
-				statuses.forEach(status => {
+				statuses.forEach((status) => {
 					const submission = {
 						id: 1,
 						template_id: 2,

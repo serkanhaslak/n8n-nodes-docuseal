@@ -90,21 +90,21 @@ describe('DocusealTrigger.node', () => {
 
 			it('should not check webhook existence', async () => {
 				const result = await docusealTrigger.webhookMethods.default.checkExists.call(
-					mockHookFunctions as IHookFunctions
+					mockHookFunctions as IHookFunctions,
 				);
 				expect(result).toBe(false);
 			});
 
 			it('should create webhook with instructions', async () => {
 				const result = await docusealTrigger.webhookMethods.default.create.call(
-					mockHookFunctions as IHookFunctions
+					mockHookFunctions as IHookFunctions,
 				);
 
 				expect(result).toBe(true);
 				expect(mockHookFunctions.getNodeWebhookUrl).toHaveBeenCalledWith('default');
 				expect(mockHookFunctions.getNodeParameter).toHaveBeenCalledWith('eventType');
 				expect(mockHookFunctions.logger?.info).toHaveBeenCalledWith(
-					expect.stringContaining('DocuSeal Webhook Setup')
+					expect.stringContaining('DocuSeal Webhook Setup'),
 				);
 			});
 
@@ -112,24 +112,24 @@ describe('DocusealTrigger.node', () => {
 				(mockHookFunctions.getNodeParameter as jest.Mock).mockReturnValue('submission.completed');
 
 				const result = await docusealTrigger.webhookMethods.default.create.call(
-					mockHookFunctions as IHookFunctions
+					mockHookFunctions as IHookFunctions,
 				);
 
 				expect(result).toBe(true);
 				expect(mockHookFunctions.logger?.info).toHaveBeenCalledWith(
-					expect.stringContaining('submission.completed')
+					expect.stringContaining('submission.completed'),
 				);
 			});
 
 			it('should delete webhook with instructions', async () => {
 				const result = await docusealTrigger.webhookMethods.default.delete.call(
-					mockHookFunctions as IHookFunctions
+					mockHookFunctions as IHookFunctions,
 				);
 
 				expect(result).toBe(true);
 				expect(mockHookFunctions.getNodeWebhookUrl).toHaveBeenCalledWith('default');
 				expect(mockHookFunctions.logger?.info).toHaveBeenCalledWith(
-					expect.stringContaining('Please delete the webhook')
+					expect.stringContaining('Please delete the webhook'),
 				);
 			});
 		});
@@ -143,21 +143,21 @@ describe('DocusealTrigger.node', () => {
 
 			it('should not check setup webhook existence', async () => {
 				const result = await docusealTrigger.webhookMethods.setup.checkExists.call(
-					mockHookFunctions as IHookFunctions
+					mockHookFunctions as IHookFunctions,
 				);
 				expect(result).toBe(false);
 			});
 
 			it('should create setup webhook', async () => {
 				const result = await docusealTrigger.webhookMethods.setup.create.call(
-					mockHookFunctions as IHookFunctions
+					mockHookFunctions as IHookFunctions,
 				);
 				expect(result).toBe(true);
 			});
 
 			it('should delete setup webhook', async () => {
 				const result = await docusealTrigger.webhookMethods.setup.delete.call(
-					mockHookFunctions as IHookFunctions
+					mockHookFunctions as IHookFunctions,
 				);
 				expect(result).toBe(true);
 			});
@@ -325,14 +325,14 @@ describe('DocusealTrigger.node', () => {
 				} as any,
 			} as any;
 
-			void await docusealTrigger.webhook.call(mockWebhookFunctions);
+			void (await docusealTrigger.webhook.call(mockWebhookFunctions));
 
 			expect(mockWebhookFunctions.helpers.request).toHaveBeenCalledWith(
 				expect.objectContaining({
 					headers: {
 						'X-Auth-Token': 'test-key',
 					},
-				})
+				}),
 			);
 		});
 
@@ -376,7 +376,7 @@ describe('DocusealTrigger.node', () => {
 			expect(result.workflowData).toBeDefined();
 			expect(mockWebhookFunctions.logger.error).toHaveBeenCalledWith(
 				'Failed to fetch submission details',
-				expect.objectContaining({ error: expect.any(Error) })
+				expect.objectContaining({ error: expect.any(Error) }),
 			);
 		});
 
@@ -416,12 +416,12 @@ describe('DocusealTrigger.node', () => {
 				} as any,
 			} as any;
 
-			void await docusealTrigger.webhook.call(mockWebhookFunctions);
+			void (await docusealTrigger.webhook.call(mockWebhookFunctions));
 
 			expect(mockWebhookFunctions.helpers.request).toHaveBeenCalledWith(
 				expect.objectContaining({
 					uri: 'https://api.docuseal.com/submissions/123',
-				})
+				}),
 			);
 		});
 

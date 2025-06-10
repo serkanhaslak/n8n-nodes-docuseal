@@ -198,7 +198,7 @@ describe('DocusealApi.node', () => {
             const result = await docusealApi.execute.call(mockExecuteFunctions);
             expect(mockDocusealApiRequest).toHaveBeenCalledWith('POST', '/templates/html', expect.objectContaining({
                 name: 'Test HTML Template',
-                html: '<html><body>Test</body></html>'
+                html: '<html><body>Test</body></html>',
             }));
             expect(result[0]?.[0]?.json).toEqual({ id: 1, name: 'HTML Template' });
         });
@@ -228,7 +228,7 @@ describe('DocusealApi.node', () => {
             const result = await docusealApi.execute.call(mockExecuteFunctions);
             expect(mockDocusealApiRequest).toHaveBeenCalledWith('POST', '/templates/merge', expect.objectContaining({
                 template_ids: [1, 2],
-                name: 'Merged Template'
+                name: 'Merged Template',
             }));
             expect(result[0]?.[0]?.json).toEqual({ id: 3, name: 'Merged Template' });
         });
@@ -324,7 +324,7 @@ describe('DocusealApi.node', () => {
             const result = await docusealApi.execute.call(mockExecuteFunctions);
             expect(mockDocusealApiRequest).toHaveBeenCalledWith('GET', '/submissions', {}, expect.objectContaining({
                 status: 'completed,pending',
-                limit: 50
+                limit: 50,
             }));
             expect(result[0]).toHaveLength(2);
         });
@@ -368,7 +368,7 @@ describe('DocusealApi.node', () => {
             expect(mockBuildSubmittersArray).toHaveBeenCalled();
             expect(mockDocusealApiRequest).toHaveBeenCalledWith('POST', '/submissions/html', expect.objectContaining({
                 html: '<html><body>Document</body></html>',
-                submitters: [{ email: 'test@example.com' }]
+                submitters: [{ email: 'test@example.com' }],
             }));
             expect(result[0]?.[0]?.json).toEqual({ id: 1, status: 'pending' });
         });
@@ -434,7 +434,7 @@ describe('DocusealApi.node', () => {
             expect(mockFormatDate).toHaveBeenCalledWith('2023-01-01');
             expect(mockDocusealApiRequest).toHaveBeenCalledWith('GET', '/submitters', {}, expect.objectContaining({
                 completed_after: '2023-01-01T00:00:00Z',
-                limit: 50
+                limit: 50,
             }));
             expect(result[0]).toHaveLength(2);
         });
@@ -597,7 +597,7 @@ describe('DocusealApi.node', () => {
                 metadata: '{"key": "value"}',
                 order: 'sequential',
                 send_email: true,
-                send_sms: false
+                send_sms: false,
             })
                 .mockReturnValue({});
             const result = await docusealApi.execute.call(mockExecuteFunctions);
@@ -611,7 +611,7 @@ describe('DocusealApi.node', () => {
                 values: { field1: 'value1' },
                 preferences: {
                     bcc_completed: 'admin@example.com',
-                    reply_to: 'noreply@example.com'
+                    reply_to: 'noreply@example.com',
                 },
                 completed_redirect_url: 'https://example.com/completed',
                 expire_at: '2023-12-31T23:59:59Z',
@@ -620,7 +620,7 @@ describe('DocusealApi.node', () => {
                 metadata: { meta: 'data' },
                 order: 'sequential',
                 send_email: true,
-                send_sms: false
+                send_sms: false,
             }));
             expect(result[0]?.[0]?.json).toEqual({ id: 1, status: 'pending' });
         });

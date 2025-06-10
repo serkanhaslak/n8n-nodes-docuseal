@@ -190,7 +190,7 @@ describe('DocusealApi.node', () => {
 				'/templates/pdf',
 				{},
 				{},
-				expect.objectContaining({ formData: expect.any(Object) })
+				expect.objectContaining({ formData: expect.any(Object) }),
 			);
 			expect(result[0]?.[0]?.json).toEqual({ id: 1, name: 'PDF Template' });
 		});
@@ -219,7 +219,7 @@ describe('DocusealApi.node', () => {
 				'/templates/pdf',
 				{},
 				{},
-				expect.objectContaining({ formData: expect.any(Object) })
+				expect.objectContaining({ formData: expect.any(Object) }),
 			);
 			expect(result[0]?.[0]?.json).toEqual({ id: 1, name: 'PDF Template' });
 		});
@@ -243,8 +243,8 @@ describe('DocusealApi.node', () => {
 				'/templates/html',
 				expect.objectContaining({
 					name: 'Test HTML Template',
-					html: '<html><body>Test</body></html>'
-				})
+					html: '<html><body>Test</body></html>',
+				}),
 			);
 			expect(result[0]?.[0]?.json).toEqual({ id: 1, name: 'HTML Template' });
 		});
@@ -266,7 +266,7 @@ describe('DocusealApi.node', () => {
 			expect(mockDocusealApiRequest).toHaveBeenCalledWith(
 				'POST',
 				'/templates/1/clone',
-				expect.objectContaining({ name: 'Cloned Template' })
+				expect.objectContaining({ name: 'Cloned Template' }),
 			);
 			expect(result[0]?.[0]?.json).toEqual({ id: 2, name: 'Cloned Template' });
 		});
@@ -289,8 +289,8 @@ describe('DocusealApi.node', () => {
 				'/templates/merge',
 				expect.objectContaining({
 					template_ids: [1, 2],
-					name: 'Merged Template'
-				})
+					name: 'Merged Template',
+				}),
 			);
 			expect(result[0]?.[0]?.json).toEqual({ id: 3, name: 'Merged Template' });
 		});
@@ -311,7 +311,7 @@ describe('DocusealApi.node', () => {
 			expect(mockDocusealApiRequest).toHaveBeenCalledWith(
 				'PUT',
 				'/templates/1',
-				expect.objectContaining({ name: 'Updated Template' })
+				expect.objectContaining({ name: 'Updated Template' }),
 			);
 			expect(result[0]?.[0]?.json).toEqual({ id: 1, name: 'Updated Template' });
 		});
@@ -422,8 +422,8 @@ describe('DocusealApi.node', () => {
 				{},
 				expect.objectContaining({
 					status: 'completed,pending',
-					limit: 50
-				})
+					limit: 50,
+				}),
 			);
 			expect(result[0]).toHaveLength(2);
 		});
@@ -456,7 +456,7 @@ describe('DocusealApi.node', () => {
 				'/submissions/pdf',
 				{},
 				{},
-				expect.objectContaining({ formData: expect.any(Object) })
+				expect.objectContaining({ formData: expect.any(Object) }),
 			);
 			expect(result[0]?.[0]?.json).toEqual({ id: 1, status: 'pending' });
 		});
@@ -484,8 +484,8 @@ describe('DocusealApi.node', () => {
 				'/submissions/html',
 				expect.objectContaining({
 					html: '<html><body>Document</body></html>',
-					submitters: [{ email: 'test@example.com' }]
-				})
+					submitters: [{ email: 'test@example.com' }],
+				}),
 			);
 			expect(result[0]?.[0]?.json).toEqual({ id: 1, status: 'pending' });
 		});
@@ -571,8 +571,8 @@ describe('DocusealApi.node', () => {
 				{},
 				expect.objectContaining({
 					completed_after: '2023-01-01T00:00:00Z',
-					limit: 50
-				})
+					limit: 50,
+				}),
 			);
 			expect(result[0]).toHaveLength(2);
 		});
@@ -694,7 +694,7 @@ describe('DocusealApi.node', () => {
 				.mockReturnValueOnce('invalid-url'); // fileUrl
 
 			await expect(
-				docusealApi.execute.call(mockExecuteFunctions as IExecuteFunctions)
+				docusealApi.execute.call(mockExecuteFunctions as IExecuteFunctions),
 			).rejects.toThrow('Invalid file URL: Invalid URL format');
 
 			expect(mockValidateUrl).toHaveBeenCalledWith('invalid-url');
@@ -708,7 +708,7 @@ describe('DocusealApi.node', () => {
 				.mockReturnValueOnce({}); // updateFields (empty)
 
 			await expect(
-				docusealApi.execute.call(mockExecuteFunctions as IExecuteFunctions)
+				docusealApi.execute.call(mockExecuteFunctions as IExecuteFunctions),
 			).rejects.toThrow('At least one field must be updated');
 		});
 
@@ -722,7 +722,7 @@ describe('DocusealApi.node', () => {
 				.mockReturnValueOnce({}); // values
 
 			await expect(
-				docusealApi.execute.call(mockExecuteFunctions as IExecuteFunctions)
+				docusealApi.execute.call(mockExecuteFunctions as IExecuteFunctions),
 			).rejects.toThrow('At least one field must be updated');
 		});
 
@@ -739,7 +739,7 @@ describe('DocusealApi.node', () => {
 				.mockReturnValueOnce({}); // additionalOptions
 
 			await expect(
-				docusealApi.execute.call(mockExecuteFunctions as IExecuteFunctions)
+				docusealApi.execute.call(mockExecuteFunctions as IExecuteFunctions),
 			).rejects.toThrow('At least one submitter is required');
 
 			expect(mockBuildSubmittersArray).toHaveBeenCalled();
@@ -779,7 +779,7 @@ describe('DocusealApi.node', () => {
 					metadata: '{"key": "value"}',
 					order: 'sequential',
 					send_email: true,
-					send_sms: false
+					send_sms: false,
 				}) // additionalOptions
 				.mockReturnValue({}); // for buildFieldValues call
 
@@ -798,7 +798,7 @@ describe('DocusealApi.node', () => {
 					values: { field1: 'value1' },
 					preferences: {
 						bcc_completed: 'admin@example.com',
-						reply_to: 'noreply@example.com'
+						reply_to: 'noreply@example.com',
 					},
 					completed_redirect_url: 'https://example.com/completed',
 					expire_at: '2023-12-31T23:59:59Z',
@@ -807,8 +807,8 @@ describe('DocusealApi.node', () => {
 					metadata: { meta: 'data' },
 					order: 'sequential',
 					send_email: true,
-					send_sms: false
-				})
+					send_sms: false,
+				}),
 			);
 			expect(result[0]?.[0]?.json).toEqual({ id: 1, status: 'pending' });
 		});
