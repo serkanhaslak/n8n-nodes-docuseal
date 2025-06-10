@@ -947,9 +947,7 @@ export async function getTemplates(
 	this: ILoadOptionsFunctions,
 ): Promise<Array<{ name: string; value: string }>> {
 	try {
-		console.log('Starting to fetch templates for dropdown');
-
-		// First try with docusealApiRequest to see the raw response
+		// Fetch templates from DocuSeal API
 		const rawResponse = await docusealApiRequest.call(
 			this,
 			'GET',
@@ -957,14 +955,6 @@ export async function getTemplates(
 			{},
 			{ limit: 100 },
 		);
-
-		console.log('Raw API response structure for template dropdown:');
-		console.log('Response type:', typeof rawResponse);
-		console.log('Response is array:', Array.isArray(rawResponse));
-		if (rawResponse && typeof rawResponse === 'object') {
-			console.log('Response keys:', Object.keys(rawResponse));
-			console.log('First 300 characters:', JSON.stringify(rawResponse).substring(0, 300));
-		}
 
 		// Handle different response structures
 		let templates: any[];
@@ -988,28 +978,20 @@ export async function getTemplates(
 			return [];
 		}
 
-		// Extracted templates for processing
-
 		if (templates.length === 0) {
-			// No templates found
 			return [];
 		}
 
 		// Transform API response to options format
 		const options = templates.map((template: any) => {
-			const option = {
+			return {
 				name: template.name || template.title || `Template ${template.id}`,
 				value: String(template.id),
 			};
-			// Mapping template for dropdown
-			return option;
 		});
 
-		// Final options array prepared
 		return options;
 	} catch (error) {
-		// Error occurred during template fetching
-
 		// Return empty array to prevent dropdown from breaking
 		return [];
 	}

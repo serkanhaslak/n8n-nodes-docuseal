@@ -542,15 +542,7 @@ function parseJsonInput(inputData) {
 exports.parseJsonInput = parseJsonInput;
 async function getTemplates() {
     try {
-        console.log('Starting to fetch templates for dropdown');
         const rawResponse = await docusealApiRequest.call(this, 'GET', '/templates', {}, { limit: 100 });
-        console.log('Raw API response structure for template dropdown:');
-        console.log('Response type:', typeof rawResponse);
-        console.log('Response is array:', Array.isArray(rawResponse));
-        if (rawResponse && typeof rawResponse === 'object') {
-            console.log('Response keys:', Object.keys(rawResponse));
-            console.log('First 300 characters:', JSON.stringify(rawResponse).substring(0, 300));
-        }
         let templates;
         if (Array.isArray(rawResponse)) {
             templates = rawResponse;
@@ -576,11 +568,10 @@ async function getTemplates() {
             return [];
         }
         const options = templates.map((template) => {
-            const option = {
+            return {
                 name: template.name || template.title || `Template ${template.id}`,
                 value: String(template.id),
             };
-            return option;
         });
         return options;
     }
