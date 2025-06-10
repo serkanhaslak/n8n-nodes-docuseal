@@ -392,6 +392,7 @@ export async function docusealApiRequest(
 		timeout: 30000, // 30 second timeout
 	};
 
+
 	// Add options if any
 	if (Object.keys(options).length > 0) {
 		Object.assign(requestOptions, options);
@@ -947,7 +948,7 @@ export async function getTemplates(
 	this: ILoadOptionsFunctions,
 ): Promise<Array<{ name: string; value: string }>> {
 	try {
-		// Starting to fetch templates
+		console.log('Starting to fetch templates for dropdown');
 
 		// First try with docusealApiRequest to see the raw response
 		const rawResponse = await docusealApiRequest.call(
@@ -958,7 +959,13 @@ export async function getTemplates(
 			{ limit: 100 },
 		);
 
-		// Debug: Raw API response structure
+		console.log('Raw API response structure for template dropdown:');
+		console.log('Response type:', typeof rawResponse);
+		console.log('Response is array:', Array.isArray(rawResponse));
+		if (rawResponse && typeof rawResponse === 'object') {
+			console.log('Response keys:', Object.keys(rawResponse));
+			console.log('First 300 characters:', JSON.stringify(rawResponse).substring(0, 300));
+		}
 
 		// Handle different response structures
 		let templates: any[];

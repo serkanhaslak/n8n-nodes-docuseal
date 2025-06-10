@@ -109,7 +109,22 @@ class DocusealApi {
                         const filters = this.getNodeParameter('filters', i, {});
                         const limit = this.getNodeParameter('limit', i);
                         filters.limit = limit;
-                        responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'GET', '/templates', {}, filters);
+                        try {
+                            responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'GET', '/templates', {}, filters);
+                            if (responseData && typeof responseData === 'object' && 'data' in responseData && Array.isArray(responseData.data)) {
+                                responseData = responseData.data;
+                            }
+                            else if (!Array.isArray(responseData)) {
+                                console.warn('Unexpected DocuSeal API response format:', responseData);
+                                responseData = [];
+                            }
+                            if (!Array.isArray(responseData)) {
+                                responseData = [];
+                            }
+                        }
+                        catch (error) {
+                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Failed to retrieve templates: ${error.message}`, { itemIndex: i });
+                        }
                     }
                     else if (operation === 'createFromPdf') {
                         const name = this.getNodeParameter('name', i);
@@ -295,7 +310,18 @@ class DocusealApi {
                         }
                         const limit = this.getNodeParameter('limit', i);
                         filters.limit = limit;
-                        responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'GET', '/submissions', {}, filters);
+                        try {
+                            responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'GET', '/submissions', {}, filters);
+                            if (responseData && typeof responseData === 'object' && 'data' in responseData && Array.isArray(responseData.data)) {
+                                responseData = responseData.data;
+                            }
+                            else if (!Array.isArray(responseData)) {
+                                responseData = [];
+                            }
+                        }
+                        catch (error) {
+                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Failed to retrieve submissions: ${error.message}`, { itemIndex: i });
+                        }
                     }
                     else if (operation === 'create') {
                         const templateId = this.getNodeParameter('templateId', i);
@@ -433,7 +459,18 @@ class DocusealApi {
                         }
                         const limit = this.getNodeParameter('limit', i);
                         filters.limit = limit;
-                        responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'GET', '/submitters', {}, filters);
+                        try {
+                            responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'GET', '/submitters', {}, filters);
+                            if (responseData && typeof responseData === 'object' && 'data' in responseData && Array.isArray(responseData.data)) {
+                                responseData = responseData.data;
+                            }
+                            else if (!Array.isArray(responseData)) {
+                                responseData = [];
+                            }
+                        }
+                        catch (error) {
+                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Failed to retrieve submitters: ${error.message}`, { itemIndex: i });
+                        }
                     }
                     else if (operation === 'update') {
                         const submitterId = this.getNodeParameter('submitterId', i);
