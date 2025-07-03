@@ -97,10 +97,9 @@ describe('GenericFunctions', () => {
                 { email: 'test2@example.com', role: 'Viewer' },
             ]);
         });
-        it('should return empty array when no submitters provided', () => {
+        it('should throw error when no submitters provided', () => {
             const submittersData = {};
-            const result = (0, GenericFunctions_1.buildSubmittersArray)(submittersData);
-            expect(result).toEqual([]);
+            expect(() => (0, GenericFunctions_1.buildSubmittersArray)(submittersData)).toThrow('Submitters parameter must be a valid array');
         });
         it('should handle single submitter object', () => {
             const submittersData = {

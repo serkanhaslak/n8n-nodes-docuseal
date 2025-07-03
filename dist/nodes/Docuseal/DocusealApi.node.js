@@ -7,6 +7,7 @@ const TemplateDescription_1 = require("./TemplateDescription");
 const SubmissionDescription_1 = require("./SubmissionDescription");
 const SubmitterDescription_1 = require("./SubmitterDescription");
 const FormDescription_1 = require("./FormDescription");
+const AiToolDescription_1 = require("./AiToolDescription");
 class DocusealApi {
     constructor() {
         Object.defineProperty(this, "description", {
@@ -41,6 +42,11 @@ class DocusealApi {
                         noDataExpression: true,
                         options: [
                             {
+                                name: 'AI Tool',
+                                value: 'aiTool',
+                                description: 'Generate documents using AI',
+                            },
+                            {
                                 name: 'Form',
                                 value: 'form',
                                 description: 'Work with form events',
@@ -63,6 +69,8 @@ class DocusealApi {
                         ],
                         default: 'submission',
                     },
+                    ...AiToolDescription_1.aiToolOperations,
+                    ...AiToolDescription_1.aiToolFields,
                     ...TemplateDescription_1.templateOperations,
                     ...TemplateDescription_1.templateFields,
                     ...SubmissionDescription_1.submissionOperations,
@@ -100,6 +108,38 @@ class DocusealApi {
             try {
                 const resource = this.getNodeParameter('resource', i);
                 const operation = this.getNodeParameter('operation', i);
+                if (resource === 'aiTool') {
+                    if (operation === 'generateDocument') {
+                        const documentType = this.getNodeParameter('documentType', i);
+                        const description = this.getNodeParameter('description', i);
+                        const additionalOptions = this.getNodeParameter('additionalOptions', i, {});
+                        const body = {
+                            type: documentType,
+                            description,
+                        };
+                        if (additionalOptions.language) {
+                            body.language = additionalOptions.language;
+                        }
+                        if (additionalOptions.style) {
+                            body.style = additionalOptions.style;
+                        }
+                        if (additionalOptions.fields) {
+                            const fieldsString = additionalOptions.fields;
+                            if (fieldsString.trim()) {
+                                body.fields = fieldsString
+                                    .split(',')
+                                    .map((field) => field.trim())
+                                    .filter((field) => field.length > 0);
+                            }
+                        }
+                        try {
+                            responseData = await GenericFunctions_1.docusealApiRequest.call(this, 'POST', '/ai/documents', body);
+                        }
+                        catch (error) {
+                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Failed to generate document with AI: ${error.message}`, { itemIndex: i });
+                        }
+                    }
+                }
                 if (resource === 'template') {
                     if (operation === 'get') {
                         const templateId = this.getNodeParameter('templateId', i);

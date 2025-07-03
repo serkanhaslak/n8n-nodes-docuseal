@@ -87,10 +87,10 @@ describe('DocusealApi.node', () => {
 			) as any;
 
 			expect(resourceProperty).toBeDefined();
-			expect(resourceProperty.options).toHaveLength(4);
+			expect(resourceProperty.options).toHaveLength(5);
 
 			const resourceValues = resourceProperty.options.map((opt: any) => opt.value);
-			expect(['form', 'submission', 'submitter', 'template']).toEqual(
+			expect(['aiTool', 'form', 'submission', 'submitter', 'template']).toEqual(
 				expect.arrayContaining(resourceValues),
 			);
 		});

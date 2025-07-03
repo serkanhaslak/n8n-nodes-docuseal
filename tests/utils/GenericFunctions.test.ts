@@ -148,10 +148,11 @@ describe('GenericFunctions', () => {
 			]);
 		});
 
-		it('should return empty array when no submitters provided', () => {
+		it('should throw error when no submitters provided', () => {
 			const submittersData = {};
-			const result = buildSubmittersArray(submittersData);
-			expect(result).toEqual([]);
+			expect(() => buildSubmittersArray(submittersData)).toThrow(
+				'Submitters parameter must be a valid array',
+			);
 		});
 
 		it('should handle single submitter object', () => {

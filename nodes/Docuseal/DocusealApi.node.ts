@@ -29,6 +29,8 @@ import { submitterOperations, submitterFields } from './SubmitterDescription';
 
 import { formOperations, formFields } from './FormDescription';
 
+import { aiToolOperations, aiToolFields } from './AiToolDescription';
+
 /**
  * DocuSeal API Node for n8n
  * Provides integration with DocuSeal document management platform
@@ -64,6 +66,11 @@ export class DocusealApi implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
+						name: 'AI Tool',
+						value: 'aiTool',
+						description: 'Generate documents using AI',
+					},
+					{
 						name: 'Form',
 						value: 'form',
 						description: 'Work with form events',
@@ -86,6 +93,9 @@ export class DocusealApi implements INodeType {
 				],
 				default: 'submission',
 			},
+			// AI Tool operations and fields
+			...aiToolOperations,
+			...aiToolFields,
 			// Template operations and fields
 			...templateOperations,
 			...templateFields,
@@ -141,6 +151,53 @@ export class DocusealApi implements INodeType {
 			try {
 				const resource = this.getNodeParameter('resource', i);
 				const operation = this.getNodeParameter('operation', i);
+
+				// AI Tool operations
+				if (resource === 'aiTool') {
+					// Generate document using AI
+					if (operation === 'generateDocument') {
+						const documentType = this.getNodeParameter('documentType', i) as string;
+						const description = this.getNodeParameter('description', i) as string;
+						const additionalOptions = this.getNodeParameter(
+							'additionalOptions',
+							i,
+							{},
+						) as IDataObject;
+
+						const body: IDataObject = {
+							type: documentType,
+							description,
+						};
+
+						// Add optional parameters
+						if (additionalOptions.language) {
+							body.language = additionalOptions.language;
+						}
+						if (additionalOptions.style) {
+							body.style = additionalOptions.style;
+						}
+						if (additionalOptions.fields) {
+							// Convert comma-separated fields to array
+							const fieldsString = additionalOptions.fields as string;
+							if (fieldsString.trim()) {
+								body.fields = fieldsString
+									.split(',')
+									.map((field) => field.trim())
+									.filter((field) => field.length > 0);
+							}
+						}
+
+						try {
+							responseData = await docusealApiRequest.call(this, 'POST', '/ai/documents', body);
+						} catch (error) {
+							throw new NodeOperationError(
+								this.getNode(),
+								`Failed to generate document with AI: ${(error as Error).message}`,
+								{ itemIndex: i },
+							);
+						}
+					}
+				}
 
 				// Template operations
 				if (resource === 'template') {

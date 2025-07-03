@@ -593,46 +593,144 @@ async function prepareBinaryData(binaryPropertyName, itemIndex, fileName) {
 }
 exports.prepareBinaryData = prepareBinaryData;
 function buildSubmittersArray(submittersData) {
-    if (!submittersData.submitter) {
-        return [];
+    if (!submittersData) {
+        throw new Error('Submitters parameter is required. Please provide submitters in one of these formats:\n' +
+            '1. FixedCollection: { submitter: [{ email: "user@example.com", role: "Signer" }] }\n' +
+            '2. Direct array: [{ email: "user@example.com", role: "Signer" }]\n' +
+            '3. JSON string: \'[{"email": "user@example.com", "role": "Signer"}]\'');
     }
-    const submitterItems = Array.isArray(submittersData.submitter)
-        ? submittersData.submitter
-        : [submittersData.submitter];
-    return submitterItems.map((item) => {
-        const submitter = {
-            email: item.email,
-            role: item.role || 'Signer',
-        };
-        if (item.additionalFields) {
-            const additionalFields = item.additionalFields;
-            if (additionalFields.name) {
-                submitter.name = additionalFields.name;
+    let submitterItems = [];
+    try {
+        if (typeof submittersData === 'string') {
+            try {
+                const parsed = JSON.parse(submittersData);
+                if (Array.isArray(parsed)) {
+                    submitterItems = parsed;
+                }
+                else {
+                    throw new Error('JSON string must contain an array of submitters');
+                }
             }
-            if (additionalFields.phone) {
-                submitter.phone = additionalFields.phone;
-            }
-            if (additionalFields.external_id) {
-                submitter.external_id = additionalFields.external_id;
-            }
-            if (additionalFields.completed !== undefined) {
-                submitter.completed = additionalFields.completed;
-            }
-            if (additionalFields.send_email !== undefined) {
-                submitter.send_email = additionalFields.send_email;
-            }
-            if (additionalFields.send_sms !== undefined) {
-                submitter.send_sms = additionalFields.send_sms;
-            }
-            if (additionalFields.metadata) {
-                submitter.metadata = parseJsonInput(additionalFields.metadata);
-            }
-            if (additionalFields.fields) {
-                submitter.fields = parseJsonInput(additionalFields.fields);
+            catch (parseError) {
+                throw new Error('Invalid JSON format for submitters. Please provide a valid JSON array like: [{"email": "user@example.com", "role": "Signer"}]\n' +
+                    `Parse error: ${parseError.message}`);
             }
         }
-        return submitter;
-    });
+        else if (Array.isArray(submittersData)) {
+            submitterItems = submittersData;
+        }
+        else if (submittersData && typeof submittersData === 'object') {
+            if ('submitter' in submittersData) {
+                const submitterValue = submittersData.submitter;
+                if (Array.isArray(submitterValue)) {
+                    submitterItems = submitterValue;
+                }
+                else if (submitterValue) {
+                    submitterItems = [submitterValue];
+                }
+            }
+            else {
+                if ('email' in submittersData && submittersData.email) {
+                    submitterItems = [submittersData];
+                }
+            }
+        }
+        if (!Array.isArray(submitterItems) || submitterItems.length === 0) {
+            throw new Error('Submitters parameter must be a valid array with at least one submitter object.\n' +
+                'Expected format examples:\n' +
+                '• [{ "email": "user@example.com", "role": "Signer" }]\n' +
+                '• { "submitter": [{ "email": "user@example.com", "role": "Signer" }] }\n' +
+                `• Received: ${typeof submittersData} with ${Array.isArray(submittersData) ? submittersData.length : 'unknown'} items`);
+        }
+        return submitterItems.map((item, index) => {
+            if (!item || typeof item !== 'object') {
+                throw new Error(`Submitter at index ${index} must be an object. ` +
+                    'Expected: { email: "user@example.com", role: "Signer" }, ' +
+                    `Received: ${typeof item}`);
+            }
+            if (!item.email || typeof item.email !== 'string' || item.email.trim() === '') {
+                throw new Error(`Submitter at index ${index} must have a valid email address. ` +
+                    'Expected: non-empty string, ' +
+                    `Received: ${typeof item.email} "${item.email}"`);
+            }
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(item.email.trim())) {
+                throw new Error(`Submitter at index ${index} has invalid email format: "${item.email}". ` +
+                    'Please provide a valid email address like "user@example.com"');
+            }
+            const submitter = {
+                email: item.email.trim(),
+                role: item.role || 'Signer',
+            };
+            if (item.role && typeof item.role !== 'string') {
+                throw new Error(`Submitter at index ${index} role must be a string. ` +
+                    `Received: ${typeof item.role} "${item.role}"`);
+            }
+            const fieldsToCheck = [
+                'name',
+                'phone',
+                'external_id',
+                'completed',
+                'send_email',
+                'send_sms',
+                'metadata',
+                'fields',
+            ];
+            fieldsToCheck.forEach((field) => {
+                if (item[field] !== undefined) {
+                    submitter[field] = item[field];
+                }
+            });
+            if (item.additionalFields) {
+                const additionalFields = item.additionalFields;
+                if (additionalFields.name) {
+                    submitter.name = additionalFields.name;
+                }
+                if (additionalFields.phone) {
+                    submitter.phone = additionalFields.phone;
+                }
+                if (additionalFields.external_id) {
+                    submitter.external_id = additionalFields.external_id;
+                }
+                if (additionalFields.completed !== undefined) {
+                    submitter.completed = additionalFields.completed;
+                }
+                if (additionalFields.send_email !== undefined) {
+                    submitter.send_email = additionalFields.send_email;
+                }
+                if (additionalFields.send_sms !== undefined) {
+                    submitter.send_sms = additionalFields.send_sms;
+                }
+                if (additionalFields.metadata) {
+                    try {
+                        submitter.metadata = parseJsonInput(additionalFields.metadata);
+                    }
+                    catch (error) {
+                        throw new Error(`Submitter at index ${index} has invalid metadata JSON: ${error.message}`);
+                    }
+                }
+                if (additionalFields.fields) {
+                    try {
+                        submitter.fields = parseJsonInput(additionalFields.fields);
+                    }
+                    catch (error) {
+                        throw new Error(`Submitter at index ${index} has invalid fields JSON: ${error.message}`);
+                    }
+                }
+            }
+            return submitter;
+        });
+    }
+    catch (error) {
+        if (error instanceof Error && error.message.includes('Submitter')) {
+            throw error;
+        }
+        throw new Error(`Failed to process submitters data: ${error.message}\n` +
+            'Please ensure submitters are provided in one of these formats:\n' +
+            '1. FixedCollection: { submitter: [{ email: "user@example.com", role: "Signer" }] }\n' +
+            '2. Direct array: [{ email: "user@example.com", role: "Signer" }]\n' +
+            '3. JSON string: \'[{"email": "user@example.com", "role": "Signer"}]\'');
+    }
 }
 exports.buildSubmittersArray = buildSubmittersArray;
 function buildFieldValues(nodeParameters) {

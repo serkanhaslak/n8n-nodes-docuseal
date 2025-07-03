@@ -91,9 +91,9 @@ describe('DocusealApi.node', () => {
         it('should have all required resources', () => {
             const resourceProperty = docusealApi.description.properties?.find((prop) => prop.name === 'resource');
             expect(resourceProperty).toBeDefined();
-            expect(resourceProperty.options).toHaveLength(4);
+            expect(resourceProperty.options).toHaveLength(5);
             const resourceValues = resourceProperty.options.map((opt) => opt.value);
-            expect(['form', 'submission', 'submitter', 'template']).toEqual(expect.arrayContaining(resourceValues));
+            expect(['aiTool', 'form', 'submission', 'submitter', 'template']).toEqual(expect.arrayContaining(resourceValues));
         });
     });
     describe('Load Options Methods', () => {
