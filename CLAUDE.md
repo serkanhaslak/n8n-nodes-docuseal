@@ -73,6 +73,8 @@ npm run validate
 
 ### Publishing
 
+#### Local Publishing (for development)
+
 ```bash
 # Publish patch version locally
 npm run release:patch:local
@@ -83,6 +85,32 @@ npm run release:minor:local
 # Publish major version locally
 npm run release:major:local
 ```
+
+#### NPM Publishing (with API key)
+
+Set up NPM authentication using the NPM_KEY environment variable in `.env` file:
+
+```bash
+# Set NPM authentication token
+echo "//registry.npmjs.org/:_authToken=${NPM_KEY}" > ~/.npmrc
+
+# Publish patch version to npm
+npm version patch && npm publish
+
+# Publish minor version to npm
+npm version minor && npm publish
+
+# Publish major version to npm
+npm version major && npm publish
+```
+
+**Important**:
+
+- Always run `npm run validate` before publishing to ensure code quality
+- Check current version in `package.json` before publishing
+- The build process automatically runs during `npm publish` via `prepublishOnly`
+  script
+- Use patch for bug fixes, minor for new features, major for breaking changes
 
 ## Architecture
 
@@ -129,6 +157,15 @@ parameter must be a valid array" error by:
   examples
 - Implementing proper email format validation
 - Handling edge cases like empty objects and malformed data
+
+**Parameter Handling Bug (GitHub #7)**: Fixed the
+`"Error extra { "parameterName": "" }"` error by:
+
+- Correcting empty parameter name in `buildFieldValues()` function call
+- Adding proper parameter collection for `fieldValuesMode`, `fieldValues`, and
+  `fieldValuesJson`
+- Enhanced error handling with try-catch blocks and descriptive error messages
+- Fixed rimraf dependency issue for npm installation
 
 **AI Tool Integration**: Fully integrated existing AI tool functionality:
 

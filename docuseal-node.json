@@ -1,0 +1,52 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "templateId": "485024",
+        "submitters": {
+          "submitter": [
+            {
+              "email": "test@example.com",
+              "additionalFields": {
+                "name": "Test User"
+              }
+            }
+          ]
+        },
+        "fieldValues": {
+          "field": [
+            {
+              "name": "companyName",
+              "value": "Hareword LLC"
+            },
+            {
+              "name": "filingId",
+              "value": "123123123123123123"
+            }
+          ]
+        },
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-docuseal.docusealApi",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        -160
+      ],
+      "id": "c7c16243-4762-47b3-80cc-89e493d506ad",
+      "name": "Create a submission",
+      "credentials": {
+        "docusealApi": {
+          "id": "SfKuyPshupLlWCPw",
+          "name": "DocuSeal Test"
+        }
+      }
+    }
+  ],
+  "connections": {},
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f351e44c5604cecc63318eec7e6f66d3d137ab6677e97aec349cb83f7a7b7948"
+  }
+}

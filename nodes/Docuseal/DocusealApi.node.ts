@@ -589,8 +589,31 @@ export class DocusealApi implements INodeType {
 							});
 						}
 
-						// Build field values from additional options
-						const values = buildFieldValues(this.getNodeParameter('', 0) as IDataObject);
+						// Build field values from field parameters
+						let values: IDataObject = {};
+						try {
+							const fieldValuesMode = this.getNodeParameter(
+								'fieldValuesMode',
+								i,
+								'individual',
+							) as string;
+							const fieldValues = this.getNodeParameter('fieldValues', i, {}) as IDataObject;
+							const fieldValuesJson = this.getNodeParameter('fieldValuesJson', i, '{}') as string;
+
+							const fieldParams: IDataObject = {
+								fieldValuesMode,
+								fieldValues,
+								fieldValuesJson,
+							};
+
+							values = buildFieldValues(fieldParams);
+						} catch (error) {
+							throw new NodeOperationError(
+								this.getNode(),
+								`Failed to build field values: ${(error as Error).message}`,
+								{ itemIndex: i },
+							);
+						}
 
 						// Build request body
 						const body: IDataObject = {

@@ -378,7 +378,21 @@ class DocusealApi {
                                 itemIndex: i,
                             });
                         }
-                        const values = (0, GenericFunctions_1.buildFieldValues)(this.getNodeParameter('', 0));
+                        let values = {};
+                        try {
+                            const fieldValuesMode = this.getNodeParameter('fieldValuesMode', i, 'individual');
+                            const fieldValues = this.getNodeParameter('fieldValues', i, {});
+                            const fieldValuesJson = this.getNodeParameter('fieldValuesJson', i, '{}');
+                            const fieldParams = {
+                                fieldValuesMode,
+                                fieldValues,
+                                fieldValuesJson,
+                            };
+                            values = (0, GenericFunctions_1.buildFieldValues)(fieldParams);
+                        }
+                        catch (error) {
+                            throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Failed to build field values: ${error.message}`, { itemIndex: i });
+                        }
                         const body = {
                             template_id: templateId,
                             submitters,
